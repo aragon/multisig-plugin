@@ -370,7 +370,7 @@ describe('MultisigSetup', function () {
         owner
       );
       pluginRepoRegistry = await pluginRepoRegistryFactory.deploy();
-      pluginRepoRegistry.initialize(
+      await pluginRepoRegistry.initialize(
         managingDAO.address,
         getInterfaceId(IPluginRepo__factory.createInterface())
       );
@@ -600,7 +600,7 @@ describe('MultisigSetup', function () {
           })
         ).to.emit(psp, 'InstallationApplied');
 
-        let plugin = Multisig__factory.connect(
+        const plugin = Multisig__factory.connect(
           preparedEvent.args.plugin,
           owner
         );

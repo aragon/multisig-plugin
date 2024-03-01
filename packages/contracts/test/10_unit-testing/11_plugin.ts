@@ -56,7 +56,7 @@ export async function approveWithSigners(
   signers: SignerWithAddress[],
   signerIds: number[]
 ) {
-  let promises = signerIds.map(i =>
+  const promises = signerIds.map(i =>
     multisigContract.connect(signers[i]).approve(proposalId, false)
   );
 
@@ -114,12 +114,12 @@ describe('Multisig', function () {
     );
     multisig = Multisig__factory.connect(event.args.proxy, signers[0]);
 
-    dao.grant(
+    await dao.grant(
       dao.address,
       multisig.address,
       ethers.utils.id('EXECUTE_PERMISSION')
     );
-    dao.grant(
+    await dao.grant(
       multisig.address,
       signers[0].address,
       ethers.utils.id('UPDATE_MULTISIG_SETTINGS_PERMISSION')
@@ -353,7 +353,7 @@ describe('Multisig', function () {
     });
 
     it('should not allow to set minApprovals larger than the address list length', async () => {
-      let addresslistLength = (await multisig.addresslistLength()).toNumber();
+      const addresslistLength = (await multisig.addresslistLength()).toNumber();
 
       multisigSettings.minApprovals = addresslistLength + 1;
 
