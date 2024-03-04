@@ -334,7 +334,6 @@ describe('MultisigSetup', function () {
     });
   });
 
-  // TODO: Improve checks by using smock with the proxy (We don't know how yet)
   describe('Updates', async () => {
     let psp: PluginSetupProcessor;
     let setup1: MultisigSetup;
