@@ -18,7 +18,7 @@ import {Multisig} from "./Multisig.sol";
 contract MultisigSetup is PluginUpgradeableSetup {
     using ProxyLib for address;
 
-    // TODO This permission identifier has to be moved inside `PermissionLib` as per task OS-954.
+    // TODO This permission identifier will be moved into a library in task OS-954.
     /// @notice The ID of the permission required to call the `execute` function.
     bytes32 internal constant EXECUTE_PERMISSION_ID = keccak256("EXECUTE_PERMISSION");
 
