@@ -3,7 +3,7 @@ import {version} from '../../package.json';
 /**
  * Returns the NPM version number from the `osx` package.json file
  */
-// TODO
+// TODO This will be refactored as part of Task OS-1093.
 export function osxContractsVersion(): [number, number, number] {
   const trimmedVersion = version.split('-')[0];
   const semver = trimmedVersion.split('.');
