@@ -1,10 +1,14 @@
-import {IMPLICIT_INITIAL_PROTOCOL_VERSION} from './protocol-version';
 import {readStorage, ERC1967_IMPLEMENTATION_SLOT} from './storage';
 import {DAO, PluginRepo} from '@aragon/osx-ethers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {Contract, ContractFactory, errors} from 'ethers';
 import {upgrades} from 'hardhat';
+
+// The protocol version number of contracts not having a `getProtocolVersion()` function because they don't inherit from `ProtocolVersion.sol` yet.
+export const IMPLICIT_INITIAL_PROTOCOL_VERSION: [number, number, number] = [
+  1, 0, 0,
+];
 
 // Deploys a proxy and a new implementation from the same factory and checks that the upgrade works.
 export async function deployAndUpgradeSelfCheck(
