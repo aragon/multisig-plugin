@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.8;
 
+/* solhint-disable max-line-length */
 import {PermissionLib} from "@aragon/osx-commons-contracts/src/permission/PermissionLib.sol";
 import {IPluginSetup} from "@aragon/osx-commons-contracts/src/plugin/setup/IPluginSetup.sol";
 import {PluginUpgradeableSetup} from "@aragon/osx-commons-contracts/src/plugin/setup/PluginUpgradeableSetup.sol";
@@ -9,6 +10,8 @@ import {ProxyLib} from "@aragon/osx-commons-contracts/src/utils/deployment/Proxy
 import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
 
 import {Multisig} from "./Multisig.sol";
+
+/* solhint-enable max-line-length */
 
 /// @title MultisigSetup
 /// @author Aragon Association - 2022-2023

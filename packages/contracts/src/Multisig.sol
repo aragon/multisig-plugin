@@ -2,16 +2,18 @@
 
 pragma solidity ^0.8.8;
 
+/* solhint-disable max-line-length */
 import {SafeCastUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
 
 import {IMembership} from "@aragon/osx-commons-contracts/src/plugin/extensions/membership/IMembership.sol";
 import {Addresslist} from "@aragon/osx-commons-contracts/src/plugin/extensions/governance/Addresslist.sol";
-// solhint-disable-next-line max-line-length
 import {ProposalUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/extensions/proposal/ProposalUpgradeable.sol";
 import {PluginUUPSUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/PluginUUPSUpgradeable.sol";
 import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
 
 import {IMultisig} from "./IMultisig.sol";
+
+/* solhint-enable max-line-length */
 
 /// @title Multisig
 /// @author Aragon Association - 2022-2023
