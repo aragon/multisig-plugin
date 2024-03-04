@@ -29,7 +29,7 @@
           "internalType": "struct Multisig.MultisigSettings",
           "name": "multisigSettings",
           "type": "tuple",
-          "description": "The inital multisig settings."
+          "description": "The initial multisig settings."
         }
       ]
     },
