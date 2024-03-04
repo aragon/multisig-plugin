@@ -217,7 +217,7 @@ async function checkPermissions(
   }
 }
 
-// TODO Move into OSX commons ?
+// TODO Move into OSX commons as part of Task OS-928.
 export async function createDaoProxy(
   deployer: SignerWithAddress,
   dummyMetadata: string
