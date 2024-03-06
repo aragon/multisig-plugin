@@ -213,11 +213,13 @@ describe('Multisig', function () {
       const {uninitializedPlugin, alice, defaultInitData, dao} =
         await loadFixture(fixture);
 
-      // Create a member list that overflows
+      // Create a member list causing an overflow during initialization.
       const uint16MaxValue = 2 ** 16 - 1; // = 65535
       const overflowingMemberList = new Array(uint16MaxValue + 1).fill(
         alice.address
       );
+
+      // Try to initialize the plugin with a list of new members causing an overflow.
       await expect(
         uninitializedPlugin.initialize(
           dao.address,
@@ -459,6 +461,37 @@ describe('Multisig', function () {
           alice.address,
           UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
         );
+    });
+
+    it('reverts if the member list would become longer than uint16 max', async () => {
+      const {
+        initializedPlugin: plugin,
+        alice,
+        dave,
+        dao,
+      } = await loadFixture(fixture);
+
+      // Grant Alice the permission to update settings.
+      await dao.grant(
+        plugin.address,
+        alice.address,
+        UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
+      );
+
+      const currentMemberCount = (
+        await plugin.callStatic.addresslistLength()
+      ).toNumber();
+
+      // Create list of new members causing an overflow.
+      const uint16MaxValue = 2 ** 16 - 1; // = 65535
+      const overflowingNewMemberList = new Array(
+        uint16MaxValue - currentMemberCount + 1
+      ).fill(dave.address);
+
+      // Try to add a list of new members causing an overflow as Alice.
+      await expect(plugin.connect(alice).addAddresses(overflowingNewMemberList))
+        .to.revertedWithCustomError(plugin, 'AddresslistLengthOutOfBounds')
+        .withArgs(uint16MaxValue, uint16MaxValue + 1);
     });
 
     it('adds new members to the address list and emit the `MembersAdded` event', async () => {
