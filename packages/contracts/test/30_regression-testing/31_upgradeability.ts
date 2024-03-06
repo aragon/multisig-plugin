@@ -1,7 +1,7 @@
 import {createDaoProxy} from '../20_integration-testing/test-helpers';
 import {
-  Multisig_V1_0_0__factory,
-  Multisig_V1_3_0__factory,
+  Multisig_V1_1__factory,
+  Multisig_V1_2__factory,
   Multisig__factory,
   Multisig,
 } from '../test-utils/typechain-versions';
@@ -33,10 +33,10 @@ describe('Upgrades', () => {
     );
   });
 
-  it('upgrades from v1.0.0', async () => {
+  it('upgrades from v1.1', async () => {
     const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
     const currentContractFactory = new Multisig__factory(deployer);
-    const legacyContractFactory = new Multisig_V1_0_0__factory(deployer);
+    const legacyContractFactory = new Multisig_V1_1__factory(deployer);
 
     const {fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
@@ -60,13 +60,13 @@ describe('Upgrades', () => {
 
     expect(fromProtocolVersion).to.not.deep.equal(toProtocolVersion);
     expect(fromProtocolVersion).to.deep.equal([1, 0, 0]);
-    expect(toProtocolVersion).to.deep.equal([1, 4, 0]); // TODO Check this automatically
+    expect(toProtocolVersion).to.deep.equal([1, 4, 0]);
   });
 
-  it('from v1.3.0', async () => {
+  it('from v1.2', async () => {
     const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
     const currentContractFactory = new Multisig__factory(deployer);
-    const legacyContractFactory = new Multisig_V1_3_0__factory(deployer);
+    const legacyContractFactory = new Multisig_V1_2__factory(deployer);
 
     const {fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
