@@ -62,17 +62,19 @@ type FixtureResult = {
 async function fixture(): Promise<FixtureResult> {
   const [deployer, alice, bob, carol, dave, eve] = await ethers.getSigners();
 
+  // Deploy a DAO proxy.
   const dummyMetadata = ethers.utils.hexlify(
     ethers.utils.toUtf8Bytes('0x123456789')
   );
   const dao = await createDaoProxy(deployer, dummyMetadata);
 
+  // Deploy a plugin proxy factory containing the multisig implementation.
   const pluginImplementation = await new Multisig__factory(deployer).deploy();
   const proxyFactory = await new ProxyFactory__factory(deployer).deploy(
     pluginImplementation.address
   );
 
-  // Create an initialized plugin proxy
+  // Deploy an initialized plugin proxy.
   const defaultInitData = {
     members: [alice.address, bob.address, carol.address],
     settings: {
@@ -94,7 +96,7 @@ async function fixture(): Promise<FixtureResult> {
     deployer
   );
 
-  // Create an initialized plugin proxy
+  // Deploy an initialized plugin proxy.
   const deploymentTx2 = await proxyFactory.deployUUPSProxy([]);
   const proxyCreatedEvent2 = await findEvent<ProxyCreatedEvent>(
     deploymentTx2,
@@ -105,6 +107,7 @@ async function fixture(): Promise<FixtureResult> {
     deployer
   );
 
+  // Provide a dummy action array.
   const dummyActions: DAOStructs.ActionStruct[] = [
     {
       to: deployer.address,
