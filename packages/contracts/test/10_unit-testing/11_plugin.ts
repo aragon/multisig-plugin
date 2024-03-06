@@ -48,7 +48,6 @@ type FixtureResult = {
   carol: SignerWithAddress;
   dave: SignerWithAddress;
   eve: SignerWithAddress;
-  ivan: SignerWithAddress;
   initializedPlugin: Multisig;
   uninitializedPlugin: Multisig;
   defaultInitData: {
@@ -61,8 +60,7 @@ type FixtureResult = {
 };
 
 async function fixture(): Promise<FixtureResult> {
-  const [deployer, alice, bob, carol, dave, eve, ivan] =
-    await ethers.getSigners();
+  const [deployer, alice, bob, carol, dave, eve] = await ethers.getSigners();
 
   const dummyMetadata = ethers.utils.hexlify(
     ethers.utils.toUtf8Bytes('0x123456789')
@@ -74,7 +72,7 @@ async function fixture(): Promise<FixtureResult> {
     pluginImplementation.address
   );
 
-  // Create an initialized plugin clone
+  // Create an initialized plugin proxy
   const defaultInitData = {
     members: [alice.address, bob.address, carol.address],
     settings: {
@@ -82,7 +80,6 @@ async function fixture(): Promise<FixtureResult> {
       minApprovals: 2,
     },
   };
-
   const pluginInitdata = pluginImplementation.interface.encodeFunctionData(
     'initialize',
     [dao.address, defaultInitData.members, defaultInitData.settings]
@@ -97,6 +94,7 @@ async function fixture(): Promise<FixtureResult> {
     deployer
   );
 
+  // Create an initialized plugin proxy
   const deploymentTx2 = await proxyFactory.deployUUPSProxy([]);
   const proxyCreatedEvent2 = await findEvent<ProxyCreatedEvent>(
     deploymentTx2,
@@ -122,7 +120,6 @@ async function fixture(): Promise<FixtureResult> {
     carol,
     dave,
     eve,
-    ivan,
     initializedPlugin,
     uninitializedPlugin,
     defaultInitData,
@@ -139,6 +136,7 @@ describe('Multisig', function () {
         fixture
       );
 
+      // Try to reinitialize the initialized plugin.
       await expect(
         initializedPlugin.initialize(
           dao.address,
@@ -169,7 +167,6 @@ describe('Multisig', function () {
       expect(await plugin.addresslistLength()).to.equal(
         defaultInitData.members.length
       );
-
       const promises = defaultInitData.members.map(member =>
         plugin.isListed(member)
       );
@@ -178,21 +175,21 @@ describe('Multisig', function () {
       });
     });
 
-    it('should set the `minApprovals`', async () => {
+    it('sets the `minApprovals`', async () => {
       const {initializedPlugin, defaultInitData} = await loadFixture(fixture);
       expect(
         (await initializedPlugin.multisigSettings()).minApprovals
       ).to.be.eq(defaultInitData.settings.minApprovals);
     });
 
-    it('should set `onlyListed`', async () => {
+    it('sets `onlyListed`', async () => {
       const {initializedPlugin, defaultInitData} = await loadFixture(fixture);
       expect((await initializedPlugin.multisigSettings()).onlyListed).to.be.eq(
         defaultInitData.settings.onlyListed
       );
     });
 
-    it('should emit `MultisigSettingsUpdated` during initialization', async () => {
+    it('emits `MultisigSettingsUpdated` during initialization', async () => {
       const {uninitializedPlugin, defaultInitData, dao} = await loadFixture(
         fixture
       );
@@ -210,11 +207,15 @@ describe('Multisig', function () {
         );
     });
 
-    it('should revert if members list is longer than uint16 max', async () => {
+    it('reverts if the member list is longer than uint16 max', async () => {
       const {uninitializedPlugin, alice, defaultInitData, dao} =
         await loadFixture(fixture);
 
-      const overflowingMemberList = new Array(65536).fill(alice.address);
+      // Create a member list that overflows
+      const uint16MaxValue = 2 ** 16 - 1; // = 65535
+      const overflowingMemberList = new Array(uint16MaxValue + 1).fill(
+        alice.address
+      );
       await expect(
         uninitializedPlugin.initialize(
           dao.address,
@@ -229,7 +230,7 @@ describe('Multisig', function () {
           uninitializedPlugin,
           'AddresslistLengthOutOfBounds'
         )
-        .withArgs(65535, overflowingMemberList.length);
+        .withArgs(uint16MaxValue, overflowingMemberList.length);
     });
   });
 
@@ -296,7 +297,7 @@ describe('Multisig', function () {
         dao,
       } = await loadFixture(fixture);
 
-      // Check that the Alice hasn't `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission on the Multisig plugin.
+      // Check that Alice hasn't `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission on the Multisig plugin.
       expect(
         await dao.hasPermission(
           plugin.address,
@@ -322,58 +323,58 @@ describe('Multisig', function () {
         );
     });
 
-    it('should not allow to set minApprovals larger than the address list length', async () => {
+    it('reverts when setting `minApprovals` to a value greater than the address list length', async () => {
       const {
         alice,
         initializedPlugin: plugin,
         dao,
       } = await loadFixture(fixture);
 
-      // Grant alice the permission to update settings.
+      // Grant Alice the permission to update settings.
       await dao.grant(
         plugin.address,
         alice.address,
         UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
       );
 
+      // Create settings where `minApprovals` is greater than the address list length
       const addresslistLength = (await plugin.addresslistLength()).toNumber();
-
       const badSettings: MultisigSettings = {
         onlyListed: true,
         minApprovals: addresslistLength + 1,
       };
 
+      // Try to update the multisig settings
       await expect(plugin.connect(alice).updateMultisigSettings(badSettings))
         .to.be.revertedWithCustomError(plugin, 'MinApprovalsOutOfBounds')
         .withArgs(addresslistLength, badSettings.minApprovals);
     });
 
-    it('should not allow to set `minApprovals` to 0', async () => {
+    it('reverts when setting `minApprovals` to 0', async () => {
       const {
         alice,
         initializedPlugin: plugin,
         dao,
       } = await loadFixture(fixture);
 
-      // Grant alice the permission to update settings.
+      // Grant Alice the permission to update settings.
       await dao.grant(
         plugin.address,
         alice.address,
         UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
       );
 
-      // Update the settings with alice.
+      // Try as Alice to update the settings with `minApprovals` being 0.
       const badSettings: MultisigSettings = {
         onlyListed: true,
         minApprovals: 0,
       };
-
       await expect(plugin.connect(alice).updateMultisigSettings(badSettings))
         .to.be.revertedWithCustomError(plugin, 'MinApprovalsOutOfBounds')
         .withArgs(1, 0);
     });
 
-    it('should emit `MultisigSettingsUpdated` when `updateMultisigSettings` gets called', async () => {
+    it('emits `MultisigSettingsUpdated` when `updateMultisigSettings` gets called', async () => {
       const {
         alice,
         initializedPlugin: plugin,
@@ -381,14 +382,14 @@ describe('Multisig', function () {
         dao,
       } = await loadFixture(fixture);
 
-      // Grant alice the permission to update settings.
+      // Grant Alice the permission to update settings.
       await dao.grant(
         plugin.address,
         alice.address,
         UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
       );
 
-      // Update the settings with alice.
+      // Update the settings as Alice.
       await expect(
         plugin.connect(alice).updateMultisigSettings(defaultInitData.settings)
       )
@@ -401,20 +402,24 @@ describe('Multisig', function () {
   });
 
   describe('isListed', async () => {
-    it('should return false, if a user is not listed', async () => {
-      const {ivan, initializedPlugin: plugin} = await loadFixture(fixture);
-      expect(await plugin.isListed(ivan.address)).to.equal(false);
+    it('returns false, if a user is not listed', async () => {
+      const {dave, initializedPlugin: plugin} = await loadFixture(fixture);
+      expect(await plugin.isListed(dave.address)).to.equal(false);
+    });
+
+    it('returns true, if a user is listed', async () => {
+      const {alice, initializedPlugin: plugin} = await loadFixture(fixture);
+      expect(await plugin.isListed(alice.address)).to.equal(true);
     });
   });
 
   describe('isMember', async () => {
-    it('should return false, if user is not listed', async () => {
-      const {ivan, initializedPlugin: plugin} = await loadFixture(fixture);
-      expect(await plugin.isMember(ivan.address)).to.be.false;
+    it('returns false, if user is not a member', async () => {
+      const {dave, initializedPlugin: plugin} = await loadFixture(fixture);
+      expect(await plugin.isMember(dave.address)).to.be.false;
     });
 
-    it('should return true if user is in the latest list', async () => {
-      // TODO does this make sense?
+    it('returns true if user a user is a member', async () => {
       const {alice, initializedPlugin: plugin} = await loadFixture(fixture);
       expect(await plugin.isMember(alice.address)).to.be.true;
     });
@@ -454,7 +459,7 @@ describe('Multisig', function () {
         );
     });
 
-    it('should add new members to the address list and emit the `MembersAdded` event', async () => {
+    it('adds new members to the address list and emit the `MembersAdded` event', async () => {
       const {
         alice,
         dave,
@@ -463,24 +468,25 @@ describe('Multisig', function () {
         dao,
       } = await loadFixture(fixture);
 
-      // Grant alice the permission to update settings.
+      // Grant Alice the permission to update settings.
       await dao.grant(
         plugin.address,
         alice.address,
         UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
       );
 
-      // Check that dave and eve are not listed yet.
+      // Check that Dave and Eve are not listed yet.
       expect(await plugin.isListed(dave.address)).to.equal(false);
       expect(await plugin.isListed(eve.address)).to.equal(false);
 
-      // Call `addAddresses` with alice to add dave and eve.
+      // Call `addAddresses` as Alice to add Dave and Eve.
       await expect(
         plugin.connect(alice).addAddresses([dave.address, eve.address])
       )
         .to.emit(plugin, IMEMBERSHIP_EVENTS.MembersAdded)
         .withArgs([dave.address, eve.address]);
 
+      // Check that Dave and Eve are listed now.
       expect(await plugin.isListed(dave.address)).to.equal(true);
       expect(await plugin.isListed(eve.address)).to.equal(true);
     });
@@ -520,7 +526,7 @@ describe('Multisig', function () {
         );
     });
 
-    it('should remove users from the address list and emit the `MembersRemoved` event', async () => {
+    it('removes users from the address list and emit the `MembersRemoved` event', async () => {
       const {
         alice,
         bob,
@@ -529,24 +535,24 @@ describe('Multisig', function () {
         dao,
       } = await loadFixture(fixture);
 
-      // Grant alice the permission to update settings.
+      // Grant Alice the permission to update settings.
       await dao.grant(
         plugin.address,
         alice.address,
         UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
       );
 
-      // Check that alice, bob, and carol are listed
+      // Check that Alice, Bob, and Carol are listed.
       expect(await plugin.isListed(alice.address)).to.equal(true);
       expect(await plugin.isListed(bob.address)).to.equal(true);
       expect(await plugin.isListed(carol.address)).to.equal(true);
 
-      // Call `removeAddresses` with alice to remove bob.
-      await expect(plugin.connect(alice).removeAddresses([bob.address])) // TODO Use larger member list
+      // Call `removeAddresses` as Alice to remove Bob.
+      await expect(plugin.connect(alice).removeAddresses([bob.address]))
         .to.emit(plugin, IMEMBERSHIP_EVENTS.MembersRemoved)
         .withArgs([bob.address]);
 
-      // Check that bob is removed while alice and carol remains listed.
+      // Check that Bob is removed while Alice and Carol remains listed.
       expect(await plugin.isListed(alice.address)).to.equal(true);
       expect(await plugin.isListed(bob.address)).to.equal(false);
       expect(await plugin.isListed(carol.address)).to.equal(true);
@@ -560,21 +566,19 @@ describe('Multisig', function () {
         dao,
       } = await loadFixture(fixture);
 
-      // Grant alice the permission to update settings.
+      // Grant Alice the permission to update settings.
       await dao.grant(
         plugin.address,
         alice.address,
         UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
       );
 
+      // Try to remove all members.
       await expect(
         plugin.connect(alice).removeAddresses(defaultInitData.members)
       )
         .to.be.revertedWithCustomError(plugin, 'MinApprovalsOutOfBounds')
-        .withArgs(
-          0, //(await plugin.addresslistLength()).sub(1),
-          defaultInitData.settings.minApprovals
-        );
+        .withArgs(0, defaultInitData.settings.minApprovals);
     });
 
     it('reverts if the address list would become shorter than the current minimum approval parameter requires', async () => {
@@ -586,16 +590,19 @@ describe('Multisig', function () {
         dao,
       } = await loadFixture(fixture);
 
-      // Grant alice the permission to update settings.
+      // Grant Alice the permission to update settings.
       await dao.grant(
         plugin.address,
         alice.address,
         UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
       );
 
+      // Initially, there are 3 members and `minApprovals` is 2.
+      // Remove one member, which is ok.
       await expect(plugin.connect(alice).removeAddresses([carol.address])).not
         .to.be.reverted;
 
+      // Try to remove  another member, which will revert.
       await expect(plugin.connect(alice).removeAddresses([alice.address]))
         .to.be.revertedWithCustomError(plugin, 'MinApprovalsOutOfBounds')
         .withArgs(
@@ -606,7 +613,7 @@ describe('Multisig', function () {
   });
 
   describe('createProposal', async () => {
-    it('increments the proposal counter', async () => {
+    it('increments the proposal count', async () => {
       const {
         alice,
         initializedPlugin: plugin,
@@ -614,25 +621,41 @@ describe('Multisig', function () {
         dummyActions,
       } = await loadFixture(fixture);
 
+      // Check that the proposal count is 0.
       expect(await plugin.proposalCount()).to.equal(0);
 
+      // Create a proposal as Alice.
       const endDate = (await time.latest()) + TIME.HOUR;
 
-      await expect(
-        plugin
-          .connect(alice)
-          .createProposal(
-            dummyMetadata,
-            dummyActions,
-            0,
-            false,
-            false,
-            0,
-            endDate
-          )
-      ).not.to.be.reverted;
-
+      await plugin
+        .connect(alice)
+        .createProposal(
+          dummyMetadata,
+          dummyActions,
+          0,
+          false,
+          false,
+          0,
+          endDate
+        );
+      // Check that the proposal count is 1.
       expect(await plugin.proposalCount()).to.equal(1);
+
+      // Create another proposal as Alice.
+      await plugin
+        .connect(alice)
+        .createProposal(
+          dummyMetadata,
+          dummyActions,
+          0,
+          false,
+          false,
+          0,
+          endDate
+        );
+
+      // Check that the proposal count is 2.
+      expect(await plugin.proposalCount()).to.equal(2);
     });
 
     it('creates unique proposal IDs for each proposal', async () => {
@@ -643,8 +666,8 @@ describe('Multisig', function () {
         dummyActions,
       } = await loadFixture(fixture);
 
+      // Make a static call to `createProposal` to get the first proposal ID ahead of time.
       const endDate = (await time.latest()) + TIME.HOUR;
-
       const proposalId0 = await plugin
         .connect(alice)
         .callStatic.createProposal(
@@ -657,7 +680,7 @@ describe('Multisig', function () {
           endDate
         );
 
-      // create a new proposal for the proposalCounter to be incremented
+      // Create the new proposal as Alice.
       await expect(
         plugin
           .connect(alice)
@@ -672,6 +695,7 @@ describe('Multisig', function () {
           )
       ).not.to.be.reverted;
 
+      // Make a static call to `createProposal` to get the next proposal ID ahead of time.
       const proposalId1 = await plugin
         .connect(alice)
         .callStatic.createProposal(
@@ -684,10 +708,9 @@ describe('Multisig', function () {
           endDate
         );
 
+      // Check that the proposal IDs are as expected.
       expect(proposalId0).to.equal(0);
       expect(proposalId1).to.equal(1);
-
-      expect(proposalId0).to.not.equal(proposalId1);
     });
 
     it('emits the `ProposalCreated` event', async () => {
@@ -697,20 +720,17 @@ describe('Multisig', function () {
         dummyMetadata,
       } = await loadFixture(fixture);
 
+      // Create a proposal as Alice and check the event arguments.
       const startDate = (await time.latest()) + TIME.MINUTE;
       const endDate = startDate + TIME.HOUR;
-
-      const allowFailureMap = 1;
-
       const expectedProposalId = 0;
-
       await expect(
         plugin
           .connect(alice)
           .createProposal(
             dummyMetadata,
             [],
-            allowFailureMap,
+            0,
             false,
             false,
             startDate,
@@ -725,7 +745,7 @@ describe('Multisig', function () {
           endDate,
           dummyMetadata,
           [],
-          allowFailureMap
+          0
         );
     });
 
@@ -752,9 +772,9 @@ describe('Multisig', function () {
       // Disable auto-mining so that both proposals end up in the same block.
       await ethers.provider.send('evm_setAutomine', [false]);
       // Update #1
-      await expect(plugin.connect(alice).updateMultisigSettings(newSettings));
+      await plugin.connect(alice).updateMultisigSettings(newSettings);
       // Update #2
-      await expect(plugin.connect(alice).updateMultisigSettings(newSettings));
+      await plugin.connect(alice).updateMultisigSettings(newSettings);
       // Re-enable auto-mining so that the remaining tests run normally.
       await ethers.provider.send('evm_setAutomine', [true]);
     });
@@ -770,9 +790,6 @@ describe('Multisig', function () {
         onlyListed: true,
         minApprovals: 1,
       });
-
-      const startDate = (await time.latest()) + TIME.MINUTE;
-      const endDate = startDate + TIME.HOUR;
 
       // Grant permissions between the DAO and the plugin.
       await dao.grant(
@@ -799,6 +816,7 @@ describe('Multisig', function () {
       };
 
       /* Create two proposals to update the settings in the same block. */
+      const endDate = (await time.latest()) + TIME.HOUR;
 
       // Disable auto-mining so that both proposals end up in the same block.
       await ethers.provider.send('evm_setAutomine', [false]);
@@ -843,17 +861,20 @@ describe('Multisig', function () {
           dummyMetadata,
         } = await loadFixture(fixture);
 
+        // Grant Alice the permission to update settings.
         await dao.grant(
           plugin.address,
           alice.address,
           UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
         );
 
+        // As Alice, set `onlyListed` to `false`.
         await plugin.connect(alice).updateMultisigSettings({
           minApprovals: 2,
           onlyListed: false,
         });
 
+        // Create a proposal as Dave (who is not listed).
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
 
@@ -861,7 +882,7 @@ describe('Multisig', function () {
 
         await expect(
           plugin
-            .connect(dave) // not listed
+            .connect(dave) // Dave is not listed.
             .createProposal(
               dummyMetadata,
               [],
@@ -886,7 +907,7 @@ describe('Multisig', function () {
     });
 
     describe('`onlyListed` is set to `true`', async () => {
-      it('reverts if the user is not on the list and only listed accounts can create proposals', async () => {
+      it('reverts if the caller is not listed and only listed accounts can create proposals', async () => {
         const {
           dave,
           initializedPlugin: plugin,
@@ -894,11 +915,11 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Try to create a proposal as Dave (who is not listed), which should revert.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await expect(
           plugin
-            .connect(dave) // not listed
+            .connect(dave) // Dave is not listed.
             .createProposal(
               dummyMetadata,
               dummyActions,
@@ -913,7 +934,7 @@ describe('Multisig', function () {
           .withArgs(dave.address);
       });
 
-      it('reverts if `_msgSender` is not listed in the current block although he was listed in the last block', async () => {
+      it('reverts if caller is not listed in the current block although she was listed in the last block', async () => {
         const {
           alice,
           carol,
@@ -924,14 +945,14 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
-        const startDate = (await time.latest()) + TIME.MINUTE;
-        const endDate = startDate + TIME.HOUR;
-
+        // Grant Alice the permission to update settings.
         await dao.grant(
           plugin.address,
           alice.address,
           UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
         );
+
+        const endDate = (await time.latest()) + TIME.HOUR;
 
         // Disable auto-mining so that all subsequent transactions end up in the same block.
         await ethers.provider.send('evm_setAutomine', [false]);
@@ -946,6 +967,7 @@ describe('Multisig', function () {
           .removeAddresses([carol.address]);
 
         // Transaction 3: Expect the proposal creation to fail for Carol because she was removed as a member in transaction 2.
+
         await expect(
           plugin
             .connect(carol)
@@ -962,8 +984,6 @@ describe('Multisig', function () {
           .to.be.revertedWithCustomError(plugin, 'ProposalCreationForbidden')
           .withArgs(carol.address);
 
-        const id = 0;
-
         // Transaction 4: Create the proposal as Dave
         const tx4 = await plugin
           .connect(dave)
@@ -974,10 +994,11 @@ describe('Multisig', function () {
             false,
             false,
             0,
-            startDate
+            endDate
           );
+        const id = 0;
 
-        // Check the listed members before the block is mined
+        // Check the listed members before the block is mined.
         expect(await plugin.isListed(carol.address)).to.equal(true);
         expect(await plugin.isListed(dave.address)).to.equal(false);
 
@@ -992,11 +1013,11 @@ describe('Multisig', function () {
         expect((await tx4.wait()).blockNumber).to.equal(minedBlockNumber);
         expect(minedBlockNumber).to.equal(expectedSnapshotBlockNumber + 1);
 
-        // Expect the listed member to have changed
+        // Expect the listed member to have changed.
         expect(await plugin.isListed(carol.address)).to.equal(false);
         expect(await plugin.isListed(dave.address)).to.equal(true);
 
-        // Check the `ProposalCreatedEvent` for the creator and proposalId
+        // Check the `ProposalCreatedEvent` for the creator and proposalId.
         const event = await findEvent<ProposalCreatedEvent>(
           tx4,
           'ProposalCreated'
@@ -1004,7 +1025,7 @@ describe('Multisig', function () {
         expect(event.args.proposalId).to.equal(id);
         expect(event.args.creator).to.equal(dave.address);
 
-        // Check that the snapshot block stored in the proposal struct
+        // Check that the snapshot block stored in the proposal struct.
         const proposal = await plugin.getProposal(id);
         expect(proposal.parameters.snapshotBlock).to.equal(
           expectedSnapshotBlockNumber
@@ -1013,167 +1034,129 @@ describe('Multisig', function () {
         // Re-enable auto-mining so that the remaining tests run normally.
         await ethers.provider.send('evm_setAutomine', [true]);
       });
-
-      it('creates a proposal successfully and does not approve if not specified', async () => {
-        const {
-          alice,
-          bob,
-          initializedPlugin: plugin,
-          defaultInitData,
-          dummyMetadata,
-        } = await loadFixture(fixture);
-
-        const startDate = (await time.latest()) + TIME.MINUTE;
-        const endDate = startDate + TIME.HOUR;
-
-        await time.setNextBlockTimestamp(startDate);
-
-        const id = 0;
-        await expect(
-          plugin
-            .connect(alice)
-            .createProposal(
-              dummyMetadata,
-              [],
-              0,
-              false,
-              false,
-              startDate,
-              endDate
-            )
-        )
-          .to.emit(plugin, IPROPOSAL_EVENTS.ProposalCreated)
-          .withArgs(
-            id,
-            alice.address,
-            startDate,
-            endDate,
-            dummyMetadata,
-            [],
-            0
-          );
-
-        const block = await ethers.provider.getBlock('latest');
-
-        const proposal = await plugin.getProposal(id);
-        expect(proposal.executed).to.equal(false);
-        expect(proposal.allowFailureMap).to.equal(0);
-        expect(proposal.parameters.snapshotBlock).to.equal(block.number - 1);
-        expect(proposal.parameters.minApprovals).to.equal(
-          defaultInitData.settings.minApprovals
-        );
-
-        expect(proposal.parameters.startDate).to.equal(startDate);
-        expect(proposal.parameters.endDate).to.equal(endDate);
-        expect(proposal.actions.length).to.equal(0);
-        expect(proposal.approvals).to.equal(0);
-
-        expect(await plugin.canApprove(id, alice.address)).to.be.true;
-        expect(await plugin.canApprove(id, bob.address)).to.be.true;
-      });
-
-      it('creates a proposal successfully and approves if specified', async () => {
-        const {
-          alice,
-          bob,
-          initializedPlugin: plugin,
-          defaultInitData,
-          dummyMetadata,
-        } = await loadFixture(fixture);
-
-        const startDate = (await time.latest()) + TIME.MINUTE;
-        const endDate = startDate + TIME.HOUR;
-        const allowFailureMap = 1;
-
-        await time.setNextBlockTimestamp(startDate);
-
-        const id = 0;
-        await expect(
-          plugin
-            .connect(alice)
-            .createProposal(
-              dummyMetadata,
-              [],
-              allowFailureMap,
-              true,
-              false,
-              startDate,
-              endDate
-            )
-        )
-          .to.emit(plugin, IPROPOSAL_EVENTS.ProposalCreated)
-          .withArgs(
-            id,
-            alice.address,
-            startDate,
-            endDate,
-            dummyMetadata,
-            [],
-            allowFailureMap
-          )
-          .to.emit(plugin, MULTISIG_EVENTS.Approved)
-          .withArgs(id, alice.address);
-
-        const block = await ethers.provider.getBlock('latest');
-
-        const proposal = await plugin.getProposal(id);
-        expect(proposal.executed).to.equal(false);
-        expect(proposal.allowFailureMap).to.equal(allowFailureMap);
-        expect(proposal.parameters.snapshotBlock).to.equal(block.number - 1);
-        expect(proposal.parameters.minApprovals).to.equal(
-          defaultInitData.settings.minApprovals
-        );
-        expect(proposal.parameters.startDate).to.equal(startDate);
-        expect(proposal.parameters.endDate).to.equal(endDate);
-        expect(proposal.actions.length).to.equal(0);
-        expect(proposal.approvals).to.equal(1);
-
-        expect(await plugin.canApprove(id, alice.address)).to.be.false;
-        expect(await plugin.canApprove(id, bob.address)).to.be.true;
-      });
-
-      it('increases the proposal count', async () => {
-        const {
-          alice,
-          initializedPlugin: plugin,
-          dummyMetadata,
-          dummyActions,
-        } = await loadFixture(fixture);
-
-        const startDate = (await time.latest()) + TIME.MINUTE;
-        const endDate = startDate + TIME.HOUR;
-
-        expect(await plugin.proposalCount()).to.equal(0);
-
-        await plugin
-          .connect(alice)
-          .createProposal(
-            dummyMetadata,
-            dummyActions,
-            0,
-            false,
-            false,
-            0,
-            endDate
-          );
-        expect(await plugin.proposalCount()).to.equal(1);
-
-        await plugin
-          .connect(alice)
-          .createProposal(
-            dummyMetadata,
-            dummyActions,
-            0,
-            false,
-            false,
-            0,
-            endDate
-          );
-        expect(await plugin.proposalCount()).to.equal(2);
-      });
     });
 
-    it('should revert if startDate is < than now', async () => {
+    it('creates a proposal successfully and does not approve if not specified', async () => {
+      const {
+        alice,
+        bob,
+        initializedPlugin: plugin,
+        defaultInitData,
+        dummyMetadata,
+      } = await loadFixture(fixture);
+
+      // Create a proposal (ID 0) as Alice but don't approve on creation.
+      const startDate = (await time.latest()) + TIME.MINUTE;
+      const endDate = startDate + TIME.HOUR;
+      const allowFailureMap = 0;
+      await time.setNextBlockTimestamp(startDate);
+      const id = 0;
+
+      const approveProposal = false;
+
+      await expect(
+        plugin.connect(alice).createProposal(
+          dummyMetadata,
+          [],
+          allowFailureMap,
+          approveProposal, // false
+          false,
+          startDate,
+          endDate
+        )
+      )
+        .to.emit(plugin, IPROPOSAL_EVENTS.ProposalCreated)
+        .withArgs(id, alice.address, startDate, endDate, dummyMetadata, [], 0);
+
+      const latestBlock = await ethers.provider.getBlock('latest');
+
+      // Check that the proposal was created as expected and has 0 approvals.
+      const proposal = await plugin.getProposal(id);
+      expect(proposal.executed).to.equal(false);
+      expect(proposal.allowFailureMap).to.equal(0);
+      expect(proposal.parameters.snapshotBlock).to.equal(
+        latestBlock.number - 1
+      );
+      expect(proposal.parameters.minApprovals).to.equal(
+        defaultInitData.settings.minApprovals
+      );
+      expect(proposal.parameters.startDate).to.equal(startDate);
+      expect(proposal.parameters.endDate).to.equal(endDate);
+      expect(proposal.actions.length).to.equal(0);
+      expect(proposal.approvals).to.equal(0);
+
+      // Check that Alice hasn't approved the proposal yet.
+      expect(await plugin.canApprove(id, alice.address)).to.be.true;
+      // Check that, e.g., Bob hasn't approved the proposal yet.
+      expect(await plugin.canApprove(id, bob.address)).to.be.true;
+    });
+
+    it('creates a proposal successfully and approves if specified', async () => {
+      const {
+        alice,
+        bob,
+        initializedPlugin: plugin,
+        defaultInitData,
+        dummyMetadata,
+      } = await loadFixture(fixture);
+
+      // Create a proposal as Alice and approve on creation.
+      const startDate = (await time.latest()) + TIME.MINUTE;
+      const endDate = startDate + TIME.HOUR;
+      const allowFailureMap = 1;
+      const approveProposal = true;
+
+      await time.setNextBlockTimestamp(startDate);
+
+      const id = 0;
+      await expect(
+        plugin.connect(alice).createProposal(
+          dummyMetadata,
+          [],
+          allowFailureMap,
+          approveProposal, // true
+          false,
+          startDate,
+          endDate
+        )
+      )
+        .to.emit(plugin, IPROPOSAL_EVENTS.ProposalCreated)
+        .withArgs(
+          id,
+          alice.address,
+          startDate,
+          endDate,
+          dummyMetadata,
+          [],
+          allowFailureMap
+        )
+        .to.emit(plugin, MULTISIG_EVENTS.Approved)
+        .withArgs(id, alice.address);
+
+      const latestBlock = await ethers.provider.getBlock('latest');
+
+      // Check that the proposal was created as expected and has 1 approval.
+      const proposal = await plugin.getProposal(id);
+      expect(proposal.executed).to.equal(false);
+      expect(proposal.allowFailureMap).to.equal(allowFailureMap);
+      expect(proposal.parameters.snapshotBlock).to.equal(
+        latestBlock.number - 1
+      );
+      expect(proposal.parameters.minApprovals).to.equal(
+        defaultInitData.settings.minApprovals
+      );
+      expect(proposal.parameters.startDate).to.equal(startDate);
+      expect(proposal.parameters.endDate).to.equal(endDate);
+      expect(proposal.actions.length).to.equal(0);
+      expect(proposal.approvals).to.equal(1);
+
+      // Check that Alice has approved the proposal already.
+      expect(await plugin.canApprove(id, alice.address)).to.be.false;
+      // Check that, e.g., Bob hasn't approved the proposal yet.
+      expect(await plugin.canApprove(id, bob.address)).to.be.true;
+    });
+
+    it('reverts if startDate < now', async () => {
       const {
         alice,
         initializedPlugin: plugin,
@@ -1181,12 +1164,13 @@ describe('Multisig', function () {
         dummyActions,
       } = await loadFixture(fixture);
 
+      // Set the clock to the start date.
       const startDate = (await time.latest()) + TIME.MINUTE;
-      const startDateInThePast = startDate - 1;
-      const endDate = 0; // startDate + minDuration // TODO use elsewhere
-
       await time.setNextBlockTimestamp(startDate);
 
+      //  Try to create a proposal as Alice where the start date lies in the past.
+      const startDateInThePast = startDate - 1;
+      const endDate = startDate + TIME.HOUR;
       await expect(
         plugin
           .connect(alice)
@@ -1201,13 +1185,10 @@ describe('Multisig', function () {
           )
       )
         .to.be.revertedWithCustomError(plugin, 'DateOutOfBounds')
-        .withArgs(
-          startDate, // await takes one second
-          startDateInThePast
-        );
+        .withArgs(startDate, startDateInThePast);
     });
 
-    it('should revert if endDate is < than startDate', async () => {
+    it('reverts if endDate < startDate', async () => {
       const {
         alice,
         initializedPlugin: plugin,
@@ -1215,9 +1196,9 @@ describe('Multisig', function () {
         dummyActions,
       } = await loadFixture(fixture);
 
+      // Try to create a proposal as Alice where the end date is before the start date
       const startDate = (await time.latest()) + TIME.MINUTE;
       const endDate = startDate - 1; // endDate < startDate
-
       await expect(
         plugin
           .connect(alice)
@@ -1282,7 +1263,7 @@ describe('Multisig', function () {
         // Check that the proposal got executed.
         expect((await plugin.getProposal(id)).executed).to.be.true;
 
-        // Check that carol cannot approve the executed proposal anymore.
+        // Check that Carol cannot approve the executed proposal anymore.
         expect(await plugin.canApprove(id, carol.address)).to.be.false;
       });
 
@@ -1295,8 +1276,8 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -1310,6 +1291,7 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Check that Dave who is not listed cannot approve.
         expect(await plugin.isListed(dave.address)).to.be.false;
         expect(await plugin.canApprove(id, dave.address)).to.be.false;
       });
@@ -1547,12 +1529,14 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
         await dao.grant(
           dao.address,
           plugin.address,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
         );
 
+        // Try to execute the proposals although `minApprovals` has not been reached yet.
         const proposal = await plugin.getProposal(id);
         expect(proposal.approvals).to.eq(0);
         await expect(plugin.connect(alice).execute(id))
@@ -1560,7 +1544,7 @@ describe('Multisig', function () {
           .withArgs(id);
       });
 
-      it('approves with the msg.sender address', async () => {
+      it('approves with the caller address', async () => {
         const {
           alice,
           initializedPlugin: plugin,
@@ -1570,7 +1554,7 @@ describe('Multisig', function () {
 
         const endDate = (await time.latest()) + TIME.HOUR;
 
-        // Create a proposal (with ID 0)
+        // Create a proposal (with ID 0).
         await plugin
           .connect(alice)
           .createProposal(
@@ -1584,15 +1568,18 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Check that there are 0 approvals yet.
         expect((await plugin.getProposal(id)).approvals).to.equal(0);
 
+        // Approve the proposal as Alice.
         const tx = await plugin.connect(alice).approve(id, false);
 
+        // Check the `Approved` event and make sure that Alice is emitted as the approver.
         const event = await findEvent<ApprovedEvent>(tx, 'Approved');
         expect(event.args.proposalId).to.eq(id);
-        expect(event.args.approver).to.not.eq(plugin.address);
         expect(event.args.approver).to.eq(alice.address);
 
+        // Check that the approval was counted.
         expect((await plugin.getProposal(id)).approvals).to.equal(1);
       });
 
@@ -1604,9 +1591,9 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice that didn't started yet.
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -1620,12 +1607,15 @@ describe('Multisig', function () {
           );
         const id = 0;
 
-        await expect(
-          plugin.connect(alice).approve(id, false)
-        ).to.be.revertedWithCustomError(plugin, 'ApprovalCastForbidden');
+        // Try to approve the proposal as Alice although being before the start date.
+        await expect(plugin.connect(alice).approve(id, false))
+          .to.be.revertedWithCustomError(plugin, 'ApprovalCastForbidden')
+          .withArgs(0, alice.address);
 
+        // Advance to the start date.
         await time.increaseTo(startDate);
 
+        // Approve as Alice and check that this doesn't revert.
         await expect(plugin.connect(alice).approve(id, false)).not.to.be
           .reverted;
       });
@@ -1638,6 +1628,7 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice that starts now.
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
 
@@ -1654,14 +1645,12 @@ describe('Multisig', function () {
           );
         const id = 0;
 
-        await expect(plugin.connect(alice).approve(id, false)).not.to.be
-          .reverted;
-
+        // Advance time after the end date.
         await time.increaseTo(endDate + 1);
 
-        await expect(
-          plugin.connect(alice).approve(id, false)
-        ).to.be.revertedWithCustomError(plugin, 'ApprovalCastForbidden');
+        await expect(plugin.connect(alice).approve(id, false))
+          .to.be.revertedWithCustomError(plugin, 'ApprovalCastForbidden')
+          .withArgs(id, alice.address);
       });
     });
 
@@ -1674,8 +1663,8 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -1689,9 +1678,11 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Check that `minApprovals` isn't met yet.
         const proposal = await plugin.getProposal(id);
         expect(proposal.approvals).to.be.lt(proposal.parameters.minApprovals);
 
+        // Check that the proposal can not be executed.
         expect(await plugin.canExecute(id)).to.be.false;
       });
 
@@ -1705,8 +1696,8 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -1720,17 +1711,22 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
         await dao.grant(
           dao.address,
           plugin.address,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
         );
 
+        // Approve as Alice.
         await plugin.connect(alice).approve(id, false);
+        // Approve and execute as Bob.
         await plugin.connect(bob).approve(id, true);
 
+        // Check that the proposal got executed.
         expect((await plugin.getProposal(id)).executed).to.be.true;
 
+        // Check that it cannot be executed again.
         expect(await plugin.canExecute(id)).to.be.false;
       });
 
@@ -1848,8 +1844,8 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -1863,12 +1859,14 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
         await dao.grant(
           dao.address,
           plugin.address,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
         );
 
+        // Check that proposal cannot be executed if the minimum approval is not met yet.
         await expect(plugin.execute(id))
           .to.be.revertedWithCustomError(plugin, 'ProposalExecutionForbidden')
           .withArgs(id);
@@ -1878,7 +1876,6 @@ describe('Multisig', function () {
         const {
           alice,
           bob,
-
           initializedPlugin: plugin,
           defaultInitData,
           dao,
@@ -1886,8 +1883,8 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -1901,17 +1898,19 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
         await dao.grant(
           dao.address,
           plugin.address,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
         );
 
+        // Approve with Alice and Bob.
         await plugin.connect(alice).approve(id, false);
         await plugin.connect(bob).approve(id, false);
 
+        // Check that the `minApprovals` threshold is met.
         const proposal = await plugin.getProposal(id);
-
         expect(proposal.parameters.minApprovals).to.equal(
           defaultInitData.settings.minApprovals
         );
@@ -1919,7 +1918,10 @@ describe('Multisig', function () {
           defaultInitData.settings.minApprovals
         );
 
+        // Check that the proposal can be executed.
         expect(await plugin.canExecute(id)).to.be.true;
+
+        // Check that it executes.
         await expect(plugin.execute(id)).not.to.be.reverted;
       });
 
@@ -1984,8 +1986,8 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -1999,13 +2001,14 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
         await dao.grant(
           dao.address,
           plugin.address,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
         );
 
-        // `tryExecution` is turned on but the vote is not decided yet
+        // Approve and try execution as Alice although the `minApprovals` threshold is not met yet.
         let tx = await plugin.connect(alice).approve(id, true);
         await expect(
           findEventTopicLog<ExecutedEvent>(
@@ -2019,7 +2022,7 @@ describe('Multisig', function () {
 
         expect(await plugin.canExecute(id)).to.equal(false);
 
-        // `tryExecution` is turned off and the vote is decided
+        // Approve but do not try execution as Bob although the `minApprovals` threshold is reached now.
         tx = await plugin.connect(bob).approve(id, false);
         await expect(
           findEventTopicLog<ExecutedEvent>(
@@ -2031,8 +2034,10 @@ describe('Multisig', function () {
           `Event "${IDAO_EVENTS.Executed}" could not be found in transaction ${tx.hash}.`
         );
 
-        // `tryEarlyExecution` is turned on and the vote is decided
+        // Approve and try execution as Carol while `minApprovals` threshold is reached already.
         tx = await plugin.connect(carol).approve(id, true);
+
+        // Check that the proposal got executed by checking the `Executed` event emitted by the DAO.
         {
           const event = await findEventTopicLog<ExecutedEvent>(
             tx,
@@ -2052,7 +2057,7 @@ describe('Multisig', function () {
           expect(prop.executed).to.equal(true);
         }
 
-        // check for the `ProposalExecuted` event in the multisig contract
+        // Check that the proposal got executed by checking the `ProposalExecuted` event emitted by the plugin.
         {
           const event = await findEvent<ProposalExecutedEvent>(
             tx,
@@ -2061,7 +2066,7 @@ describe('Multisig', function () {
           expect(event.args.proposalId).to.equal(id);
         }
 
-        // calling execute again should fail
+        // Try executing it again.
         await expect(plugin.execute(id))
           .to.be.revertedWithCustomError(plugin, 'ProposalExecutionForbidden')
           .withArgs(id);
@@ -2077,8 +2082,8 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -2092,15 +2097,19 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Grant the plugin `EXECUTE_PERMISSION_ID` on the DAO.
         await dao.grant(
           dao.address,
           plugin.address,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
         );
 
+        // Approve the proposal as Alice and Bob.
         await plugin.connect(alice).approve(id, false);
         await plugin.connect(bob).approve(id, false);
 
+        // Execute the proposal and check that the `Executed` and `ProposalExecuted` event is emitted
+        // and that the `Approved` event is not emitted.
         await expect(plugin.connect(alice).execute(id))
           .to.emit(dao, IDAO_EVENTS.Executed)
           .to.emit(plugin, IPROPOSAL_EVENTS.ProposalExecuted)
@@ -2117,8 +2126,8 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -2132,14 +2141,18 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
         await dao.grant(
           dao.address,
           plugin.address,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
         );
 
+        // Approve the proposal as Alice.
         await plugin.connect(alice).approve(id, false);
 
+        // Approve and execute the proposal as Bob and check that the `Executed`, `ProposalExecuted`, and `Approved`
+        // event is not emitted.
         await expect(plugin.connect(bob).approve(id, true))
           .to.emit(dao, IDAO_EVENTS.Executed)
           .to.emit(plugin, IPROPOSAL_EVENTS.ProposalExecuted)
@@ -2156,9 +2169,9 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -2170,25 +2183,28 @@ describe('Multisig', function () {
             startDate,
             endDate
           );
-
         const id = 0;
 
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
         await dao.grant(
           dao.address,
           plugin.address,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
         );
 
-        await expect(plugin.execute(id)).to.be.revertedWithCustomError(
-          plugin,
-          'ProposalExecutionForbidden'
-        );
+        // Try to execute the proposal before the start date.
+        await expect(plugin.execute(id))
+          .to.be.revertedWithCustomError(plugin, 'ProposalExecutionForbidden')
+          .withArgs(id);
 
+        // Advance time to the start date.
         await time.increaseTo(startDate);
 
+        // Approve the proposal as Alice and Bob.
         await plugin.connect(alice).approve(id, false);
         await plugin.connect(bob).approve(id, false);
 
+        // Execute the proposal.
         await expect(plugin.execute(id)).not.to.be.reverted;
       });
 
@@ -2202,9 +2218,9 @@ describe('Multisig', function () {
           dummyActions,
         } = await loadFixture(fixture);
 
+        // Create a proposal as Alice.
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
-
         await plugin
           .connect(alice)
           .createProposal(
@@ -2218,11 +2234,14 @@ describe('Multisig', function () {
           );
         const id = 0;
 
+        // Approve the proposal but do not execute yet.
         await plugin.connect(alice).approve(id, false);
         await plugin.connect(bob).approve(id, false);
-        await plugin.connect(carol).approve(id, false);
 
-        await time.increase(10000);
+        // Advance time after the end date
+        await time.increase(endDate + 1);
+
+        // Try to execute the proposal after the end date.
         await expect(
           plugin.connect(bob).execute(id)
         ).to.be.revertedWithCustomError(plugin, 'ProposalExecutionForbidden');
