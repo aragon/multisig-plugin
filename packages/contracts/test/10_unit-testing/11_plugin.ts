@@ -2215,7 +2215,6 @@ describe('Multisig', function () {
         const {
           alice,
           bob,
-          carol,
           initializedPlugin: plugin,
           dummyMetadata,
           dummyActions,
