@@ -336,7 +336,7 @@ describe('MultisigSetup', function () {
       // Check that the plugin is initialized correctly.
       expect(await plugin.dao()).to.eq(dao.address);
       expect(await plugin.addresslistLength()).to.be.eq(defaultMembers.length);
-      const settings = await multisigContract.multisigSettings();
+      const settings = await plugin.multisigSettings();
       expect(settings.onlyListed).to.equal(defaultMultisigSettings.onlyListed);
       expect(settings.minApprovals).to.eq(defaultMultisigSettings.minApprovals);
     });
