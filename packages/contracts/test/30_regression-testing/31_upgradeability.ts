@@ -90,7 +90,7 @@ describe('Upgrades', () => {
 
     expect(fromProtocolVersion).to.not.deep.equal(toProtocolVersion);
     expect(fromProtocolVersion).to.deep.equal([1, 0, 0]);
-    expect(toProtocolVersion).to.deep.equal([1, 4, 0]); // TODO Check this automatically
+    expect(toProtocolVersion).to.deep.equal([1, 4, 0]);
   });
 });
 
