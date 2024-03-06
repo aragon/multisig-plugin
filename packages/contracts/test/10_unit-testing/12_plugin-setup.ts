@@ -3,10 +3,9 @@ import {METADATA, VERSION} from '../../plugin-settings';
 import {MultisigSetup, MultisigSetup__factory} from '../../typechain';
 import {
   MULTISIG_INTERFACE,
-  MultisigSettings,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
 } from '../multisig-constants';
-import {Multisig__factory} from '../test-utils/typechain-versions';
+import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
 import {
   getInterfaceId,
   Operation,
@@ -30,7 +29,7 @@ type FixtureResult = {
   carol: SignerWithAddress;
   pluginSetup: MultisigSetup;
   defaultMembers: string[];
-  defaultMultisigSettings: MultisigSettings;
+  defaultMultisigSettings: Multisig.MultisigSettingsStruct;
   prepareInstallationInputs: string;
   prepareUninstallationInputs: string;
   dao: DAO;
@@ -50,7 +49,7 @@ async function fixture(): Promise<FixtureResult> {
 
   // Provide default multisig settings
   const defaultMembers = [alice.address, bob.address, carol.address];
-  const defaultMultisigSettings: MultisigSettings = {
+  const defaultMultisigSettings: Multisig.MultisigSettingsStruct = {
     onlyListed: true,
     minApprovals: 1,
   };
@@ -172,7 +171,7 @@ describe('MultisigSetup', function () {
       const {deployer, pluginSetup, dao} = await loadFixture(fixture);
 
       // Create input data containing a `minApprovals` threshold of 0.
-      const multisigSettings: MultisigSettings = {
+      const multisigSettings: Multisig.MultisigSettingsStruct = {
         onlyListed: true,
         minApprovals: 0,
       };
@@ -214,7 +213,7 @@ describe('MultisigSetup', function () {
 
       // Create input data containing an initial member list with a length lower that the specified `minApprovals`
       // threshold.
-      const multisigSettings: MultisigSettings = {
+      const multisigSettings: Multisig.MultisigSettingsStruct = {
         onlyListed: true,
         minApprovals: 2,
       };

@@ -19,7 +19,6 @@ import {
 import {
   MULTISIG_EVENTS,
   MULTISIG_INTERFACE,
-  MultisigSettings,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
 } from '../multisig-constants';
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
@@ -52,7 +51,7 @@ type FixtureResult = {
   uninitializedPlugin: Multisig;
   defaultInitData: {
     members: string[];
-    settings: MultisigSettings;
+    settings: Multisig.MultisigSettingsStruct;
   };
   dao: DAO;
   dummyActions: DAOStructs.ActionStruct[];
@@ -312,7 +311,7 @@ describe('Multisig', function () {
 
       // Expect Alice's `updateMultisigSettings` call to be reverted because she hasn't `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID`
       // permission on the Multisig plugin.
-      const newSettings: MultisigSettings = {
+      const newSettings: Multisig.MultisigSettingsStruct = {
         onlyListed: false,
         minApprovals: 1,
       };
@@ -342,7 +341,7 @@ describe('Multisig', function () {
 
       // Create settings where `minApprovals` is greater than the address list length
       const addresslistLength = (await plugin.addresslistLength()).toNumber();
-      const badSettings: MultisigSettings = {
+      const badSettings: Multisig.MultisigSettingsStruct = {
         onlyListed: true,
         minApprovals: addresslistLength + 1,
       };
@@ -368,7 +367,7 @@ describe('Multisig', function () {
       );
 
       // Try as Alice to update the settings with `minApprovals` being 0.
-      const badSettings: MultisigSettings = {
+      const badSettings: Multisig.MultisigSettingsStruct = {
         onlyListed: true,
         minApprovals: 0,
       };

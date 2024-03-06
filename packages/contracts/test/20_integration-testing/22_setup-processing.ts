@@ -1,7 +1,7 @@
 import {METADATA, VERSION} from '../../plugin-settings';
 import {MultisigSetup, Multisig__factory} from '../../typechain';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
-import {MultisigSettings} from '../multisig-constants';
+import {Multisig} from '../test-utils/typechain-versions';
 import {
   createDaoProxy,
   installPLugin,
@@ -40,7 +40,7 @@ type FixtureResult = {
   dao: DAO;
   defaultInitData: {
     members: string[];
-    settings: MultisigSettings;
+    settings: Multisig.MultisigSettingsStruct;
   };
   psp: PluginSetupProcessor;
   pluginRepo: PluginRepo;
@@ -141,7 +141,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
 
     // Install the current build.
     const initialMembers = [alice.address, bob.address];
-    const multisigSettings: MultisigSettings = {
+    const multisigSettings: Multisig.MultisigSettingsStruct = {
       onlyListed: true,
       minApprovals: 2,
     };

@@ -1,9 +1,9 @@
 import {createDaoProxy} from '../20_integration-testing/test-helpers';
-import {MultisigSettings} from '../multisig-constants';
 import {
   Multisig_V1_0_0__factory,
   Multisig_V1_3_0__factory,
   Multisig__factory,
+  Multisig,
 } from '../test-utils/typechain-versions';
 import {
   deployAndUpgradeFromToCheck,
@@ -101,7 +101,7 @@ type FixtureResult = {
   carol: SignerWithAddress;
   defaultInitData: {
     members: string[];
-    settings: MultisigSettings;
+    settings: Multisig.MultisigSettingsStruct;
   };
   dao: DAO;
 };
