@@ -1,23 +1,22 @@
 # Types
 type DaoPlugin @entity {
-  "OSX related data"
-  id: ID! # psp installationId
+  # OSX related data
+  id: ID! # PluginInstallationEntityId
   dao: Bytes!
   pluginAddress: Bytes!
 
-  "Plugin specific data:"
+  #Plugin specific data"
   proposalCount: BigInt
   proposals: [MultisigProposal!]! @derivedFrom(field: "plugin")
   members: [MultisigApprover!]! @derivedFrom(field: "plugin")
 
-  # multisig settings
   minApprovals: Int
   onlyListed: Boolean
 }
 
 interface IProposal {
-  id: ID! # package + proposalId
-  dao: Bytes! #Before: Dao! // TODO remove this comment
+  id: ID! # ProposalEntityId
+  dao: Bytes!
   creator: Bytes!
   metadata: String
   actions: [Action!]! @derivedFrom(field: "proposal")
@@ -31,11 +30,11 @@ interface IProposal {
 }
 
 type Action @entity {
-  id: ID!
+  id: ID! # ActionEntityId
   to: Bytes!
   value: BigInt!
   data: Bytes!
-  dao: Bytes! #Before: Dao! // TODO remove this comment
+  dao: Bytes!
   proposal: IProposal!
   execResult: Bytes
 }
@@ -57,7 +56,7 @@ type MultisigProposalApprover @entity(immutable: true) {
 
 type MultisigProposal implements IProposal @entity {
   id: ID! # plugin + proposalId
-  dao: Bytes! #Before: Dao! // TODO remove this comment
+  dao: Bytes!
   actions: [Action!]! @derivedFrom(field: "proposal")
   allowFailureMap: BigInt!
   failureMap: BigInt

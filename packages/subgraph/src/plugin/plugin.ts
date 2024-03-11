@@ -22,6 +22,23 @@ import {
 } from '@aragon/osx-commons-subgraph';
 import {Address, dataSource, store} from '@graphprotocol/graph-ts';
 
+export function generateVoterEntityId(
+  memberEntityId: string,
+  proposalId: string
+): string {
+  return [memberEntityId, proposalId].join('_');
+}
+
+export function generateMemberEntityId(
+  pluginAddress: Address,
+  memberAddress: Address
+): string {
+  return [
+    generateEntityIdFromAddress(pluginAddress),
+    generateEntityIdFromAddress(memberAddress),
+  ].join('_');
+}
+
 export function handleProposalCreated(event: ProposalCreated): void {
   const pluginProposalId = event.params.proposalId;
   const pluginAddress = event.address;
@@ -90,24 +107,6 @@ export function handleProposalCreated(event: ProposalCreated): void {
     }
   }
 }
-// TODO Begin - Move somewhere else
-export function generateVoterEntityId(
-  memberEntityId: string,
-  proposalId: string
-): string {
-  return [memberEntityId, proposalId].join('_');
-}
-
-export function generateMemberEntityId(
-  pluginAddress: Address,
-  memberAddress: Address
-): string {
-  return [
-    generateEntityIdFromAddress(pluginAddress),
-    generateEntityIdFromAddress(memberAddress),
-  ].join('_');
-}
-// TODO End - Move somewhere else
 
 export function handleApproved(event: Approved): void {
   const memberAddress = event.params.approver;
@@ -177,18 +176,18 @@ export function handleProposalExecuted(event: ProposalExecuted): void {
 }
 
 export function handleMembersAdded(event: MembersAdded): void {
-  const members = event.params.members;
-  for (let index = 0; index < members.length; index++) {
-    const memberAddress = members[index];
+  const memberAddresses = event.params.members;
+  for (let index = 0; index < memberAddresses.length; index++) {
     const pluginEntityId = generatePluginEntityId(event.address);
-    const memberEntityId = [pluginEntityId, memberAddress.toHexString()].join(
-      '_'
+    const memberEntityId = generateMemberEntityId(
+      event.address,
+      memberAddresses[index]
     );
 
     let approverEntity = MultisigApprover.load(memberEntityId);
     if (!approverEntity) {
       approverEntity = new MultisigApprover(memberEntityId);
-      approverEntity.address = memberAddress.toHexString();
+      approverEntity.address = memberAddresses[index].toHexString();
       approverEntity.plugin = pluginEntityId;
       approverEntity.save();
     }
@@ -196,12 +195,11 @@ export function handleMembersAdded(event: MembersAdded): void {
 }
 
 export function handleMembersRemoved(event: MembersRemoved): void {
-  const members = event.params.members;
-  for (let index = 0; index < members.length; index++) {
-    const memberAddress = members[index];
-    const pluginEntityId = generatePluginEntityId(event.address);
-    const memberEntityId = [pluginEntityId, memberAddress.toHexString()].join(
-      '_'
+  const memberAddresses = event.params.members;
+  for (let index = 0; index < memberAddresses.length; index++) {
+    const memberEntityId = generateMemberEntityId(
+      event.address,
+      memberAddresses[index]
     );
 
     const approverEntity = MultisigApprover.load(memberEntityId);
