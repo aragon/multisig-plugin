@@ -7,24 +7,28 @@ import {
   MembersRemoved,
   MultisigSettingsUpdated,
 } from '../../../generated/templates/Plugin/Plugin';
+import {ADDRESS_ONE, DAO_ADDRESS, CONTRACT_ADDRESS} from '../constants';
 import {
-  ADDRESS_ONE,
-  DAO_ADDRESS,
-  PROPOSAL_ENTITY_ID,
-  PLUGIN_PROPOSAL_ID,
-  CONTRACT_ADDRESS,
-  SNAPSHOT_BLOCK,
-  CREATED_AT,
-  TWO,
-  START_DATE,
-  END_DATE,
-  ALLOW_FAILURE_MAP,
-  ZERO,
-  THREE,
-  PLUGIN_ENTITY_ID,
-} from '../constants';
+  generatePluginEntityId,
+  generateProposalEntityId,
+} from '@aragon/osx-commons-subgraph';
 import {Address, BigInt, Bytes, ethereum} from '@graphprotocol/graph-ts';
 import {createMockedFunction, newMockEvent} from 'matchstick-as';
+
+// test data
+
+export const ZERO = '0';
+export const ONE = '1';
+export const TWO = '2';
+export const THREE = '3';
+
+export const PLUGIN_PROPOSAL_ID = ZERO;
+export const MIN_PROPOSER_VOTING_POWER = ZERO;
+export const START_DATE = '1644851000';
+export const END_DATE = '1644852000';
+export const CREATED_AT = ONE;
+export const SNAPSHOT_BLOCK = '100';
+export const ALLOW_FAILURE_MAP = '1';
 
 // events
 
@@ -265,7 +269,9 @@ export function createGetProposalCall(
 // state
 
 export function createMultisigPluginState(
-  entityID: string = PLUGIN_ENTITY_ID,
+  entityID: string = generatePluginEntityId(
+    Address.fromString(CONTRACT_ADDRESS)
+  ),
   dao: string = DAO_ADDRESS,
   pluginAddress: string = CONTRACT_ADDRESS,
   proposalCount: string = ZERO,
@@ -284,7 +290,10 @@ export function createMultisigPluginState(
 }
 
 export function createMultisigProposalEntityState(
-  entityID: string = PROPOSAL_ENTITY_ID,
+  entityID: string = generateProposalEntityId(
+    Address.fromString(CONTRACT_ADDRESS),
+    BigInt.fromString(PLUGIN_PROPOSAL_ID)
+  ),
   dao: string = DAO_ADDRESS,
   plugin: string = CONTRACT_ADDRESS,
   creator: string = ADDRESS_ONE,

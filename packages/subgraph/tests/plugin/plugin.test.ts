@@ -12,18 +12,9 @@ import {
 import {
   ADDRESS_ONE,
   ADDRESS_TWO,
-  DAO_TOKEN_ADDRESS,
+  ADDRESS_THREE,
   CONTRACT_ADDRESS,
-  STRING_DATA,
   DAO_ADDRESS,
-  PLUGIN_PROPOSAL_ID,
-  SNAPSHOT_BLOCK,
-  ONE,
-  TWO,
-  PROPOSAL_ENTITY_ID,
-  START_DATE,
-  END_DATE,
-  ALLOW_FAILURE_MAP,
 } from '../utils/constants';
 import {
   createNewMembersAddedEvent,
@@ -36,6 +27,13 @@ import {
   createGetProposalCall,
   createNewMultisigSettingsUpdatedEvent,
   createMultisigPluginState,
+  PLUGIN_PROPOSAL_ID,
+  SNAPSHOT_BLOCK,
+  ONE,
+  TWO,
+  START_DATE,
+  END_DATE,
+  ALLOW_FAILURE_MAP,
 } from '../utils/events';
 import {
   generatePluginEntityId,
@@ -53,11 +51,17 @@ import {
   test,
 } from 'matchstick-as/assembly/index';
 
-let actions = [createDummyAction(DAO_TOKEN_ADDRESS, '0', '0x00000000')];
+let actions = [createDummyAction(ADDRESS_THREE, '0', '0x00000000')];
 
 const pluginAddress = Address.fromString(CONTRACT_ADDRESS);
 const pluginEntityId = generatePluginEntityId(pluginAddress);
 const pluginProposalId = BigInt.fromString(PLUGIN_PROPOSAL_ID);
+const proposalEntityId = generateProposalEntityId(
+  pluginAddress,
+  pluginProposalId
+);
+
+export const METADATA = 'Some String Data ...';
 
 describe('Plugin', () => {
   beforeEach(function () {
@@ -102,7 +106,7 @@ describe('Plugin', () => {
         ADDRESS_ONE,
         START_DATE,
         END_DATE,
-        STRING_DATA,
+        METADATA,
         actions,
         ALLOW_FAILURE_MAP,
         CONTRACT_ADDRESS
@@ -110,11 +114,6 @@ describe('Plugin', () => {
 
       // handle event
       handleProposalCreated(event);
-
-      let proposalEntityId = generateProposalEntityId(
-        pluginAddress,
-        pluginProposalId
-      );
 
       // checks
       assert.fieldEquals(
@@ -163,7 +162,7 @@ describe('Plugin', () => {
         'MultisigProposal',
         proposalEntityId,
         'metadata',
-        STRING_DATA
+        METADATA
       );
       assert.fieldEquals(
         'MultisigProposal',
@@ -222,7 +221,7 @@ describe('Plugin', () => {
     test('Run Multisig (handleApproved) mappings with mock event', () => {
       // create state
       let proposal = createMultisigProposalEntityState(
-        PROPOSAL_ENTITY_ID,
+        proposalEntityId,
         DAO_ADDRESS,
         CONTRACT_ADDRESS,
         ADDRESS_ONE
@@ -344,7 +343,7 @@ describe('Plugin', () => {
     test('Run Multisig (handleProposalExecuted) mappings with mock event', () => {
       // create state
       createMultisigProposalEntityState(
-        PROPOSAL_ENTITY_ID,
+        proposalEntityId,
         DAO_ADDRESS,
         CONTRACT_ADDRESS,
         ADDRESS_ONE
@@ -359,31 +358,31 @@ describe('Plugin', () => {
       // checks
       assert.fieldEquals(
         'MultisigProposal',
-        PROPOSAL_ENTITY_ID,
+        proposalEntityId,
         'id',
-        PROPOSAL_ENTITY_ID
+        proposalEntityId
       );
       assert.fieldEquals(
         'MultisigProposal',
-        PROPOSAL_ENTITY_ID,
+        proposalEntityId,
         'executed',
         'true'
       );
       assert.fieldEquals(
         'MultisigProposal',
-        PROPOSAL_ENTITY_ID,
+        proposalEntityId,
         'executionDate',
         event.block.timestamp.toString()
       );
       assert.fieldEquals(
         'MultisigProposal',
-        PROPOSAL_ENTITY_ID,
+        proposalEntityId,
         'executionBlockNumber',
         event.block.number.toString()
       );
       assert.fieldEquals(
         'MultisigProposal',
-        PROPOSAL_ENTITY_ID,
+        proposalEntityId,
         'executionTxHash',
         event.transaction.hash.toHexString()
       );
