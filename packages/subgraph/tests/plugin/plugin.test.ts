@@ -210,7 +210,7 @@ describe('Plugin', () => {
 
       // check MultisigPlugin
       assert.fieldEquals(
-        'MultisigPlugin',
+        'DaoPlugin',
         Address.fromString(CONTRACT_ADDRESS).toHexString(),
         'proposalCount',
         '1'
@@ -489,18 +489,8 @@ describe('Plugin', () => {
       handleMultisigSettingsUpdated(event);
 
       // checks
-      assert.fieldEquals(
-        'MultisigPlugin',
-        entityID,
-        'onlyListed',
-        `${onlyListed}`
-      );
-      assert.fieldEquals(
-        'MultisigPlugin',
-        entityID,
-        'minApprovals',
-        minApproval
-      );
+      assert.fieldEquals('DaoPlugin', entityID, 'onlyListed', `${onlyListed}`);
+      assert.fieldEquals('DaoPlugin', entityID, 'minApprovals', minApproval);
 
       // create event
       onlyListed = false;
@@ -516,18 +506,8 @@ describe('Plugin', () => {
       handleMultisigSettingsUpdated(event);
 
       // checks
-      assert.fieldEquals(
-        'MultisigPlugin',
-        entityID,
-        'onlyListed',
-        `${onlyListed}`
-      );
-      assert.fieldEquals(
-        'MultisigPlugin',
-        entityID,
-        'minApprovals',
-        minApproval
-      );
+      assert.fieldEquals('DaoPlugin', entityID, 'onlyListed', `${onlyListed}`);
+      assert.fieldEquals('DaoPlugin', entityID, 'minApprovals', minApproval);
     });
   });
 });
