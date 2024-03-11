@@ -311,7 +311,7 @@ export function createMultisigProposalEntityState(
   creationBlockNumber: BigInt = new BigInt(0)
 ): MultisigProposal {
   let multisigProposal = new MultisigProposal(entityID);
-  multisigProposal.dao = Address.fromHexString(dao); //Address.fromString(dao).toHexString();
+  multisigProposal.dao = Address.fromHexString(dao);
   multisigProposal.plugin = Address.fromString(plugin).toHexString();
   multisigProposal.pluginProposalId = BigInt.fromString(pluginProposalId);
   multisigProposal.creator = Address.fromString(creator);

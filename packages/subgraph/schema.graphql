@@ -1,11 +1,11 @@
 # Types
 type DaoPlugin @entity {
-  # OSX related data
+  # OSx related data
   id: ID! # PluginInstallationEntityId
   dao: Bytes!
   pluginAddress: Bytes!
 
-  #Plugin specific data"
+  # Plugin specific data"
   proposalCount: BigInt
   proposals: [MultisigProposal!]! @derivedFrom(field: "plugin")
   members: [MultisigApprover!]! @derivedFrom(field: "plugin")
