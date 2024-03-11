@@ -23,18 +23,18 @@ import {
 import {Address, dataSource, store} from '@graphprotocol/graph-ts';
 
 export function handleProposalCreated(event: ProposalCreated): void {
-  let pluginProposalId = event.params.proposalId;
-  let pluginAddress = event.address;
-  let proposalEntityId = generateProposalEntityId(
+  const pluginProposalId = event.params.proposalId;
+  const pluginAddress = event.address;
+  const proposalEntityId = generateProposalEntityId(
     pluginAddress,
     pluginProposalId
   );
-  let pluginEntityId = generatePluginEntityId(pluginAddress);
+  const pluginEntityId = generatePluginEntityId(pluginAddress);
 
-  let proposalEntity = new MultisigProposal(proposalEntityId);
+  const proposalEntity = new MultisigProposal(proposalEntityId);
 
-  let context = dataSource.context();
-  let daoAddr = Address.fromHexString(context.getString('daoAddress'));
+  const context = dataSource.context();
+  const daoAddr = Address.fromHexString(context.getString('daoAddress'));
 
   proposalEntity.dao = daoAddr;
   proposalEntity.plugin = pluginEntityId;
@@ -47,27 +47,27 @@ export function handleProposalCreated(event: ProposalCreated): void {
   proposalEntity.endDate = event.params.endDate;
   proposalEntity.allowFailureMap = event.params.allowFailureMap;
 
-  let contract = Plugin.bind(pluginAddress);
+  const contract = Plugin.bind(pluginAddress);
 
-  let proposal = contract.try_getProposal(pluginProposalId);
+  const proposal = contract.try_getProposal(pluginProposalId);
   if (!proposal.reverted) {
     proposalEntity.executed = proposal.value.value0;
     proposalEntity.approvals = proposal.value.value1;
 
     // ProposalParameters
-    let parameters = proposal.value.value2;
+    const parameters = proposal.value.value2;
     proposalEntity.minApprovals = parameters.minApprovals;
     proposalEntity.snapshotBlock = parameters.snapshotBlock;
     proposalEntity.approvalReached = false;
 
     // Actions
-    let actions = proposal.value.value3;
+    const actions = proposal.value.value3;
     for (let index = 0; index < actions.length; index++) {
       const action = actions[index];
 
-      let actionId = generateActionEntityId(proposalEntityId, index);
+      const actionId = generateActionEntityId(proposalEntityId, index);
 
-      let actionEntity = new Action(actionId);
+      const actionEntity = new Action(actionId);
       actionEntity.to = action.to;
       actionEntity.value = action.value;
       actionEntity.data = action.data;
@@ -81,9 +81,9 @@ export function handleProposalCreated(event: ProposalCreated): void {
   proposalEntity.save();
 
   // update vote length
-  let pluginEntity = DaoPlugin.load(pluginEntityId);
+  const pluginEntity = DaoPlugin.load(pluginEntityId);
   if (pluginEntity) {
-    let voteLength = contract.try_proposalCount();
+    const voteLength = contract.try_proposalCount();
     if (!voteLength.reverted) {
       pluginEntity.proposalCount = voteLength.value;
       pluginEntity.save();
@@ -110,15 +110,15 @@ export function generateMemberEntityId(
 // TODO End - Move somewhere else
 
 export function handleApproved(event: Approved): void {
-  let memberAddress = event.params.approver;
-  let pluginAddress = event.address;
-  let memberEntityId = generateMemberEntityId(pluginAddress, memberAddress);
-  let pluginProposalId = event.params.proposalId;
-  let proposalEntityId = generateProposalEntityId(
+  const memberAddress = event.params.approver;
+  const pluginAddress = event.address;
+  const memberEntityId = generateMemberEntityId(pluginAddress, memberAddress);
+  const pluginProposalId = event.params.proposalId;
+  const proposalEntityId = generateProposalEntityId(
     event.address,
     pluginProposalId
   );
-  let approverProposalId = generateVoterEntityId(
+  const approverProposalId = generateVoterEntityId(
     memberEntityId,
     proposalEntityId
   );
@@ -134,17 +134,17 @@ export function handleApproved(event: Approved): void {
   approverProposalEntity.save();
 
   // update count
-  let proposalEntity = MultisigProposal.load(proposalEntityId);
+  const proposalEntity = MultisigProposal.load(proposalEntityId);
   if (proposalEntity) {
-    let contract = Plugin.bind(pluginAddress);
-    let proposal = contract.try_getProposal(pluginProposalId);
+    const contract = Plugin.bind(pluginAddress);
+    const proposal = contract.try_getProposal(pluginProposalId);
 
     if (!proposal.reverted) {
-      let approvals = proposal.value.value1;
+      const approvals = proposal.value.value1;
       proposalEntity.approvals = approvals;
 
       // calculate if proposal is executable
-      let minApprovalsStruct = proposal.value.value2;
+      const minApprovalsStruct = proposal.value.value2;
 
       if (
         approvals >= minApprovalsStruct.minApprovals &&
@@ -159,13 +159,13 @@ export function handleApproved(event: Approved): void {
 }
 
 export function handleProposalExecuted(event: ProposalExecuted): void {
-  let pluginProposalId = event.params.proposalId;
-  let proposalEntityId = generateProposalEntityId(
+  const pluginProposalId = event.params.proposalId;
+  const proposalEntityId = generateProposalEntityId(
     event.address,
     pluginProposalId
   );
 
-  let proposalEntity = MultisigProposal.load(proposalEntityId);
+  const proposalEntity = MultisigProposal.load(proposalEntityId);
   if (proposalEntity) {
     proposalEntity.approvalReached = false;
     proposalEntity.executed = true;
@@ -214,7 +214,7 @@ export function handleMembersRemoved(event: MembersRemoved): void {
 export function handleMultisigSettingsUpdated(
   event: MultisigSettingsUpdated
 ): void {
-  let pluginEntity = DaoPlugin.load(generatePluginEntityId(event.address));
+  const pluginEntity = DaoPlugin.load(generatePluginEntityId(event.address));
   if (pluginEntity) {
     pluginEntity.onlyListed = event.params.onlyListed;
     pluginEntity.minApprovals = event.params.minApprovals;
