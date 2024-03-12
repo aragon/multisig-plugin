@@ -14,6 +14,7 @@ import {
   Approved,
   MultisigSettingsUpdated,
 } from '../../generated/templates/Plugin/Plugin';
+import {generateMemberEntityId, generateVoterEntityId} from './id';
 import {
   generateActionEntityId,
   generatePluginEntityId,
