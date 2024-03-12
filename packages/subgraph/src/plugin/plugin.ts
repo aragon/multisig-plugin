@@ -16,28 +16,12 @@ import {
 } from '../../generated/templates/Plugin/Plugin';
 import {
   generateActionEntityId,
-  generateEntityIdFromAddress,
   generatePluginEntityId,
   generateProposalEntityId,
 } from '@aragon/osx-commons-subgraph';
 import {Address, dataSource, store} from '@graphprotocol/graph-ts';
 
-export function generateVoterEntityId(
-  memberEntityId: string,
-  proposalId: string
-): string {
-  return [memberEntityId, proposalId].join('_');
-}
 
-export function generateMemberEntityId(
-  pluginAddress: Address,
-  memberAddress: Address
-): string {
-  return [
-    generateEntityIdFromAddress(pluginAddress),
-    generateEntityIdFromAddress(memberAddress),
-  ].join('_');
-}
 
 export function handleProposalCreated(event: ProposalCreated): void {
   const pluginProposalId = event.params.proposalId;

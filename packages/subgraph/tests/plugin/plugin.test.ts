@@ -1,4 +1,5 @@
 import {MultisigApprover} from '../../generated/schema';
+import { generateMemberEntityId, generateVoterEntityId } from '../../src/plugin/id';
 import {
   handleMembersAdded,
   handleApproved,
@@ -6,8 +7,6 @@ import {
   handleMembersRemoved,
   handleProposalCreated,
   handleMultisigSettingsUpdated,
-  generateMemberEntityId,
-  generateVoterEntityId,
 } from '../../src/plugin/plugin';
 import {
   ADDRESS_ONE,
