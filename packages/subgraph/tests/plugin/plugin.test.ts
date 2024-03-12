@@ -74,7 +74,7 @@ describe('Plugin', () => {
   });
 
   describe('ProposalCreated', () => {
-    test('Run Multisig (handleProposalCreated) mappings with mock event', () => {
+    test('processes the event', () => {
       // create state
       createMultisigPluginState();
 
@@ -217,7 +217,7 @@ describe('Plugin', () => {
   });
 
   describe('Approved', () => {
-    test('Run Multisig (handleApproved) mappings with mock event', () => {
+    test('processes the event', () => {
       // create state
       let proposal = createMultisigProposalEntityState(
         proposalEntityId,
@@ -339,7 +339,7 @@ describe('Plugin', () => {
   });
 
   describe('ProposalExecuted', () => {
-    test('Run Multisig (handleProposalExecuted) mappings with mock event', () => {
+    test('processes the event', () => {
       // create state
       createMultisigProposalEntityState(
         proposalEntityId,
@@ -389,7 +389,7 @@ describe('Plugin', () => {
   });
 
   describe('MembersAdded', () => {
-    test('Run Multisig (handleMembersAdded) mappings with mock event', () => {
+    test('processes the event', () => {
       let userArray = [
         Address.fromString(ADDRESS_ONE),
         Address.fromString(ADDRESS_TWO),
@@ -424,7 +424,7 @@ describe('Plugin', () => {
   });
 
   describe('MembersRemoved', () => {
-    test('Run Multisig (handleMembersRemoved) mappings with mock event', () => {
+    test('processes the event', () => {
       // create state
       let memberAddresses = [
         Address.fromString(ADDRESS_ONE),
@@ -469,7 +469,7 @@ describe('Plugin', () => {
   });
 
   describe('MultisigSettingsUpdated', () => {
-    test('Run Multisig (handleMultisigSettingsUpdated) mappings with mock event', () => {
+    test('processes the event', () => {
       // create state
       let entityID = createMultisigPluginState().id;
 
