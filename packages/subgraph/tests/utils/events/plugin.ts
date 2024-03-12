@@ -1,4 +1,4 @@
-import {DaoPlugin, MultisigProposal} from '../../../generated/schema';
+import {MultisigPlugin, MultisigProposal} from '../../../generated/schema';
 import {
   ProposalCreated,
   Approved,
@@ -277,8 +277,8 @@ export function createMultisigPluginState(
   proposalCount: string = ZERO,
   minApprovals: string = THREE,
   onlyListed: boolean = false
-): DaoPlugin {
-  let multisigPlugin = new DaoPlugin(entityID);
+): MultisigPlugin {
+  let multisigPlugin = new MultisigPlugin(entityID);
   multisigPlugin.dao = Bytes.fromHexString(dao);
   multisigPlugin.pluginAddress = Bytes.fromHexString(pluginAddress);
   multisigPlugin.proposalCount = BigInt.fromString(proposalCount);

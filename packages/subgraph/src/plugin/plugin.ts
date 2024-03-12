@@ -1,6 +1,6 @@
 import {
   Action,
-  DaoPlugin,
+  MultisigPlugin,
   MultisigProposal,
   MultisigApprover,
   MultisigProposalApprover,
@@ -34,9 +34,9 @@ export function handleProposalCreated(event: ProposalCreated): void {
   const proposalEntity = new MultisigProposal(proposalEntityId);
 
   const context = dataSource.context();
-  const daoAddress = Address.fromHexString(context.getString('daoAddress'));
+  const daoAddr = Address.fromHexString(context.getString('daoAddress'));
 
-  proposalEntity.dao = daoAddress;
+  proposalEntity.dao = daoAddr;
   proposalEntity.plugin = pluginEntityId;
   proposalEntity.pluginProposalId = pluginProposalId;
   proposalEntity.creator = event.params.creator;
@@ -71,7 +71,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
       actionEntity.to = action.to;
       actionEntity.value = action.value;
       actionEntity.data = action.data;
-      actionEntity.dao = daoAddress;
+      actionEntity.dao = daoAddr;
       actionEntity.proposal = proposalEntityId;
       actionEntity.save();
     }
@@ -81,7 +81,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
   proposalEntity.save();
 
   // update vote length
-  const pluginEntity = DaoPlugin.load(pluginEntityId);
+  const pluginEntity = MultisigPlugin.load(pluginEntityId);
   if (pluginEntity) {
     const voteLength = contract.try_proposalCount();
     if (!voteLength.reverted) {
@@ -195,7 +195,9 @@ export function handleMembersRemoved(event: MembersRemoved): void {
 export function handleMultisigSettingsUpdated(
   event: MultisigSettingsUpdated
 ): void {
-  const pluginEntity = DaoPlugin.load(generatePluginEntityId(event.address));
+  const pluginEntity = MultisigPlugin.load(
+    generatePluginEntityId(event.address)
+  );
   if (pluginEntity) {
     pluginEntity.onlyListed = event.params.onlyListed;
     pluginEntity.minApprovals = event.params.minApprovals;

@@ -1,6 +1,11 @@
+interface IPlugin {
+  id: ID! # PluginInstallationEntityId
+  dao: Dao!
+  pluginAddress: Bytes!
+}
+
 # Types
-type DaoPlugin @entity {
-  # OSx related data
+type MultisigPlugin implements IPlugin @entity {
   id: ID! # PluginInstallationEntityId
   dao: Bytes!
   pluginAddress: Bytes!
@@ -43,7 +48,7 @@ type MultisigApprover @entity {
   id: ID! # plugin_address + member_address
   address: String # address as string to facilitate filtering by address on the UI
   proposals: [MultisigProposalApprover!]! @derivedFrom(field: "approver")
-  plugin: DaoPlugin!
+  plugin: MultisigPlugin!
 }
 
 type MultisigProposalApprover @entity(immutable: true) {
@@ -60,7 +65,7 @@ type MultisigProposal implements IProposal @entity {
   actions: [Action!]! @derivedFrom(field: "proposal")
   allowFailureMap: BigInt!
   failureMap: BigInt
-  plugin: DaoPlugin!
+  plugin: MultisigPlugin!
   pluginProposalId: BigInt!
   creator: Bytes!
   metadata: String

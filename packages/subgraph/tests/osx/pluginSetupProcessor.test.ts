@@ -76,8 +76,8 @@ describe('OSx', () => {
 
         handleInstallationPrepared(event1);
 
-        assert.notInStore('DaoPlugin', installationId!);
-        assert.entityCount('DaoPlugin', 0);
+        assert.notInStore('MultisigPlugin', installationId!);
+        assert.entityCount('MultisigPlugin', 0);
 
         const thisPluginRepoAddress = PLUGIN_REPO_ADDRESS;
 
@@ -95,8 +95,13 @@ describe('OSx', () => {
 
         handleInstallationPrepared(event2);
 
-        assert.entityCount('DaoPlugin', 1);
-        assert.fieldEquals('DaoPlugin', installationId!, 'id', installationId!);
+        assert.entityCount('MultisigPlugin', 1);
+        assert.fieldEquals(
+          'MultisigPlugin',
+          installationId!,
+          'id',
+          installationId!
+        );
       });
     });
   });
