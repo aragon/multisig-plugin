@@ -61,3 +61,4 @@ templates:
         - event: MultisigSettingsUpdated(bool,indexed uint16)
           handler: handleMultisigSettingsUpdated
       file: ./src/plugin/plugin.ts
+      
