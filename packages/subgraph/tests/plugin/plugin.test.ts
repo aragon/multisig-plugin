@@ -73,8 +73,8 @@ describe('Plugin', () => {
     clearStore();
   });
 
-  describe('ProposalCreated', () => {
-    test('processes the event', () => {
+  describe('handleProposalCreated', () => {
+    test('handles the event', () => {
       // create state
       createMultisigPluginState();
 
@@ -216,8 +216,8 @@ describe('Plugin', () => {
     });
   });
 
-  describe('Approved', () => {
-    test('processes the event', () => {
+  describe('handleApproved', () => {
+    test('handles the event', () => {
       // create state
       let proposal = createMultisigProposalEntityState(
         proposalEntityId,
@@ -338,8 +338,8 @@ describe('Plugin', () => {
     });
   });
 
-  describe('ProposalExecuted', () => {
-    test('processes the event', () => {
+  describe('handleProposalExecuted', () => {
+    test('handles the event', () => {
       // create state
       createMultisigProposalEntityState(
         proposalEntityId,
@@ -388,8 +388,8 @@ describe('Plugin', () => {
     });
   });
 
-  describe('MembersAdded', () => {
-    test('processes the event', () => {
+  describe('handleMembersAdded', () => {
+    test('handles the event', () => {
       let userArray = [
         Address.fromString(ADDRESS_ONE),
         Address.fromString(ADDRESS_TWO),
@@ -423,8 +423,8 @@ describe('Plugin', () => {
     });
   });
 
-  describe('MembersRemoved', () => {
-    test('processes the event', () => {
+  describe('handleMembersRemoved', () => {
+    test('handles the event', () => {
       // create state
       let memberAddresses = [
         Address.fromString(ADDRESS_ONE),
@@ -468,8 +468,8 @@ describe('Plugin', () => {
     });
   });
 
-  describe('MultisigSettingsUpdated', () => {
-    test('processes the event', () => {
+  describe('handleMultisigSettingsUpdated', () => {
+    test('handles the event', () => {
       // create state
       let entityID = createMultisigPluginState().id;
 
