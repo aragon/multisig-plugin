@@ -8,7 +8,6 @@ dotenv.config({path: path.join(rootDir, '.env')});
 
 // Temporary hotfix until task OS-1028 is finished.
 function writeAddressToTS(): void {
-
   // TODO Refactor this after OS-1028.
   const network = process.env.SUBGRAPH_NETWORK_NAME;
   if (network !== 'sepolia') {

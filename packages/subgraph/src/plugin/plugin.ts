@@ -21,8 +21,6 @@ import {
 } from '@aragon/osx-commons-subgraph';
 import {Address, dataSource, store} from '@graphprotocol/graph-ts';
 
-
-
 export function handleProposalCreated(event: ProposalCreated): void {
   const pluginProposalId = event.params.proposalId;
   const pluginAddress = event.address;
