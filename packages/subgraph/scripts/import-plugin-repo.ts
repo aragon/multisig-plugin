@@ -6,11 +6,13 @@ import path from 'path';
 const rootDir = path.join(__dirname, '../../../'); // Adjust the path as necessary
 dotenv.config({path: path.join(rootDir, '.env')});
 
-// Extract Repo address from the production-network-deployments.json
+// Temporary hotfix until task OS-1028 is finished.
 function writeAddressToTS(): void {
+
+  // TODO Refactor this after OS-1028.
   const network = process.env.SUBGRAPH_NETWORK_NAME;
   if (network !== 'sepolia') {
-    throw 'The plugin repo address has been hardcoded only for sepolia for now.';
+    throw 'The plugin repo address has been hardcoded only for sepolia for now until.';
   }
   const sepoliaAddr = '0x9e7956C8758470dE159481e5DD0d08F8B59217A2';
 
