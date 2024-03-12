@@ -34,9 +34,9 @@ export function handleProposalCreated(event: ProposalCreated): void {
   const proposalEntity = new MultisigProposal(proposalEntityId);
 
   const context = dataSource.context();
-  const daoAddr = Address.fromHexString(context.getString('daoAddress'));
+  const daoAddress = Address.fromHexString(context.getString('daoAddress'));
 
-  proposalEntity.dao = daoAddr;
+  proposalEntity.dao = daoAddress;
   proposalEntity.plugin = pluginEntityId;
   proposalEntity.pluginProposalId = pluginProposalId;
   proposalEntity.creator = event.params.creator;
@@ -71,7 +71,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
       actionEntity.to = action.to;
       actionEntity.value = action.value;
       actionEntity.data = action.data;
-      actionEntity.dao = daoAddr;
+      actionEntity.dao = daoAddress;
       actionEntity.proposal = proposalEntityId;
       actionEntity.save();
     }
