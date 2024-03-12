@@ -60,7 +60,7 @@ type MultisigProposal implements IProposal @entity {
   actions: [Action!]! @derivedFrom(field: "proposal")
   allowFailureMap: BigInt!
   failureMap: BigInt
-  plugin: DaoPlugin! #Before: MultisigPlugin! // TODO remove this comment
+  plugin: DaoPlugin!
   pluginProposalId: BigInt!
   creator: Bytes!
   metadata: String
