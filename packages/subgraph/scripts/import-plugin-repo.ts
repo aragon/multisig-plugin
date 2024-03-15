@@ -37,7 +37,6 @@ function extractAndWriteAddressToTS(): void {
     );
     networkRepoAddress = ZERO_ADDRESS;
   }
-  const sepoliaAddr = '0x9e7956C8758470dE159481e5DD0d08F8B59217A2';
 
   const tsContent: string[] = [
     `export const PLUGIN_REPO_ADDRESS = '${networkRepoAddress}';`,
