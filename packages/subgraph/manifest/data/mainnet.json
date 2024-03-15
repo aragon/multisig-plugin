@@ -10,9 +10,9 @@
       }
     ],
     "Plugin": {
-      "name": "MyPlugin",
-      "address": null,
-      "startBlock": 7727664
+      "name": "multisig.plugin.dao.eth",
+      "address": "0x8c278e37D0817210E18A7958524b7D0a1fAA6F7b",
+      "startBlock": 16721881
     }
   }
 }

@@ -11,8 +11,8 @@
     ],
     "Plugin": {
       "name": "MyPlugin",
-      "address": null,
-      "startBlock": 7727664
+      "address": "0x9e7956C8758470dE159481e5DD0d08F8B59217A2",
+      "startBlock": 3654521
     }
   }
 }
