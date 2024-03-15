@@ -1,6 +1,6 @@
 interface IPlugin {
   id: ID! # PluginEntityID
-  daoAddress: Dao!
+  daoAddress: Bytes!
   pluginAddress: Bytes!
 }
 
