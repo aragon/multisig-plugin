@@ -12,7 +12,10 @@ import {
   PLUGIN_SETUP_ID,
 } from '../utils/constants';
 import {createInstallationPreparedEvent} from '../utils/events';
-import {generatePluginInstallationEntityId} from '@aragon/osx-commons-subgraph';
+import {
+  generatePluginEntityId,
+  generatePluginInstallationEntityId,
+} from '@aragon/osx-commons-subgraph';
 import {Address, BigInt, Bytes, ethereum} from '@graphprotocol/graph-ts';
 import {assert, afterEach, clearStore, test, describe} from 'matchstick-as';
 
@@ -27,12 +30,11 @@ describe('OSx', () => {
         // Create event
         const daoAddress = DAO_ADDRESS;
         const pluginAddress = CONTRACT_ADDRESS;
-        const installationId = generatePluginInstallationEntityId(
-          Address.fromString(daoAddress),
+        const pluginEntityId = generatePluginEntityId(
           Address.fromString(pluginAddress)
         );
-        if (!installationId) {
-          throw new Error('Failed to get installationId');
+        if (!pluginEntityId) {
+          throw new Error('Failed to get pluginEntityId');
         }
         const setupId = PLUGIN_SETUP_ID;
         const versionTuple = new ethereum.Tuple();
@@ -76,7 +78,7 @@ describe('OSx', () => {
 
         handleInstallationPrepared(event1);
 
-        assert.notInStore('MultisigPlugin', installationId!);
+        assert.notInStore('MultisigPlugin', pluginEntityId!);
         assert.entityCount('MultisigPlugin', 0);
 
         const thisPluginRepoAddress = PLUGIN_REPO_ADDRESS;
@@ -98,9 +100,9 @@ describe('OSx', () => {
         assert.entityCount('MultisigPlugin', 1);
         assert.fieldEquals(
           'MultisigPlugin',
-          installationId!,
+          pluginEntityId!,
           'id',
-          installationId!
+          pluginEntityId!
         );
       });
     });

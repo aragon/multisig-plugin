@@ -1,12 +1,12 @@
 interface IPlugin {
-  id: ID! # PluginInstallationEntityId
+  id: ID! # PluginEntityId
   dao: Dao!
   pluginAddress: Bytes!
 }
 
 # Types
 type MultisigPlugin implements IPlugin @entity {
-  id: ID! # PluginInstallationEntityId
+  id: ID! # PluginEntityId
   dao: Bytes!
   pluginAddress: Bytes!
 

@@ -2,7 +2,7 @@ import {InstallationPrepared} from '../../generated/PluginSetupProcessor/PluginS
 import {MultisigPlugin} from '../../generated/schema';
 import {Plugin as PluginTemplate} from '../../generated/templates';
 import {PLUGIN_REPO_ADDRESS} from '../../imported/repo-address';
-import {generatePluginInstallationEntityId} from '@aragon/osx-commons-subgraph';
+import {generatePluginEntityId} from '@aragon/osx-commons-subgraph';
 import {Address, DataSourceContext, log} from '@graphprotocol/graph-ts';
 
 export function handleInstallationPrepared(event: InstallationPrepared): void {
@@ -17,34 +17,25 @@ export function handleInstallationPrepared(event: InstallationPrepared): void {
   }
 
   const dao = event.params.dao;
-  const plugin = event.params.plugin;
+  const pluginAddress = event.params.plugin;
 
-  // Generate a unique ID for the plugin installation.
-  const installationId = generatePluginInstallationEntityId(dao, plugin);
-  // Log an error and exit if unable to generate the installation ID.
-  if (!installationId) {
-    log.error('Failed to generate installationId', [
-      dao.toHexString(),
-      plugin.toHexString(),
-    ]);
-    return;
-  }
-  // Load or create a new entry for the this plugin using the generated installation ID.
-  let pluginEntity = MultisigPlugin.load(installationId!);
+  const pluginEntityId = generatePluginEntityId(pluginAddress);
+  let pluginEntity = MultisigPlugin.load(pluginEntityId);
+
   if (!pluginEntity) {
-    pluginEntity = new MultisigPlugin(installationId!);
+    pluginEntity = new MultisigPlugin(pluginEntityId);
   }
 
   // Set the DAO and plugin address for the plugin entity.
   pluginEntity.dao = dao;
-  pluginEntity.pluginAddress = plugin;
+  pluginEntity.pluginAddress = pluginAddress;
 
   // Initialize a context for the plugin data source to enable indexing from the moment of preparation.
   const context = new DataSourceContext();
   // Include the DAO address in the context for future reference.
   context.setString('daoAddress', dao.toHexString());
   // Deploy a template for the plugin to facilitate individual contract indexing.
-  PluginTemplate.createWithContext(plugin, context);
+  PluginTemplate.createWithContext(pluginAddress, context);
 
   pluginEntity.save();
 }
