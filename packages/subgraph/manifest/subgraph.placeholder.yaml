@@ -19,9 +19,7 @@ dataSources:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - PluginInstallation
-        - PluginPreparation
-        - PluginPermission
+        - MultisigPlugin
       abis:        
         - name: PluginSetupProcessor
           file: ./imported/PluginSetupProcessor.json
@@ -43,7 +41,11 @@ templates:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - Dao
+        - Action
+        - MultisigPlugin
+        - MultisigApprover
+        - MultisigProposal
+        - MultisigProposalApprover
       abis:
         - name: Plugin
           file: $PLUGIN_MODULE/contracts/artifacts/src/Multisig.sol/Multisig.json
