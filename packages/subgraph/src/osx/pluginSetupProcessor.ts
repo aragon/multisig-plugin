@@ -3,7 +3,7 @@ import {MultisigPlugin} from '../../generated/schema';
 import {Plugin as PluginTemplate} from '../../generated/templates';
 import {PLUGIN_REPO_ADDRESS} from '../../imported/repo-address';
 import {generatePluginEntityId} from '@aragon/osx-commons-subgraph';
-import {Address, DataSourceContext, log} from '@graphprotocol/graph-ts';
+import {Address, DataSourceContext} from '@graphprotocol/graph-ts';
 
 export function handleInstallationPrepared(event: InstallationPrepared): void {
   const pluginRepo = event.params.pluginSetupRepo;
