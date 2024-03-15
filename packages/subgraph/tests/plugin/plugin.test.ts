@@ -127,7 +127,7 @@ describe('Plugin', () => {
       assert.fieldEquals(
         'MultisigProposal',
         proposalEntityId,
-        'dao',
+        'daoAddress',
         DAO_ADDRESS
       );
       assert.fieldEquals(

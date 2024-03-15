@@ -36,7 +36,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
   const context = dataSource.context();
   const daoAddr = Address.fromHexString(context.getString('daoAddress'));
 
-  proposalEntity.dao = daoAddr;
+  proposalEntity.daoAddress = daoAddr;
   proposalEntity.plugin = pluginEntityId;
   proposalEntity.pluginProposalId = pluginProposalId;
   proposalEntity.creator = event.params.creator;
@@ -71,7 +71,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
       actionEntity.to = action.to;
       actionEntity.value = action.value;
       actionEntity.data = action.data;
-      actionEntity.dao = daoAddr;
+      actionEntity.daoAddress = daoAddr;
       actionEntity.proposal = proposalEntityId;
       actionEntity.save();
     }

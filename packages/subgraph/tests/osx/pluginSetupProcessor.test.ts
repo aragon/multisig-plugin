@@ -12,10 +12,7 @@ import {
   PLUGIN_SETUP_ID,
 } from '../utils/constants';
 import {createInstallationPreparedEvent} from '../utils/events';
-import {
-  generatePluginEntityId,
-  generatePluginInstallationEntityId,
-} from '@aragon/osx-commons-subgraph';
+import {generatePluginEntityId} from '@aragon/osx-commons-subgraph';
 import {Address, BigInt, Bytes, ethereum} from '@graphprotocol/graph-ts';
 import {assert, afterEach, clearStore, test, describe} from 'matchstick-as';
 
@@ -82,6 +79,9 @@ describe('OSx', () => {
         assert.entityCount('MultisigPlugin', 0);
 
         const thisPluginRepoAddress = PLUGIN_REPO_ADDRESS;
+        const pluginId = generatePluginEntityId(
+          Address.fromString(pluginAddress)
+        );
 
         const event2 = createInstallationPreparedEvent(
           ADDRESS_THREE,
@@ -98,12 +98,7 @@ describe('OSx', () => {
         handleInstallationPrepared(event2);
 
         assert.entityCount('MultisigPlugin', 1);
-        assert.fieldEquals(
-          'MultisigPlugin',
-          pluginEntityId!,
-          'id',
-          pluginEntityId!
-        );
+        assert.fieldEquals('MultisigPlugin', pluginId, 'id', pluginId);
       });
     });
   });

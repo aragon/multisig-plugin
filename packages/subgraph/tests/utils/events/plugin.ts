@@ -279,7 +279,7 @@ export function createMultisigPluginState(
   onlyListed: boolean = false
 ): MultisigPlugin {
   let multisigPlugin = new MultisigPlugin(entityID);
-  multisigPlugin.dao = Bytes.fromHexString(dao);
+  multisigPlugin.daoAddress = Bytes.fromHexString(dao);
   multisigPlugin.pluginAddress = Bytes.fromHexString(pluginAddress);
   multisigPlugin.proposalCount = BigInt.fromString(proposalCount);
   multisigPlugin.minApprovals = parseInt(minApprovals) as i32;
@@ -311,7 +311,7 @@ export function createMultisigProposalEntityState(
   creationBlockNumber: BigInt = new BigInt(0)
 ): MultisigProposal {
   let multisigProposal = new MultisigProposal(entityID);
-  multisigProposal.dao = Address.fromHexString(dao);
+  multisigProposal.daoAddress = Address.fromHexString(dao);
   multisigProposal.plugin = Address.fromString(plugin).toHexString();
   multisigProposal.pluginProposalId = BigInt.fromString(pluginProposalId);
   multisigProposal.creator = Address.fromString(creator);

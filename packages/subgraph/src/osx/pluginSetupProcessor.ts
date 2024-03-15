@@ -16,24 +16,24 @@ export function handleInstallationPrepared(event: InstallationPrepared): void {
     return;
   }
 
-  const dao = event.params.dao;
+  const daoAddress = event.params.dao;
   const pluginAddress = event.params.plugin;
+  const pluginId = generatePluginEntityId(pluginAddress);
 
-  const pluginEntityId = generatePluginEntityId(pluginAddress);
-  let pluginEntity = MultisigPlugin.load(pluginEntityId);
-
+  // Load or create a new entry for the this plugin using the generated installation ID.
+  let pluginEntity = MultisigPlugin.load(pluginId);
   if (!pluginEntity) {
-    pluginEntity = new MultisigPlugin(pluginEntityId);
+    pluginEntity = new MultisigPlugin(pluginId);
   }
 
   // Set the DAO and plugin address for the plugin entity.
-  pluginEntity.dao = dao;
+  pluginEntity.daoAddress = daoAddress;
   pluginEntity.pluginAddress = pluginAddress;
 
   // Initialize a context for the plugin data source to enable indexing from the moment of preparation.
   const context = new DataSourceContext();
   // Include the DAO address in the context for future reference.
-  context.setString('daoAddress', dao.toHexString());
+  context.setString('daoAddress', daoAddress.toHexString());
   // Deploy a template for the plugin to facilitate individual contract indexing.
   PluginTemplate.createWithContext(pluginAddress, context);
 

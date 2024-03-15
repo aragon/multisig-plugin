@@ -1,13 +1,13 @@
 interface IPlugin {
-  id: ID! # PluginEntityId
+  id: ID! # PluginEntityID
   dao: Dao!
   pluginAddress: Bytes!
 }
 
 # Types
 type MultisigPlugin implements IPlugin @entity {
-  id: ID! # PluginEntityId
-  dao: Bytes!
+  id: ID! # PluginEntityID
+  daoAddress: Bytes!
   pluginAddress: Bytes!
 
   # Plugin specific data"
@@ -21,7 +21,7 @@ type MultisigPlugin implements IPlugin @entity {
 
 interface IProposal {
   id: ID! # ProposalEntityId
-  dao: Bytes!
+  daoAddress: Bytes!
   creator: Bytes!
   metadata: String
   actions: [Action!]! @derivedFrom(field: "proposal")
@@ -39,7 +39,7 @@ type Action @entity {
   to: Bytes!
   value: BigInt!
   data: Bytes!
-  dao: Bytes!
+  daoAddress: Bytes!
   proposal: IProposal!
   execResult: Bytes
 }
@@ -61,7 +61,7 @@ type MultisigProposalApprover @entity(immutable: true) {
 
 type MultisigProposal implements IProposal @entity {
   id: ID! # plugin + proposalId
-  dao: Bytes!
+  daoAddress: Bytes!
   actions: [Action!]! @derivedFrom(field: "proposal")
   allowFailureMap: BigInt!
   failureMap: BigInt
