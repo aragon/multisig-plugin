@@ -3,7 +3,7 @@ import {MultisigPlugin} from '../../generated/schema';
 import {Plugin as PluginTemplate} from '../../generated/templates';
 import {PLUGIN_REPO_ADDRESS} from '../../imported/repo-address';
 import {generatePluginEntityId} from '@aragon/osx-commons-subgraph';
-import {Address, DataSourceContext} from '@graphprotocol/graph-ts';
+import {Address, BigInt, DataSourceContext} from '@graphprotocol/graph-ts';
 
 export function handleInstallationPrepared(event: InstallationPrepared): void {
   const pluginRepo = event.params.pluginSetupRepo;
@@ -29,6 +29,7 @@ export function handleInstallationPrepared(event: InstallationPrepared): void {
   // Set the DAO and plugin address for the plugin entity.
   pluginEntity.daoAddress = daoAddress;
   pluginEntity.pluginAddress = pluginAddress;
+  pluginEntity.proposalCount = BigInt.zero();
 
   // Initialize a context for the plugin data source to enable indexing from the moment of preparation.
   const context = new DataSourceContext();
