@@ -1,5 +1,8 @@
-import {generateEntityIdFromAddress} from '@aragon/osx-commons-subgraph';
-import {Address} from '@graphprotocol/graph-ts';
+import {
+  generateEntityIdFromAddress,
+  generateEntityIdFromBigInt,
+} from '@aragon/osx-commons-subgraph';
+import {Address, BigInt} from '@graphprotocol/graph-ts';
 
 export function generateMemberEntityId(
   pluginAddress: Address,
@@ -13,7 +16,7 @@ export function generateMemberEntityId(
 
 export function generateVoterEntityId(
   memberEntityId: string,
-  proposalId: string
+  proposalId: BigInt
 ): string {
-  return [memberEntityId, proposalId].join('_');
+  return [memberEntityId, generateEntityIdFromBigInt(proposalId)].join('_');
 }

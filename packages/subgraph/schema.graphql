@@ -1,20 +1,12 @@
 interface IPlugin {
-  id: ID! # PluginEntityID
+  id: ID! # Plugin Address
   daoAddress: Bytes!
   pluginAddress: Bytes!
 }
 
-interface IAction {
-  id: ID! # ActionEntityId
-  to: Bytes!
-  value: BigInt!
-  data: Bytes!
-  daoAddress: Bytes!
-}
-
 # Types
 type MultisigPlugin implements IPlugin @entity {
-  id: ID! # PluginEntityID
+  id: ID! # Plugin Address
   daoAddress: Bytes!
   pluginAddress: Bytes!
 
@@ -27,8 +19,42 @@ type MultisigPlugin implements IPlugin @entity {
   onlyListed: Boolean
 }
 
+interface IAction {
+  id: ID! # Plugin Address + DAO Address + Plugin Proposal ID + Action Index
+  to: Bytes!
+  value: BigInt!
+  data: Bytes!
+  daoAddress: Bytes!
+}
+
+type Action implements IAction @entity(immutable: true) {
+  id: ID! # Plugin Address + DAO Address + Plugin Proposal ID + Action Index
+  to: Bytes!
+  value: BigInt!
+  data: Bytes!
+  daoAddress: Bytes!
+
+  # plugin specific data
+  proposal: IProposal!
+}
+
+type MultisigApprover @entity {
+  id: ID! # Plugin Address + Member Address
+  address: String # address as string to facilitate filtering by address on the UI
+  proposals: [MultisigProposalApprover!]! @derivedFrom(field: "approver")
+  plugin: MultisigPlugin!
+}
+
+type MultisigProposalApprover @entity(immutable: true) {
+  "ApproverProposal for Many-to-Many"
+  id: ID! # Plugin Address + Approver Address + Plugin Proposal ID
+  approver: MultisigApprover!
+  proposal: MultisigProposal!
+  createdAt: BigInt!
+}
+
 interface IProposal {
-  id: ID! # ProposalEntityId
+  id: ID! # Plugin Address + Plugin Proposal ID
   daoAddress: Bytes!
   creator: Bytes!
   metadata: String
@@ -41,34 +67,8 @@ interface IProposal {
   executionTxHash: Bytes
 }
 
-type Action implements IAction @entity(immutable: true) {
-  id: ID! # ActionEntityId
-  to: Bytes!
-  value: BigInt!
-  data: Bytes!
-  daoAddress: Bytes!
-
-  # plugin specific data
-  proposal: IProposal!
-}
-
-type MultisigApprover @entity {
-  id: ID! # plugin_address + member_address
-  address: String # address as string to facilitate filtering by address on the UI
-  proposals: [MultisigProposalApprover!]! @derivedFrom(field: "approver")
-  plugin: MultisigPlugin!
-}
-
-type MultisigProposalApprover @entity(immutable: true) {
-  "ApproverProposal for Many-to-Many"
-  id: ID! # approver + proposal
-  approver: MultisigApprover!
-  proposal: MultisigProposal!
-  createdAt: BigInt!
-}
-
 type MultisigProposal implements IProposal @entity {
-  id: ID! # plugin + proposalId
+  id: ID! # Plugin Address + Plugin Proposal ID
   daoAddress: Bytes!
   actions: [Action!]! @derivedFrom(field: "proposal")
   allowFailureMap: BigInt!
