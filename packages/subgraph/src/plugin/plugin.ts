@@ -116,7 +116,7 @@ export function handleApproved(event: Approved): void {
   );
   const approverProposalId = generateVoterEntityId(
     memberEntityId,
-    proposalEntityId
+    pluginProposalId
   );
 
   let approverProposalEntity =

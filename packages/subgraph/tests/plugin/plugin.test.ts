@@ -305,7 +305,10 @@ describe('Plugin', () => {
         memberAddress
       );
 
-      const voterEntityId = generateVoterEntityId(memberEntityId, proposal.id);
+      const voterEntityId = generateVoterEntityId(
+        memberEntityId,
+        pluginProposalId
+      );
       // check proposalVoter
       assert.fieldEquals(
         'MultisigProposalApprover',
