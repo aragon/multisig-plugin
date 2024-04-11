@@ -12,6 +12,15 @@ import {
   DAO_ADDRESS,
   CONTRACT_ADDRESS,
   CONTRACT_ADDRESS_STRING,
+  PLUGIN_PROPOSAL_ID,
+  ALLOW_FAILURE_MAP,
+  SNAPSHOT_BLOCK,
+  CREATED_AT,
+  START_DATE,
+  END_DATE,
+  TWO,
+  THREE,
+  ZERO,
 } from '../constants';
 import {
   generatePluginEntityId,
@@ -19,21 +28,6 @@ import {
 } from '@aragon/osx-commons-subgraph';
 import {Address, BigInt, Bytes, ethereum} from '@graphprotocol/graph-ts';
 import {createMockedFunction, newMockEvent} from 'matchstick-as';
-
-// test data
-
-export const ZERO = '0';
-export const ONE = '1';
-export const TWO = '2';
-export const THREE = '3';
-
-export const PLUGIN_PROPOSAL_ID = ZERO;
-export const MIN_PROPOSER_VOTING_POWER = ZERO;
-export const START_DATE = '1644851000';
-export const END_DATE = '1644852000';
-export const CREATED_AT = ONE;
-export const SNAPSHOT_BLOCK = '100';
-export const ALLOW_FAILURE_MAP = '1';
 
 // events
 

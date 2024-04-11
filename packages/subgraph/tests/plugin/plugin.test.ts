@@ -20,6 +20,13 @@ import {
   ADDRESS_THREE_STRING,
   CONTRACT_ADDRESS_STRING,
   DAO_ADDRESS_STRING,
+  PLUGIN_PROPOSAL_ID,
+  SNAPSHOT_BLOCK,
+  ONE,
+  TWO,
+  START_DATE,
+  END_DATE,
+  ALLOW_FAILURE_MAP,
 } from '../utils/constants';
 import {
   createNewMembersAddedEvent,
@@ -32,13 +39,6 @@ import {
   createGetProposalCall,
   createNewMultisigSettingsUpdatedEvent,
   createMultisigPluginState,
-  PLUGIN_PROPOSAL_ID,
-  SNAPSHOT_BLOCK,
-  ONE,
-  TWO,
-  START_DATE,
-  END_DATE,
-  ALLOW_FAILURE_MAP,
 } from '../utils/events';
 import {
   generatePluginEntityId,
