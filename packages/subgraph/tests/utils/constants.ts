@@ -41,3 +41,5 @@ export const END_DATE = '1644852000';
 export const CREATED_AT = ONE;
 export const SNAPSHOT_BLOCK = '100';
 export const ALLOW_FAILURE_MAP = '1';
+
+export const METADATA = 'Some String Data ...';

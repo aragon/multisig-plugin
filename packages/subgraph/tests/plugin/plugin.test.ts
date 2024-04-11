@@ -27,6 +27,7 @@ import {
   START_DATE,
   END_DATE,
   ALLOW_FAILURE_MAP,
+  METADATA,
 } from '../utils/constants';
 import {
   createNewMembersAddedEvent,
@@ -72,8 +73,6 @@ const proposalEntityId = generateProposalEntityId(
   pluginAddress,
   pluginProposalId
 );
-
-export const METADATA = 'Some String Data ...';
 
 describe('Plugin', () => {
   beforeEach(function () {
