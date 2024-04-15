@@ -10,7 +10,10 @@ import {
   deployAndUpgradeSelfCheck,
   getProtocolVersion,
 } from '../test-utils/uups-upgradeable';
-import {PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS} from '@aragon/osx-commons-sdk';
+import {
+  PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS,
+  hexToBytes,
+} from '@aragon/osx-commons-sdk';
 import {DAO} from '@aragon/osx-ethers';
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
@@ -109,9 +112,7 @@ type FixtureResult = {
 async function fixture(): Promise<FixtureResult> {
   const [deployer, alice, bob, carol] = await ethers.getSigners();
 
-  const dummyMetadata = ethers.utils.hexlify(
-    ethers.utils.toUtf8Bytes('0x123456789')
-  );
+  const dummyMetadata = '0x12345678';
 
   const dao = await createDaoProxy(deployer, dummyMetadata);
 

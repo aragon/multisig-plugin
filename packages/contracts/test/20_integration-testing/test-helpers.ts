@@ -66,7 +66,12 @@ export async function installPLugin(
     pluginSetupRef: pluginSetupRef,
     plugin: plugin,
     permissions: preparedPermissions,
-    helpersHash: hashHelpers(preparedEvent.args.preparedSetupData.helpers),
+    helpersHash: ethers.utils.keccak256(
+      ethers.utils.defaultAbiCoder.encode(
+        ['address[]'],
+        [preparedEvent.args.preparedSetupData.helpers]
+      )
+    ),
   });
 
   const appliedEvent =
@@ -183,7 +188,12 @@ export async function updatePlugin(
     pluginSetupRef: pluginSetupRefUpdate,
     initData: preparedEvent.args.initData,
     permissions: preparedPermissions,
-    helpersHash: hashHelpers(preparedEvent.args.preparedSetupData.helpers),
+    helpersHash: ethers.utils.keccak256(
+      ethers.utils.defaultAbiCoder.encode(
+        ['address[]'],
+        [preparedEvent.args.preparedSetupData.helpers]
+      )
+    ),
   });
   const appliedEvent =
     await findEvent<PluginSetupProcessorEvents.UpdateAppliedEvent>(
