@@ -6,7 +6,6 @@ import {
 } from '../../typechain';
 import {ProxyCreatedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/utils/deployment/ProxyFactory';
 import {PluginUUPSUpgradeable__factory} from '../../typechain/factories/@aragon/osx-v1.0.0/core/plugin';
-import {hashHelpers} from '../../utils/helpers';
 import {
   DAO_PERMISSIONS,
   PLUGIN_SETUP_PROCESSOR_PERMISSIONS,

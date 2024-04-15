@@ -22,7 +22,7 @@ import {
 import {setBalance} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {BigNumber, ContractTransaction} from 'ethers';
-import {LogDescription, defaultAbiCoder, keccak256} from 'ethers/lib/utils';
+import {LogDescription} from 'ethers/lib/utils';
 import {ethers} from 'hardhat';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 

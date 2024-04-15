@@ -10,10 +10,7 @@ import {
   deployAndUpgradeSelfCheck,
   getProtocolVersion,
 } from '../test-utils/uups-upgradeable';
-import {
-  PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS,
-  hexToBytes,
-} from '@aragon/osx-commons-sdk';
+import {PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS} from '@aragon/osx-commons-sdk';
 import {DAO} from '@aragon/osx-ethers';
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
