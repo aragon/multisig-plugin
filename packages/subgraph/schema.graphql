@@ -91,3 +91,11 @@ type MultisigProposal implements IProposal @entity {
   executionTxHash: Bytes
   approvers: [MultisigProposalApprover!]! @derivedFrom(field: "proposal")
 }
+
+type IAction @entity {
+    id: ID! #action entity id
+    daoAddress: Bytes!
+    to: Bytes!
+    value: BigInt!
+    data: Bytes!
+}

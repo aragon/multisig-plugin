@@ -72,6 +72,14 @@ export async function findPluginRepo(
 ): Promise<{pluginRepo: PluginRepo | null; ensDomain: string}> {
   const [deployer] = await hre.ethers.getSigners();
   const productionNetworkName: string = getProductionNetworkName(hre);
+  const network = getNetworkNameByAlias(productionNetworkName);
+  if (network === null) {
+    throw new UnsupportedNetworkError(productionNetworkName);
+  }
+  const networkDeployments = getLatestNetworkDeployment(network);
+  if (networkDeployments === null) {
+    throw `Deployments are not available on network ${network}.`;
+  }
 
   const network = getNetworkNameByAlias(productionNetworkName);
   if (network === null) {
