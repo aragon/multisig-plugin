@@ -81,15 +81,6 @@ export async function findPluginRepo(
     throw `Deployments are not available on network ${network}.`;
   }
 
-  const network = getNetworkNameByAlias(productionNetworkName);
-  if (network === null) {
-    throw new UnsupportedNetworkError(productionNetworkName);
-  }
-  const networkDeployments = getLatestNetworkDeployment(network);
-  if (networkDeployments === null) {
-    throw `Deployments are not available on network ${network}.`;
-  }
-
   const registrar = ENSSubdomainRegistrar__factory.connect(
     networkDeployments.PluginENSSubdomainRegistrarProxy.address,
     deployer
