@@ -2040,12 +2040,31 @@ describe('Multisig', function () {
 
         // Approve and try execution as Alice although the `minApprovals` threshold is not met yet.
         let tx = await plugin.connect(alice).approve(id, true);
-        expect((await plugin.getProposal(id)).executed).to.equal(false);
+        let rc = await tx.wait();
+        expect(() =>
+          findEventTopicLog<ExecutedEvent>(
+            rc,
+            DAO__factory.createInterface(),
+            'Executed'
+          )
+        ).to.throw(
+          `Event "Executed" could not be found in transaction ${tx.hash}.`
+        );
+
         expect(await plugin.canExecute(id)).to.equal(false);
 
         // Approve but do not try execution as Bob although the `minApprovals` threshold is reached now.
         tx = await plugin.connect(bob).approve(id, false);
-        expect((await plugin.getProposal(id)).executed).to.equal(false);
+        rc = await tx.wait();
+        expect(() =>
+          findEventTopicLog<ExecutedEvent>(
+            rc,
+            DAO__factory.createInterface(),
+            'Executed'
+          )
+        ).to.throw(
+          `Event "Executed" could not be found in transaction ${tx.hash}.`
+        );
 
         // Approve and try execution as Carol while `minApprovals` threshold is reached already.
         tx = await plugin.connect(carol).approve(id, true);
