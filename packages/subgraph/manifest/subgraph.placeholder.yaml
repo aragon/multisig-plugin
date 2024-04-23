@@ -1,6 +1,6 @@
 {{info}}
 specVersion: 0.0.2
-description: The schema for Multisig Plugin subgraph
+description: The schema for the Multisig plugin subgraph
 repository: https://github.com/aragon/multisig-plugin
 schema:
   file: ./schema.graphql

@@ -25,9 +25,6 @@ import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
 import {
   getInterfaceId,
   proposalIdToBytes32,
-  IDAO_EVENTS,
-  IMEMBERSHIP_EVENTS,
-  IPROPOSAL_EVENTS,
   findEvent,
   findEventTopicLog,
   TIME,
@@ -62,9 +59,7 @@ async function fixture(): Promise<FixtureResult> {
   const [deployer, alice, bob, carol, dave, eve] = await ethers.getSigners();
 
   // Deploy a DAO proxy.
-  const dummyMetadata = ethers.utils.hexlify(
-    ethers.utils.toUtf8Bytes('0x123456789')
-  );
+  const dummyMetadata = '0x12345678';
   const dao = await createDaoProxy(deployer, dummyMetadata);
 
   // Deploy a plugin proxy factory containing the multisig implementation.
@@ -86,8 +81,8 @@ async function fixture(): Promise<FixtureResult> {
     [dao.address, defaultInitData.members, defaultInitData.settings]
   );
   const deploymentTx1 = await proxyFactory.deployUUPSProxy(pluginInitdata);
-  const proxyCreatedEvent1 = await findEvent<ProxyCreatedEvent>(
-    deploymentTx1,
+  const proxyCreatedEvent1 = findEvent<ProxyCreatedEvent>(
+    await deploymentTx1.wait(),
     proxyFactory.interface.getEvent('ProxyCreated').name
   );
   const initializedPlugin = Multisig__factory.connect(
@@ -95,10 +90,10 @@ async function fixture(): Promise<FixtureResult> {
     deployer
   );
 
-  // Deploy an initialized plugin proxy.
+  // Deploy an uninitialized plugin proxy.
   const deploymentTx2 = await proxyFactory.deployUUPSProxy([]);
-  const proxyCreatedEvent2 = await findEvent<ProxyCreatedEvent>(
-    deploymentTx2,
+  const proxyCreatedEvent2 = findEvent<ProxyCreatedEvent>(
+    await deploymentTx2.wait(),
     proxyFactory.interface.getEvent('ProxyCreated').name
   );
   const uninitializedPlugin = Multisig__factory.connect(
@@ -518,7 +513,7 @@ describe('Multisig', function () {
       await expect(
         plugin.connect(alice).addAddresses([dave.address, eve.address])
       )
-        .to.emit(plugin, IMEMBERSHIP_EVENTS.MembersAdded)
+        .to.emit(plugin, 'MembersAdded')
         .withArgs([dave.address, eve.address]);
 
       // Check that Dave and Eve are listed now.
@@ -584,7 +579,7 @@ describe('Multisig', function () {
 
       // Call `removeAddresses` as Alice to remove Bob.
       await expect(plugin.connect(alice).removeAddresses([bob.address]))
-        .to.emit(plugin, IMEMBERSHIP_EVENTS.MembersRemoved)
+        .to.emit(plugin, 'MembersRemoved')
         .withArgs([bob.address]);
 
       // Check that Bob is removed while Alice and Carol remains listed.
@@ -772,7 +767,7 @@ describe('Multisig', function () {
             endDate
           )
       )
-        .to.emit(plugin, IPROPOSAL_EVENTS.ProposalCreated)
+        .to.emit(plugin, 'ProposalCreated')
         .withArgs(
           expectedProposalId,
           alice.address,
@@ -928,7 +923,7 @@ describe('Multisig', function () {
               endDate
             )
         )
-          .to.emit(plugin, IPROPOSAL_EVENTS.ProposalCreated)
+          .to.emit(plugin, 'ProposalCreated')
           .withArgs(
             expectedProposalId,
             dave.address,
@@ -1053,8 +1048,8 @@ describe('Multisig', function () {
         expect(await plugin.isListed(dave.address)).to.equal(true);
 
         // Check the `ProposalCreatedEvent` for the creator and proposalId.
-        const event = await findEvent<ProposalCreatedEvent>(
-          tx4,
+        const event = findEvent<ProposalCreatedEvent>(
+          await tx4.wait(),
           'ProposalCreated'
         );
         expect(event.args.proposalId).to.equal(id);
@@ -1100,7 +1095,7 @@ describe('Multisig', function () {
           endDate
         )
       )
-        .to.emit(plugin, IPROPOSAL_EVENTS.ProposalCreated)
+        .to.emit(plugin, 'ProposalCreated')
         .withArgs(id, alice.address, startDate, endDate, dummyMetadata, [], 0);
 
       const latestBlock = await ethers.provider.getBlock('latest');
@@ -1155,7 +1150,7 @@ describe('Multisig', function () {
           endDate
         )
       )
-        .to.emit(plugin, IPROPOSAL_EVENTS.ProposalCreated)
+        .to.emit(plugin, 'ProposalCreated')
         .withArgs(
           id,
           alice.address,
@@ -1610,7 +1605,7 @@ describe('Multisig', function () {
         const tx = await plugin.connect(alice).approve(id, false);
 
         // Check the `Approved` event and make sure that Alice is emitted as the approver.
-        const event = await findEvent<ApprovedEvent>(tx, 'Approved');
+        const event = findEvent<ApprovedEvent>(await tx.wait(), 'Approved');
         expect(event.args.proposalId).to.eq(id);
         expect(event.args.approver).to.eq(alice.address);
 
@@ -2045,28 +2040,30 @@ describe('Multisig', function () {
 
         // Approve and try execution as Alice although the `minApprovals` threshold is not met yet.
         let tx = await plugin.connect(alice).approve(id, true);
-        await expect(
+        let rc = await tx.wait();
+        expect(() =>
           findEventTopicLog<ExecutedEvent>(
-            tx,
+            rc,
             DAO__factory.createInterface(),
-            IDAO_EVENTS.Executed
+            'Executed'
           )
-        ).to.rejectedWith(
-          `Event "${IDAO_EVENTS.Executed}" could not be found in transaction ${tx.hash}.`
+        ).to.throw(
+          `Event "Executed" could not be found in transaction ${tx.hash}.`
         );
 
         expect(await plugin.canExecute(id)).to.equal(false);
 
         // Approve but do not try execution as Bob although the `minApprovals` threshold is reached now.
         tx = await plugin.connect(bob).approve(id, false);
-        await expect(
+        rc = await tx.wait();
+        expect(() =>
           findEventTopicLog<ExecutedEvent>(
-            tx,
+            rc,
             DAO__factory.createInterface(),
-            IDAO_EVENTS.Executed
+            'Executed'
           )
-        ).to.rejectedWith(
-          `Event "${IDAO_EVENTS.Executed}" could not be found in transaction ${tx.hash}.`
+        ).to.throw(
+          `Event "Executed" could not be found in transaction ${tx.hash}.`
         );
 
         // Approve and try execution as Carol while `minApprovals` threshold is reached already.
@@ -2074,10 +2071,10 @@ describe('Multisig', function () {
 
         // Check that the proposal got executed by checking the `Executed` event emitted by the DAO.
         {
-          const event = await findEventTopicLog<ExecutedEvent>(
-            tx,
+          const event = findEventTopicLog<ExecutedEvent>(
+            await tx.wait(),
             DAO__factory.createInterface(),
-            IDAO_EVENTS.Executed
+            'Executed'
           );
 
           expect(event.args.actor).to.equal(plugin.address);
@@ -2094,9 +2091,9 @@ describe('Multisig', function () {
 
         // Check that the proposal got executed by checking the `ProposalExecuted` event emitted by the plugin.
         {
-          const event = await findEvent<ProposalExecutedEvent>(
-            tx,
-            IPROPOSAL_EVENTS.ProposalExecuted
+          const event = findEvent<ProposalExecutedEvent>(
+            await tx.wait(),
+            'ProposalExecuted'
           );
           expect(event.args.proposalId).to.equal(id);
         }
@@ -2146,9 +2143,9 @@ describe('Multisig', function () {
         // Execute the proposal and check that the `Executed` and `ProposalExecuted` event is emitted
         // and that the `Approved` event is not emitted.
         await expect(plugin.connect(alice).execute(id))
-          .to.emit(dao, IDAO_EVENTS.Executed)
-          .to.emit(plugin, IPROPOSAL_EVENTS.ProposalExecuted)
-          .to.not.emit(plugin, MULTISIG_EVENTS.Approved);
+          .to.emit(dao, 'Executed')
+          .to.emit(plugin, 'ProposalExecuted')
+          .to.not.emit(plugin, 'Approved');
       });
 
       it('emits the `Approved`, `ProposalExecuted`, and `Executed` events if execute is called inside the `approve` method', async () => {
@@ -2189,9 +2186,9 @@ describe('Multisig', function () {
         // Approve and execute the proposal as Bob and check that the `Executed`, `ProposalExecuted`, and `Approved`
         // event is not emitted.
         await expect(plugin.connect(bob).approve(id, true))
-          .to.emit(dao, IDAO_EVENTS.Executed)
-          .to.emit(plugin, IPROPOSAL_EVENTS.ProposalExecuted)
-          .to.emit(plugin, MULTISIG_EVENTS.Approved);
+          .to.emit(dao, 'Executed')
+          .to.emit(plugin, 'ProposalExecuted')
+          .to.emit(plugin, 'Approved');
       });
 
       it("reverts if the proposal hasn't started yet", async () => {

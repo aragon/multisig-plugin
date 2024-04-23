@@ -4,11 +4,7 @@ import {
   getLatestNetworkDeployment,
   getNetworkNameByAlias,
 } from '@aragon/osx-commons-configs';
-import {
-  UnsupportedNetworkError,
-  VersionTag,
-  findEvent,
-} from '@aragon/osx-commons-sdk';
+import {UnsupportedNetworkError, findEvent} from '@aragon/osx-commons-sdk';
 import {
   DAO,
   DAO__factory,
@@ -22,7 +18,7 @@ import {
 import {setBalance} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {BigNumber, ContractTransaction} from 'ethers';
-import {LogDescription, defaultAbiCoder, keccak256} from 'ethers/lib/utils';
+import {LogDescription} from 'ethers/lib/utils';
 import {ethers} from 'hardhat';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
@@ -72,7 +68,6 @@ export async function findPluginRepo(
 ): Promise<{pluginRepo: PluginRepo | null; ensDomain: string}> {
   const [deployer] = await hre.ethers.getSigners();
   const productionNetworkName: string = getProductionNetworkName(hre);
-
   const network = getNetworkNameByAlias(productionNetworkName);
   if (network === null) {
     throw new UnsupportedNetworkError(productionNetworkName);
@@ -192,12 +187,8 @@ export async function getPastVersionCreatedEvents(
   });
 }
 
-export function hashHelpers(helpers: string[]) {
-  return keccak256(defaultAbiCoder.encode(['address[]'], [helpers]));
-}
-
 export type LatestVersion = {
-  versionTag: VersionTag;
+  versionTag: PluginRepo.VersionStruct;
   pluginSetupContract: string;
   releaseMetadata: string;
   buildMetadata: string;
@@ -224,14 +215,11 @@ export async function createVersion(
 
   console.log(`Creating build for release ${releaseNumber} with tx ${tx.hash}`);
 
-  await tx.wait();
-
-  const versionCreatedEvent =
-    await findEvent<PluginRepoEvents.VersionCreatedEvent>(
-      tx,
-      pluginRepo.interface.events['VersionCreated(uint8,uint16,address,bytes)']
-        .name
-    );
+  const versionCreatedEvent = findEvent<PluginRepoEvents.VersionCreatedEvent>(
+    await tx.wait(),
+    pluginRepo.interface.events['VersionCreated(uint8,uint16,address,bytes)']
+      .name
+  );
 
   // Check if versionCreatedEvent is not undefined
   if (versionCreatedEvent) {
