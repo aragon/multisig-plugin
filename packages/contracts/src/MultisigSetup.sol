@@ -46,7 +46,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
 
         // Prepare permissions
         PermissionLib.MultiTargetPermission[]
-            memory permissions = new PermissionLib.MultiTargetPermission[](3);
+            memory permissions = new PermissionLib.MultiTargetPermission[](2);
 
         // Set permissions to be granted.
         // Grant the list of permissions of the plugin to the DAO.
@@ -58,16 +58,8 @@ contract MultisigSetup is PluginUpgradeableSetup {
             permissionId: Multisig(IMPLEMENTATION).UPDATE_MULTISIG_SETTINGS_PERMISSION_ID()
         });
 
-        permissions[1] = PermissionLib.MultiTargetPermission({
-            operation: PermissionLib.Operation.Grant,
-            where: plugin,
-            who: _dao,
-            condition: PermissionLib.NO_CONDITION,
-            permissionId: Multisig(IMPLEMENTATION).UPGRADE_PLUGIN_PERMISSION_ID()
-        });
-
         // Grant `EXECUTE_PERMISSION` of the DAO to the plugin.
-        permissions[2] = PermissionLib.MultiTargetPermission({
+        permissions[1] = PermissionLib.MultiTargetPermission({
             operation: PermissionLib.Operation.Grant,
             where: _dao,
             who: plugin,
@@ -79,19 +71,34 @@ contract MultisigSetup is PluginUpgradeableSetup {
     }
 
     /// @inheritdoc IPluginSetup
-    /// @dev Nothing needs to happen for the update.
+    /// @dev Revoke the upgrade plugin permission from the DAO for all builds previous to the current one (3).
     function prepareUpdate(
         address _dao,
         uint16 _currentBuild,
         SetupPayload calldata _payload
     )
         external
-        pure
+        view
         override
         returns (bytes memory initData, PreparedSetupData memory preparedSetupData)
-    // solhint-disable-next-line no-empty-blocks
     {
+        (initData);
 
+        // all builds previous current one (3) have this permission granted and need to be revoked
+        if (_currentBuild < 3) {
+            PermissionLib.MultiTargetPermission[]
+                memory permissions = new PermissionLib.MultiTargetPermission[](1);
+
+            permissions[0] = PermissionLib.MultiTargetPermission({
+                operation: PermissionLib.Operation.Revoke,
+                where: _payload.plugin,
+                who: _dao,
+                condition: PermissionLib.NO_CONDITION,
+                permissionId: Multisig(IMPLEMENTATION).UPGRADE_PLUGIN_PERMISSION_ID()
+            });
+
+            preparedSetupData.permissions = permissions;
+        }
     }
 
     /// @inheritdoc IPluginSetup
@@ -100,7 +107,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
         SetupPayload calldata _payload
     ) external view returns (PermissionLib.MultiTargetPermission[] memory permissions) {
         // Prepare permissions
-        permissions = new PermissionLib.MultiTargetPermission[](3);
+        permissions = new PermissionLib.MultiTargetPermission[](2);
 
         // Set permissions to be Revoked.
         permissions[0] = PermissionLib.MultiTargetPermission({
@@ -112,14 +119,6 @@ contract MultisigSetup is PluginUpgradeableSetup {
         });
 
         permissions[1] = PermissionLib.MultiTargetPermission({
-            operation: PermissionLib.Operation.Revoke,
-            where: _payload.plugin,
-            who: _dao,
-            condition: PermissionLib.NO_CONDITION,
-            permissionId: Multisig(IMPLEMENTATION).UPGRADE_PLUGIN_PERMISSION_ID()
-        });
-
-        permissions[2] = PermissionLib.MultiTargetPermission({
             operation: PermissionLib.Operation.Revoke,
             where: _dao,
             who: _payload.plugin,
