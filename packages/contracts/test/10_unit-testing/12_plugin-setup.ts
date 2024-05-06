@@ -274,7 +274,7 @@ describe('MultisigSetup', function () {
       // Check the return data.
       expect(plugin).to.be.equal(anticipatedPluginAddress);
       expect(helpers.length).to.be.equal(0);
-      expect(permissions.length).to.be.equal(3);
+      expect(permissions.length).to.be.equal(2);
       expect(permissions).to.deep.equal([
         [
           Operation.Grant,
@@ -282,13 +282,6 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
-        ],
-        [
-          Operation.Grant,
-          plugin,
-          dao.address,
-          AddressZero,
-          PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
         ],
         [
           Operation.Grant,
@@ -340,26 +333,70 @@ describe('MultisigSetup', function () {
   });
 
   describe('prepareUpdate', async () => {
-    it('should return nothing', async () => {
+    it('update from build 1 should return correct permissions', async () => {
       const {pluginSetup, dao} = await loadFixture(fixture);
+      const plugin = ethers.Wallet.createRandom().address;
 
       // Make a static call to check that the plugin update data being returned is correct.
-      const prepareUpdateData = await pluginSetup.callStatic.prepareUpdate(
-        dao.address,
-        VERSION.build,
-        {
-          currentHelpers: [
-            ethers.Wallet.createRandom().address,
-            ethers.Wallet.createRandom().address,
-          ],
-          data: [],
-          plugin: ethers.Wallet.createRandom().address,
-        }
-      );
+      const {
+        initData: initData,
+        preparedSetupData: {helpers, permissions},
+      } = await pluginSetup.callStatic.prepareUpdate(dao.address, 1, {
+        currentHelpers: [
+          ethers.Wallet.createRandom().address,
+          ethers.Wallet.createRandom().address,
+        ],
+        data: [],
+        plugin,
+      });
+
       // Check the return data.
-      expect(prepareUpdateData.initData).to.be.eq('0x');
-      expect(prepareUpdateData.preparedSetupData.permissions).to.be.eql([]);
-      expect(prepareUpdateData.preparedSetupData.helpers).to.be.eql([]);
+      expect(initData).to.be.eq('0x');
+      expect(permissions.length).to.be.eql(1);
+      expect(helpers).to.be.eql([]);
+      // check correct permission is revoked
+      expect(permissions).to.deep.equal([
+        [
+          Operation.Revoke,
+          plugin,
+          dao.address,
+          AddressZero,
+          PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
+        ],
+      ]);
+    });
+
+    it('update from build 2 should return correct permissions', async () => {
+      const {pluginSetup, dao} = await loadFixture(fixture);
+      const plugin = ethers.Wallet.createRandom().address;
+
+      // Make a static call to check that the plugin update data being returned is correct.
+      const {
+        initData: initData,
+        preparedSetupData: {helpers, permissions},
+      } = await pluginSetup.callStatic.prepareUpdate(dao.address, 2, {
+        currentHelpers: [
+          ethers.Wallet.createRandom().address,
+          ethers.Wallet.createRandom().address,
+        ],
+        data: [],
+        plugin,
+      });
+
+      // Check the return data.
+      expect(initData).to.be.eq('0x');
+      expect(permissions.length).to.be.eql(1);
+      expect(helpers).to.be.eql([]);
+      // check correct permission is revoked
+      expect(permissions).to.deep.equal([
+        [
+          Operation.Revoke,
+          plugin,
+          dao.address,
+          AddressZero,
+          PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
+        ],
+      ]);
     });
   });
 
@@ -384,7 +421,7 @@ describe('MultisigSetup', function () {
       );
 
       // Check the return data.
-      expect(permissions.length).to.be.equal(3);
+      expect(permissions.length).to.be.equal(2);
       expect(permissions).to.deep.equal([
         [
           Operation.Revoke,
@@ -392,13 +429,6 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
-        ],
-        [
-          Operation.Revoke,
-          plugin,
-          dao.address,
-          AddressZero,
-          PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
         ],
         [
           Operation.Revoke,
