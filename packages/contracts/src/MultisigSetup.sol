@@ -74,7 +74,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
     /// @dev Revoke the upgrade plugin permission from the DAO for all builds previous to the current one (3).
     function prepareUpdate(
         address _dao,
-        uint16 _currentBuild,
+        uint16 _fromBuild,
         SetupPayload calldata _payload
     )
         external
@@ -85,7 +85,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
         (initData);
 
         // all builds previous current one (3) have this permission granted and need to be revoked
-        if (_currentBuild < 3) {
+        if (_fromBuild < 3) {
             PermissionLib.MultiTargetPermission[]
                 memory permissions = new PermissionLib.MultiTargetPermission[](1);
 
