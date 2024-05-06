@@ -264,7 +264,7 @@ export async function updateFromBuildTest(
     .connect(deployer)
     .grant(dao.address, psp.address, DAO_PERMISSIONS.ROOT_PERMISSION_ID);
 
-  // Install previous plugin build (build previous than the latest one)
+  // Install previous plugin build (build previous to the latest one)
   const pluginSetupRefPreviousBuild = {
     versionTag: {
       release: VERSION.release,
