@@ -1,5 +1,5 @@
 import {createDaoProxy} from '../20_integration-testing/test-helpers';
-import {METADATA, VERSION} from '../../plugin-settings';
+import {METADATA} from '../../plugin-settings';
 import {MultisigSetup, MultisigSetup__factory} from '../../typechain';
 import {
   MULTISIG_INTERFACE,
