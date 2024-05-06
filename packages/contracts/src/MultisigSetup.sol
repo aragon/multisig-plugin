@@ -71,7 +71,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
     }
 
     /// @inheritdoc IPluginSetup
-    /// @dev Revoke the upgrade plugin permission from the DAO for all builds previous to the current one (3).
+    /// @dev Revoke the upgrade plugin permission to the DAO for all builds prior the current one (3).
     function prepareUpdate(
         address _dao,
         uint16 _fromBuild,
@@ -83,8 +83,6 @@ contract MultisigSetup is PluginUpgradeableSetup {
         returns (bytes memory initData, PreparedSetupData memory preparedSetupData)
     {
         (initData);
-
-        // all builds previous current one (3) have this permission granted and need to be revoked
         if (_fromBuild < 3) {
             PermissionLib.MultiTargetPermission[]
                 memory permissions = new PermissionLib.MultiTargetPermission[](1);
