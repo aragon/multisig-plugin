@@ -16,5 +16,5 @@ and this project adheres to the [Aragon OSx Plugin Versioning Convention](https:
 - Bumped OpenZepplin to `4.9.6`.
 - Used `ProxyLib` from `osx-commons-contracts` for the UUPS proxy deployment in `MultisigSetup`.
 - Hard-coded the `bytes32 internal constant EXECUTE_PERMISSION_ID` constant in `MultisigSetup` until it is available in `PermissionLib`.
-- Removed the Upgrade Plugin permission granted to the Dao during the `prepareInstallation` phase.
-- Updated `prepareUpdate` function to revoke the Upgrade Plugin permission on previous plugin builds when it was granted.
+- Adjusted `prepareInstallation` in `MultisigSetup` to stop granting the `UPDATE_MULTISIG_SETTINGS_PERMISSION` to the Dao.
+- Updated `prepareUpdate` function in `MultisigSetup`, to revoke the `UPDATE_MULTISIG_SETTINGS_PERMISSION` from earlier plugin builds when it was granted.
