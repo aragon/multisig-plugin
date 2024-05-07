@@ -333,7 +333,7 @@ describe('MultisigSetup', function () {
   });
 
   describe('prepareUpdate', async () => {
-    it('update from build 1 should return correct permissions', async () => {
+    it('returns the permissions expected for the update from build 1', async () => {
       const {pluginSetup, dao} = await loadFixture(fixture);
       const plugin = ethers.Wallet.createRandom().address;
 
@@ -366,7 +366,7 @@ describe('MultisigSetup', function () {
       ]);
     });
 
-    it('update from build 2 should return correct permissions', async () => {
+    it('returns the permissions expected for the update from build 2', async () => {
       const {pluginSetup, dao} = await loadFixture(fixture);
       const plugin = ethers.Wallet.createRandom().address;
 
