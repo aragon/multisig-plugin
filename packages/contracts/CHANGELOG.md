@@ -17,4 +17,4 @@ and this project adheres to the [Aragon OSx Plugin Versioning Convention](https:
 - Used `ProxyLib` from `osx-commons-contracts` for the UUPS proxy deployment in `MultisigSetup`.
 - Hard-coded the `bytes32 internal constant EXECUTE_PERMISSION_ID` constant in `MultisigSetup` until it is available in `PermissionLib`.
 - Adjusted `prepareInstallation` in `MultisigSetup` to stop granting the `UPGRADE_PLUGIN_PERMISSION_ID` to the Dao.
-- Updated `prepareUpdate` function in `MultisigSetup`, to revoke the `UPGRADE_PLUGIN_PERMISSION_ID` from earlier plugin builds when it was granted.
+- Updated `prepareUpdate` function in `MultisigSetup` to revoke the `UPGRADE_PLUGIN_PERMISSION_ID` from earlier plugin builds when it was granted.
