@@ -264,7 +264,7 @@ export async function updateFromBuildTest(
     .connect(deployer)
     .grant(dao.address, psp.address, DAO_PERMISSIONS.ROOT_PERMISSION_ID);
 
-  // Install previous plugin build (build previous to the latest one)
+  // Install a previous build with build number `build`
   const pluginSetupRefPreviousBuild = {
     versionTag: {
       release: VERSION.release,
@@ -312,7 +312,7 @@ export async function updateFromBuildTest(
       PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID
     );
 
-  // Update current build (a previous one) to the latest build
+  // Update from the previous build to the latest build
   await expect(
     updatePlugin(
       deployer,
