@@ -1,6 +1,6 @@
 {
   "ui": {},
-  "change": "v1.3\n - Removed the unnecessary permission for the Dao to upgrade the plugin. These permissions will be automatically removed during updates from previous versions.\n ",
+  "change": "v1.3\n - Removed the unnecessary permission for the Dao to upgrade the plugin. This permission granted on previous versions, will be automatically removed during update.\n",
   "pluginSetup": {
     "prepareInstallation": {
       "description": "The information required for the installation.",
