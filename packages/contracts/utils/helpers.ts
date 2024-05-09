@@ -163,7 +163,7 @@ export async function impersonatedManagementDaoSigner(
 }
 
 export type EventWithBlockNumber = {
-  event: utils.LogDescription;
+  event: LogDescription;
   blockNumber: number;
 };
 
