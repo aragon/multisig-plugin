@@ -17,6 +17,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
 
+// TODO: pass `initializeFrom` initData on upgrade to test it as well.
 describe('Upgrades', () => {
   it('upgrades to a new implementation', async () => {
     const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
@@ -25,7 +26,12 @@ describe('Upgrades', () => {
     await deployAndUpgradeSelfCheck(
       deployer,
       alice,
-      [dao.address, defaultInitData.members, defaultInitData.settings],
+      [
+        dao.address,
+        defaultInitData.members,
+        defaultInitData.settings,
+        {target: dao.address, operation: 0},
+      ],
       'initialize',
       currentContractFactory,
       PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,

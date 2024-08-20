@@ -9,6 +9,7 @@ import {IMembership} from "@aragon/osx-commons-contracts/src/plugin/extensions/m
 import {Addresslist} from "@aragon/osx-commons-contracts/src/plugin/extensions/governance/Addresslist.sol";
 import {ProposalUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/extensions/proposal/ProposalUpgradeable.sol";
 import {PluginUUPSUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/PluginUUPSUpgradeable.sol";
+import {IProposal} from "@aragon/osx-commons-contracts/src/plugin/extensions/proposal/IProposal.sol";
 import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
 
 import {IMultisig} from "./IMultisig.sol";
@@ -45,6 +46,8 @@ contract Multisig is
         mapping(address => bool) approvers;
         IDAO.Action[] actions;
         uint256 allowFailureMap;
+        address target; // added in v1.4.0
+        Operation operation; // added in v1.4.0
     }
 
     /// @notice A container for the proposal parameters.
@@ -71,12 +74,19 @@ contract Multisig is
     bytes4 internal constant MULTISIG_INTERFACE_ID =
         this.initialize.selector ^
             this.updateMultisigSettings.selector ^
-            this.createProposal.selector ^
+            bytes4(
+                keccak256(
+                    "createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)"
+                )
+            ) ^
             this.getProposal.selector;
 
     /// @notice The ID of the permission required to call the `addAddresses` and `removeAddresses` functions.
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
+
+    /// @notice The ID of the permission required to call the `addAddresses` and `removeAddresses` functions.
+    bytes32 public constant CREATE_PROPOSAL_PERMISSION_ID = keccak256("CREATE_PROPOSAL_PERMISSION");
 
     /// @notice A mapping between proposal IDs and proposal information.
     // solhint-disable-next-line named-parameters-mapping
@@ -117,6 +127,10 @@ contract Multisig is
     /// @param actual The actual value.
     error AddresslistLengthOutOfBounds(uint16 limit, uint256 actual);
 
+    /// @notice Thrown if the proposal with same actions and metadata already exists.
+    /// @param proposalId The id of the proposal.
+    error ProposalAlreadyExists(uint256 proposalId);
+
     /// @notice Thrown if a date is out of bounds.
     /// @param limit The limit value.
     /// @param actual The actual value.
@@ -140,7 +154,8 @@ contract Multisig is
     function initialize(
         IDAO _dao,
         address[] calldata _members,
-        MultisigSettings calldata _multisigSettings
+        MultisigSettings calldata _multisigSettings,
+        TargetConfig calldata _targetConfig
     ) external initializer {
         __PluginUUPSUpgradeable_init(_dao);
 
@@ -152,6 +167,14 @@ contract Multisig is
         emit MembersAdded({members: _members});
 
         _updateMultisigSettings(_multisigSettings);
+
+        _setTargetConfig(_targetConfig);
+    }
+
+    // TODO: Would we need version checking and only calling _setTargetConfig in specific cases ?
+    // TODO: What should the number in reinitializer(x) must be ?
+    function initializeFrom(TargetConfig calldata _targetConfig) external reinitializer(2) {
+        _setTargetConfig(_targetConfig);
     }
 
     /// @notice Checks if this or the parent contract supports an interface by its ID.
@@ -236,11 +259,7 @@ contract Multisig is
         bool _tryExecution,
         uint64 _startDate,
         uint64 _endDate
-    ) external returns (uint256 proposalId) {
-        if (multisigSettings.onlyListed && !isListed(_msgSender())) {
-            revert ProposalCreationForbidden(_msgSender());
-        }
-
+    ) public auth(CREATE_PROPOSAL_PERMISSION_ID) returns (uint256 proposalId) {
         uint64 snapshotBlock;
         unchecked {
             // The snapshot block must be mined already to protect the transaction against backrunning transactions
@@ -264,22 +283,31 @@ contract Multisig is
             revert DateOutOfBounds({limit: _startDate, actual: _endDate});
         }
 
-        proposalId = _createProposal({
-            _creator: _msgSender(),
-            _metadata: _metadata,
-            _startDate: _startDate,
-            _endDate: _endDate,
-            _actions: _actions,
-            _allowFailureMap: _allowFailureMap
-        });
+        proposalId = hashProposal(_actions, _metadata);
 
         // Create the proposal
         Proposal storage proposal_ = proposals[proposalId];
+
+        // Multisig doesn't allow `minApprovals` settings to be less than 0.
+        // If it is, that means proposal hasn't been created yet.
+        if (proposal_.parameters.minApprovals != 0) {
+            revert ProposalAlreadyExists(proposalId);
+        }
 
         proposal_.parameters.snapshotBlock = snapshotBlock;
         proposal_.parameters.startDate = _startDate;
         proposal_.parameters.endDate = _endDate;
         proposal_.parameters.minApprovals = multisigSettings.minApprovals;
+
+        TargetConfig memory currentTarget = getTargetConfig();
+
+        if (currentTarget.target == address(0)) {
+            proposal_.target = address(dao());
+            proposal_.operation = Operation.Call;
+        } else {
+            proposal_.target = currentTarget.target;
+            proposal_.operation = currentTarget.operation;
+        }
 
         // Reduce costs
         if (_allowFailureMap != 0) {
@@ -296,6 +324,26 @@ contract Multisig is
         if (_approveProposal) {
             approve(proposalId, _tryExecution);
         }
+
+        emit ProposalCreated(
+            proposalId,
+            _msgSender(),
+            _startDate,
+            _endDate,
+            _metadata,
+            _actions,
+            _allowFailureMap
+        );
+    }
+
+    function createProposal(
+        bytes calldata _metadata,
+        IDAO.Action[] calldata _actions,
+        uint64 _startDate,
+        uint64 _endDate
+    ) external override returns (uint256 proposalId) {
+        // Calls public function for permission check.
+        proposalId = createProposal(_metadata, _actions, 0, false, false, _startDate, _endDate);
     }
 
     /// @inheritdoc IMultisig
@@ -328,7 +376,9 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
-    function canExecute(uint256 _proposalId) external view returns (bool) {
+    function canExecute(
+        uint256 _proposalId
+    ) external view override(IMultisig, IProposal) returns (bool) {
         return _canExecute(_proposalId);
     }
 
@@ -382,6 +432,13 @@ contract Multisig is
         return isListed(_account);
     }
 
+    function hashProposal(
+        IDAO.Action[] calldata _actions,
+        bytes memory _metadata
+    ) public pure returns (uint256 proposalId) {
+        proposalId = uint256(keccak256(abi.encode(_actions, _metadata)));
+    }
+
     /// @notice Internal function to execute a vote. It assumes the queried proposal exists.
     /// @param _proposalId The ID of the proposal.
     function _execute(uint256 _proposalId) internal {
@@ -389,12 +446,15 @@ contract Multisig is
 
         proposal_.executed = true;
 
-        _executeProposal(
-            dao(),
-            _proposalId,
+        _execute(
+            proposal_.target,
+            bytes32(_proposalId),
             proposals[_proposalId].actions,
-            proposals[_proposalId].allowFailureMap
+            proposals[_proposalId].allowFailureMap,
+            proposal_.operation
         );
+
+        emit ProposalExecuted(_proposalId);
     }
 
     /// @notice Internal function to check if an account can approve. It assumes the queried proposal exists.

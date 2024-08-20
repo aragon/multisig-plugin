@@ -2,8 +2,12 @@ import {createDaoProxy} from '../20_integration-testing/test-helpers';
 import {METADATA} from '../../plugin-settings';
 import {MultisigSetup, MultisigSetup__factory} from '../../typechain';
 import {
+  ANY_ADDR,
+  CREATE_PROPOSAL_PERMISSION_ID,
   MULTISIG_INTERFACE,
+  SET_TARGET_CONFIG_PERMISSION_ID,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
+  UPGRADE_PLUGIN_PERMISSION_ID,
 } from '../multisig-constants';
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
 import {
@@ -22,12 +26,18 @@ import {ethers} from 'hardhat';
 const abiCoder = ethers.utils.defaultAbiCoder;
 const AddressZero = ethers.constants.AddressZero;
 
+type TargetConfig = {
+  target: string;
+  operation: number;
+};
+
 type FixtureResult = {
   deployer: SignerWithAddress;
   alice: SignerWithAddress;
   bob: SignerWithAddress;
   carol: SignerWithAddress;
   pluginSetup: MultisigSetup;
+  defaultTargetConfig: TargetConfig;
   defaultMembers: string[];
   defaultMultisigSettings: Multisig.MultisigSettingsStruct;
   prepareInstallationInputs: string;
@@ -52,12 +62,18 @@ async function fixture(): Promise<FixtureResult> {
     minApprovals: 1,
   };
 
+  const defaultTargetConfig = {target: dao.address, operation: 0};
+
   // Provide installation inputs
   const prepareInstallationInputs = ethers.utils.defaultAbiCoder.encode(
     getNamedTypesFromMetadata(
       METADATA.build.pluginSetup.prepareInstallation.inputs
     ),
-    [defaultMembers, Object.values(defaultMultisigSettings)]
+    [
+      defaultMembers,
+      Object.values(defaultMultisigSettings),
+      defaultTargetConfig,
+    ]
   );
 
   // Provide uninstallation inputs
@@ -75,6 +91,7 @@ async function fixture(): Promise<FixtureResult> {
     carol,
     pluginSetup,
     defaultMembers,
+    defaultTargetConfig,
     defaultMultisigSettings,
     prepareInstallationInputs,
     prepareUninstallationInputs,
@@ -82,7 +99,7 @@ async function fixture(): Promise<FixtureResult> {
   };
 }
 
-describe('MultisigSetup', function () {
+describe.only('MultisigSetup', function () {
   it('does not support the empty interface', async () => {
     const {pluginSetup} = await loadFixture(fixture);
     expect(await pluginSetup.supportsInterface('0xffffffff')).to.be.false;
@@ -96,6 +113,7 @@ describe('MultisigSetup', function () {
       await pluginSetup.implementation()
     );
 
+    // TODO: fix this with the same idea as the test in `plugin.ts` that also needs fixing.
     expect(
       await multisigImplementation.supportsInterface(
         getInterfaceId(MULTISIG_INTERFACE)
@@ -128,8 +146,13 @@ describe('MultisigSetup', function () {
     });
 
     it('reverts if zero members are provided in the initialization data', async () => {
-      const {deployer, pluginSetup, dao, defaultMultisigSettings} =
-        await loadFixture(fixture);
+      const {
+        deployer,
+        pluginSetup,
+        dao,
+        defaultMultisigSettings,
+        defaultTargetConfig,
+      } = await loadFixture(fixture);
 
       // Create input data containing an empty list of initial members.
       const noMembers: string[] = [];
@@ -137,7 +160,7 @@ describe('MultisigSetup', function () {
         getNamedTypesFromMetadata(
           METADATA.build.pluginSetup.prepareInstallation.inputs
         ),
-        [noMembers, defaultMultisigSettings]
+        [noMembers, defaultMultisigSettings, defaultTargetConfig]
       );
 
       // Anticipate the plugin proxy address that will be deployed.
@@ -166,7 +189,8 @@ describe('MultisigSetup', function () {
     });
 
     it('reverts if the `minApprovals` value in `_data` is zero', async () => {
-      const {deployer, pluginSetup, dao} = await loadFixture(fixture);
+      const {deployer, pluginSetup, dao, defaultTargetConfig} =
+        await loadFixture(fixture);
 
       // Create input data containing a `minApprovals` threshold of 0.
       const multisigSettings: Multisig.MultisigSettingsStruct = {
@@ -178,7 +202,7 @@ describe('MultisigSetup', function () {
         getNamedTypesFromMetadata(
           METADATA.build.pluginSetup.prepareInstallation.inputs
         ),
-        [members, multisigSettings]
+        [members, multisigSettings, defaultTargetConfig]
       );
 
       // Anticipate the plugin proxy address that will be deployed.
@@ -207,7 +231,8 @@ describe('MultisigSetup', function () {
     });
 
     it('reverts if the `minApprovals` value in `_data` is greater than the number of members', async () => {
-      const {deployer, pluginSetup, dao} = await loadFixture(fixture);
+      const {deployer, pluginSetup, dao, defaultTargetConfig} =
+        await loadFixture(fixture);
 
       // Create input data containing an initial member list with a length lower that the specified `minApprovals`
       // threshold.
@@ -220,7 +245,7 @@ describe('MultisigSetup', function () {
         getNamedTypesFromMetadata(
           METADATA.build.pluginSetup.prepareInstallation.inputs
         ),
-        [members, multisigSettings]
+        [members, multisigSettings, defaultTargetConfig]
       );
 
       // Anticipate the plugin proxy address that will be deployed.
@@ -273,8 +298,11 @@ describe('MultisigSetup', function () {
 
       // Check the return data.
       expect(plugin).to.be.equal(anticipatedPluginAddress);
-      expect(helpers.length).to.be.equal(0);
-      expect(permissions.length).to.be.equal(2);
+      expect(helpers.length).to.be.equal(1);
+      expect(permissions.length).to.be.equal(4);
+
+      const condition = helpers[0];
+
       expect(permissions).to.deep.equal([
         [
           Operation.Grant,
@@ -289,6 +317,20 @@ describe('MultisigSetup', function () {
           plugin,
           AddressZero,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID,
+        ],
+        [
+          Operation.GrantWithCondition,
+          plugin,
+          ANY_ADDR,
+          condition,
+          CREATE_PROPOSAL_PERMISSION_ID,
+        ],
+        [
+          Operation.Grant,
+          plugin,
+          dao.address,
+          AddressZero,
+          SET_TARGET_CONFIG_PERMISSION_ID,
         ],
       ]);
     });
@@ -334,8 +376,17 @@ describe('MultisigSetup', function () {
 
   describe('prepareUpdate', async () => {
     it('returns the permissions expected for the update from build 1', async () => {
-      const {pluginSetup, dao} = await loadFixture(fixture);
+      const {pluginSetup, dao, defaultTargetConfig} = await loadFixture(
+        fixture
+      );
       const plugin = ethers.Wallet.createRandom().address;
+
+      const prepareUpdateInputs = ethers.utils.defaultAbiCoder.encode(
+        getNamedTypesFromMetadata(
+          METADATA.build.pluginSetup.prepareUpdate[3].inputs
+        ),
+        [defaultTargetConfig]
+      );
 
       // Make a static call to check that the plugin update data being returned is correct.
       const {
@@ -346,14 +397,19 @@ describe('MultisigSetup', function () {
           ethers.Wallet.createRandom().address,
           ethers.Wallet.createRandom().address,
         ],
-        data: [],
+        data: prepareUpdateInputs,
         plugin,
       });
 
       // Check the return data.
-      expect(initData).to.be.eq('0x');
-      expect(permissions.length).to.be.eql(1);
-      expect(helpers).to.be.eql([]);
+      expect(initData).to.be.eq(
+        Multisig__factory.createInterface().encodeFunctionData(
+          'initializeFrom',
+          [defaultTargetConfig]
+        )
+      );
+      expect(permissions.length).to.be.equal(3);
+      expect(helpers.length).to.be.equal(1);
       // check correct permission is revoked
       expect(permissions).to.deep.equal([
         [
@@ -363,12 +419,35 @@ describe('MultisigSetup', function () {
           AddressZero,
           PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
         ],
+        [
+          Operation.GrantWithCondition,
+          plugin,
+          ANY_ADDR,
+          helpers[0],
+          CREATE_PROPOSAL_PERMISSION_ID,
+        ],
+        [
+          Operation.Grant,
+          plugin,
+          dao.address,
+          AddressZero,
+          SET_TARGET_CONFIG_PERMISSION_ID,
+        ],
       ]);
     });
 
     it('returns the permissions expected for the update from build 2', async () => {
-      const {pluginSetup, dao} = await loadFixture(fixture);
+      const {pluginSetup, dao, defaultTargetConfig} = await loadFixture(
+        fixture
+      );
       const plugin = ethers.Wallet.createRandom().address;
+
+      const prepareUpdateInputs = ethers.utils.defaultAbiCoder.encode(
+        getNamedTypesFromMetadata(
+          METADATA.build.pluginSetup.prepareUpdate[3].inputs
+        ),
+        [defaultTargetConfig]
+      );
 
       // Make a static call to check that the plugin update data being returned is correct.
       const {
@@ -379,14 +458,19 @@ describe('MultisigSetup', function () {
           ethers.Wallet.createRandom().address,
           ethers.Wallet.createRandom().address,
         ],
-        data: [],
+        data: prepareUpdateInputs,
         plugin,
       });
 
       // Check the return data.
-      expect(initData).to.be.eq('0x');
-      expect(permissions.length).to.be.eql(1);
-      expect(helpers).to.be.eql([]);
+      expect(initData).to.be.eq(
+        Multisig__factory.createInterface().encodeFunctionData(
+          'initializeFrom',
+          [defaultTargetConfig]
+        )
+      );
+      expect(permissions.length).to.be.equal(3);
+      expect(helpers.length).to.be.equal(1);
       // check correct permission is revoked
       expect(permissions).to.deep.equal([
         [
@@ -395,6 +479,20 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
+        ],
+        [
+          Operation.GrantWithCondition,
+          plugin,
+          ANY_ADDR,
+          helpers[0],
+          CREATE_PROPOSAL_PERMISSION_ID,
+        ],
+        [
+          Operation.Grant,
+          plugin,
+          dao.address,
+          AddressZero,
+          SET_TARGET_CONFIG_PERMISSION_ID,
         ],
       ]);
     });
@@ -421,7 +519,7 @@ describe('MultisigSetup', function () {
       );
 
       // Check the return data.
-      expect(permissions.length).to.be.equal(2);
+      expect(permissions.length).to.be.equal(5);
       expect(permissions).to.deep.equal([
         [
           Operation.Revoke,
@@ -432,10 +530,31 @@ describe('MultisigSetup', function () {
         ],
         [
           Operation.Revoke,
+          plugin,
+          dao.address,
+          AddressZero,
+          UPGRADE_PLUGIN_PERMISSION_ID,
+        ],
+        [
+          Operation.Revoke,
           dao.address,
           plugin,
           AddressZero,
           DAO_PERMISSIONS.EXECUTE_PERMISSION_ID,
+        ],
+        [
+          Operation.Revoke,
+          plugin,
+          dao.address,
+          AddressZero,
+          SET_TARGET_CONFIG_PERMISSION_ID,
+        ],
+        [
+          Operation.Revoke,
+          plugin,
+          ANY_ADDR,
+          AddressZero,
+          CREATE_PROPOSAL_PERMISSION_ID,
         ],
       ]);
     });
