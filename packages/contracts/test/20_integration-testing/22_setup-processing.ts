@@ -214,7 +214,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       1,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
       [defaultInitData.targetConfig],
-      2
+      2 // current reinitializer version
     );
   });
 
@@ -237,7 +237,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       2,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
       [defaultInitData.targetConfig],
-      2
+      2 // current reinitializer version
     );
   });
 });
