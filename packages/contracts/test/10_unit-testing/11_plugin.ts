@@ -278,6 +278,59 @@ describe('Multisig', function () {
     });
   });
 
+  describe('reinitialize', async () => {
+    it('reverts if trying to re-reinitialize', async () => {
+      const {uninitializedPlugin, deployer} = await loadFixture(fixture);
+
+      const dummyTarget = {
+        target: deployer.address,
+        operation: Operation.delegatecall,
+      };
+
+      // reinitialize the plugin.
+      uninitializedPlugin.initializeFrom(dummyTarget);
+
+      // Try to reinitialize the  plugin.
+      await expect(
+        uninitializedPlugin.initializeFrom(dummyTarget)
+      ).to.be.revertedWith('Initializable: contract is already initialized');
+    });
+
+    it('sets the `_targetConfig`', async () => {
+      const {uninitializedPlugin, deployer} = await loadFixture(fixture);
+
+      // reinitialize the plugin.
+      await uninitializedPlugin.initializeFrom({
+        target: deployer.address,
+        operation: Operation.delegatecall,
+      });
+
+      expect((await uninitializedPlugin.getTargetConfig()).target).to.be.eq(
+        deployer.address
+      );
+      expect((await uninitializedPlugin.getTargetConfig()).operation).to.be.eq(
+        Operation.delegatecall
+      );
+    });
+
+    it('sets the `_targetConfig` when reinitializing an initialized plugin', async () => {
+      const {initializedPlugin, deployer} = await loadFixture(fixture);
+
+      // reinitialize the plugin.
+      await initializedPlugin.initializeFrom({
+        target: deployer.address,
+        operation: Operation.delegatecall,
+      });
+
+      expect((await initializedPlugin.getTargetConfig()).target).to.be.eq(
+        deployer.address
+      );
+      expect((await initializedPlugin.getTargetConfig()).operation).to.be.eq(
+        Operation.delegatecall
+      );
+    });
+  });
+
   describe('ERC-165', async () => {
     it('does not support the empty interface', async () => {
       const {initializedPlugin: plugin} = await loadFixture(fixture);
