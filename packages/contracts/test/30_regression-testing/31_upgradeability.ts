@@ -1,4 +1,5 @@
 import {createDaoProxy} from '../20_integration-testing/test-helpers';
+import {Operation, TargetConfig} from '../multisig-constants';
 import {
   Multisig_V1_1__factory,
   Multisig_V1_2__factory,
@@ -30,7 +31,7 @@ describe('Upgrades', () => {
         dao.address,
         defaultInitData.members,
         defaultInitData.settings,
-        {target: dao.address, operation: 0},
+        defaultInitData.targetConfig,
       ],
       'initialize',
       currentContractFactory,
@@ -108,6 +109,7 @@ type FixtureResult = {
   defaultInitData: {
     members: string[];
     settings: Multisig.MultisigSettingsStruct;
+    targetConfig: TargetConfig;
   };
   dao: DAO;
 };
@@ -125,6 +127,10 @@ async function fixture(): Promise<FixtureResult> {
     settings: {
       onlyListed: true,
       minApprovals: 2,
+    },
+    targetConfig: {
+      target: dao.address,
+      operation: Operation.call,
     },
   };
 

@@ -6,7 +6,7 @@ export const MULTISIG_EVENTS = {
 };
 
 export const MULTISIG_INTERFACE = new ethers.utils.Interface([
-  'function initialize(address,address[],tuple(bool,uint16))',
+  'function initialize(address,address[],tuple(bool,uint16),tuple(address,uint8))',
   'function updateMultisigSettings(tuple(bool,uint16))',
   'function createProposal(bytes,tuple(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)',
   'function getProposal(uint256)',
@@ -29,3 +29,13 @@ export const SET_TARGET_CONFIG_PERMISSION_ID = ethers.utils.id(
 );
 
 export const ANY_ADDR = '0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF';
+
+export enum Operation {
+  call,
+  delegatecall,
+}
+
+export type TargetConfig = {
+  target: string;
+  operation: number;
+};

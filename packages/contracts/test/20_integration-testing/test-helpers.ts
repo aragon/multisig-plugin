@@ -26,6 +26,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {ContractTransaction} from 'ethers';
 import {ethers} from 'hardhat';
+import {create} from 'ipfs-http-client';
 
 export async function installPLugin(
   signer: SignerWithAddress,
@@ -272,6 +273,7 @@ export async function updateFromBuildTest(
     },
     pluginSetupRepo: pluginRepo.address,
   };
+
   const installationResults = await installPLugin(
     deployer,
     psp,
@@ -279,7 +281,12 @@ export async function updateFromBuildTest(
     pluginSetupRefPreviousBuild,
     ethers.utils.defaultAbiCoder.encode(
       getNamedTypesFromMetadata(
-        METADATA.build.pluginSetup.prepareInstallation.inputs
+        // NOTE that this approach is not efficient and in reality, we should be
+        // fetching `build`'s ipfs cid from pluginRepo and getting the abi from there.
+        [
+          METADATA.build.pluginSetup.prepareInstallation.inputs[0],
+          METADATA.build.pluginSetup.prepareInstallation.inputs[1],
+        ]
       ),
       installationInputs
     )
@@ -324,7 +331,7 @@ export async function updateFromBuildTest(
       pluginSetupRefLatestBuild,
       ethers.utils.defaultAbiCoder.encode(
         getNamedTypesFromMetadata(
-          METADATA.build.pluginSetup.prepareUpdate[1].inputs
+          METADATA.build.pluginSetup.prepareUpdate[3].inputs
         ),
         updateInputs
       )
@@ -344,7 +351,6 @@ export async function updateFromBuildTest(
   expect(await plugin.implementation()).to.equal(implementationLatestBuild);
 }
 
-// TODO Move into OSX commons as part of Task OS-928.
 export async function createDaoProxy(
   deployer: SignerWithAddress,
   dummyMetadata: string

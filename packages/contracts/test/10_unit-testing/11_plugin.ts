@@ -23,6 +23,8 @@ import {
   CREATE_PROPOSAL_PERMISSION_ID,
   MULTISIG_EVENTS,
   MULTISIG_INTERFACE,
+  Operation,
+  TargetConfig,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
 } from '../multisig-constants';
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
@@ -40,11 +42,6 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {BigNumber} from 'ethers';
 import {ethers} from 'hardhat';
-
-type TargetConfig = {
-  target: string;
-  operation: number;
-};
 
 type FixtureResult = {
   deployer: SignerWithAddress;
@@ -87,7 +84,7 @@ async function fixture(): Promise<FixtureResult> {
     },
     targetConfig: {
       target: dao.address,
-      operation: 0,
+      operation: Operation.call,
     },
   };
   const pluginInitdata = pluginImplementation.interface.encodeFunctionData(
@@ -331,13 +328,6 @@ describe('Multisig', function () {
 
     it('supports the `Multisig` interface', async () => {
       const {initializedPlugin: plugin} = await loadFixture(fixture);
-      // TODO: Figure out if in multisig contract, whether the below is correct and if so,
-      // fix this test, if not first fix multisig.
-      //   bytes4(
-      //     keccak256(
-      //         "createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)"
-      //     )
-      // )
       const interfaceId = getInterfaceId(MULTISIG_INTERFACE);
       expect(await plugin.supportsInterface(interfaceId)).to.be.true;
     });

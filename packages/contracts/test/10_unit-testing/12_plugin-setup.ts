@@ -6,9 +6,11 @@ import {
   CREATE_PROPOSAL_PERMISSION_ID,
   MULTISIG_INTERFACE,
   SET_TARGET_CONFIG_PERMISSION_ID,
+  TargetConfig,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
   UPGRADE_PLUGIN_PERMISSION_ID,
 } from '../multisig-constants';
+import {Operation as op} from '../multisig-constants';
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
 import {
   getInterfaceId,
@@ -25,11 +27,6 @@ import {ethers} from 'hardhat';
 
 const abiCoder = ethers.utils.defaultAbiCoder;
 const AddressZero = ethers.constants.AddressZero;
-
-type TargetConfig = {
-  target: string;
-  operation: number;
-};
 
 type FixtureResult = {
   deployer: SignerWithAddress;
@@ -62,7 +59,7 @@ async function fixture(): Promise<FixtureResult> {
     minApprovals: 1,
   };
 
-  const defaultTargetConfig = {target: dao.address, operation: 0};
+  const defaultTargetConfig = {target: dao.address, operation: op.call};
 
   // Provide installation inputs
   const prepareInstallationInputs = ethers.utils.defaultAbiCoder.encode(
@@ -99,7 +96,7 @@ async function fixture(): Promise<FixtureResult> {
   };
 }
 
-describe.only('MultisigSetup', function () {
+describe('MultisigSetup', function () {
   it('does not support the empty interface', async () => {
     const {pluginSetup} = await loadFixture(fixture);
     expect(await pluginSetup.supportsInterface('0xffffffff')).to.be.false;
@@ -113,7 +110,6 @@ describe.only('MultisigSetup', function () {
       await pluginSetup.implementation()
     );
 
-    // TODO: fix this with the same idea as the test in `plugin.ts` that also needs fixing.
     expect(
       await multisigImplementation.supportsInterface(
         getInterfaceId(MULTISIG_INTERFACE)

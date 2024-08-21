@@ -46,8 +46,8 @@ contract Multisig is
         mapping(address => bool) approvers;
         IDAO.Action[] actions;
         uint256 allowFailureMap;
-        address target; // added in v1.4.0
-        Operation operation; // added in v1.4.0
+        address target; // added in v1.3.0
+        Operation operation; // added in v1.3.0
     }
 
     /// @notice A container for the proposal parameters.
@@ -70,6 +70,8 @@ contract Multisig is
         uint16 minApprovals;
     }
 
+    // todo: since `initialize` was changed, this means it no longer supports the old interfaceId. this could be a breaking change.
+    // maybe UI was already using `supportsinterface`.
     /// @notice The [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID of the contract.
     bytes4 internal constant MULTISIG_INTERFACE_ID =
         this.initialize.selector ^
@@ -171,7 +173,6 @@ contract Multisig is
         _setTargetConfig(_targetConfig);
     }
 
-    // TODO: Would we need version checking and only calling _setTargetConfig in specific cases ?
     // TODO: What should the number in reinitializer(x) must be ?
     function initializeFrom(TargetConfig calldata _targetConfig) external reinitializer(2) {
         _setTargetConfig(_targetConfig);
