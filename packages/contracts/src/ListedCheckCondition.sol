@@ -7,10 +7,10 @@ import {Multisig} from "./Multisig.sol";
 import {PermissionCondition} from "@aragon/osx-commons-contracts/src/permission/condition/PermissionCondition.sol";
 
 contract ListedCheckCondition is PermissionCondition {
-    Multisig private immutable multisig;
+    Multisig private immutable MULTISIG;
 
     constructor(address _multisig) {
-        multisig = Multisig(_multisig);
+        MULTISIG = Multisig(_multisig);
     }
 
     function isGranted(
@@ -21,9 +21,9 @@ contract ListedCheckCondition is PermissionCondition {
     ) public view override returns (bool) {
         (_where, _data, _permissionId);
 
-        (bool onlyListed, ) = multisig.multisigSettings();
+        (bool onlyListed, ) = MULTISIG.multisigSettings();
 
-        if (onlyListed && !multisig.isListed(_who)) {
+        if (onlyListed && !MULTISIG.isListed(_who)) {
             return false;
         }
 

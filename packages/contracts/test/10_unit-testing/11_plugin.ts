@@ -12,7 +12,6 @@ import {
 } from '../../typechain';
 import {ExecutedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/dao/IDAO';
 import {ProxyCreatedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/utils/deployment/ProxyFactory';
-import {PluginUUPSUpgradeable} from '../../typechain/@aragon/osx-v1.0.0/core/plugin';
 import {
   ApprovedEvent,
   ProposalCreatedEvent,
@@ -30,7 +29,6 @@ import {
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
 import {
   getInterfaceId,
-  proposalIdToBytes32,
   findEvent,
   findEventTopicLog,
   TIME,
@@ -143,7 +141,7 @@ async function fixture(): Promise<FixtureResult> {
 }
 
 async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
-  let data = await loadFixture(fixture);
+  const data = await loadFixture(fixture);
   const {deployer, dao, initializedPlugin, uninitializedPlugin} = data;
 
   const condition = await new ListedCheckCondition__factory(deployer).deploy(
@@ -745,7 +743,7 @@ describe('Multisig', function () {
       data = await loadFixtureAndGrantCreatePermission();
     });
     it('reverts if permission is not given', async () => {
-      const {deployer, dao, dummyMetadata, initializedPlugin: plugin} = data;
+      const {deployer, dao, initializedPlugin: plugin} = data;
       await dao.revoke(plugin.address, ANY_ADDR, CREATE_PROPOSAL_PERMISSION_ID);
 
       await expect(
@@ -768,7 +766,6 @@ describe('Multisig', function () {
         initializedPlugin: plugin,
         dummyMetadata,
         dummyActions,
-        dao,
         defaultInitData,
       } = data;
 
