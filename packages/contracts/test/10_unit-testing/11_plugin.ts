@@ -287,7 +287,7 @@ describe('Multisig', function () {
       };
 
       // reinitialize the plugin.
-      uninitializedPlugin.initializeFrom(dummyTarget);
+      await uninitializedPlugin.initializeFrom(dummyTarget);
 
       // Try to reinitialize the  plugin.
       await expect(
