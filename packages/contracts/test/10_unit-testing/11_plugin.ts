@@ -166,7 +166,6 @@ async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
   return data;
 }
 
-// TODO: maybe add test for `initializeFrom` and whether it successfuly works - i.e whether reinitializer(x) is correct and so on.
 describe('Multisig', function () {
   describe('initialize', async () => {
     it('reverts if trying to re-initialize', async () => {
