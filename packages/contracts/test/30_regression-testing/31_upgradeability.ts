@@ -18,7 +18,6 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
 
-// TODO: pass `initializeFrom` initData on upgrade to test it as well.
 describe('Upgrades', () => {
   it('upgrades to a new implementation', async () => {
     const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
