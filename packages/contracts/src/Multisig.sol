@@ -70,8 +70,9 @@ contract Multisig is
         uint16 minApprovals;
     }
 
-    // todo: since `initialize` was changed, this means it no longer supports the old interfaceId. this could be a breaking change.
-    // maybe UI was already using `supportsinterface`.
+    // todo: since `initialize` was changed, this means it no longer supports the old interfaceId.
+    // todo this could be a breaking change.
+    // todo maybe UI was already using `supportsinterface`.
     /// @notice The [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID of the contract.
     bytes4 internal constant MULTISIG_INTERFACE_ID =
         this.initialize.selector ^
