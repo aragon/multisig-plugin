@@ -119,7 +119,6 @@ async function fixture(): Promise<FixtureResult> {
   };
 }
 
-// TODO: when upgrade happens, test that `initializeFrom` was called successfully.
 describe(`PluginSetup processing on network '${productionNetworkName}'`, function () {
   it('installs & uninstalls the current build', async () => {
     const {
