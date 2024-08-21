@@ -214,7 +214,8 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       pluginSetupRefLatestBuild,
       1,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
-      [defaultInitData.targetConfig]
+      [defaultInitData.targetConfig],
+      2
     );
   });
 
@@ -236,7 +237,8 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       pluginSetupRefLatestBuild,
       2,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
-      [defaultInitData.targetConfig]
+      [defaultInitData.targetConfig],
+      2
     );
   });
 });
