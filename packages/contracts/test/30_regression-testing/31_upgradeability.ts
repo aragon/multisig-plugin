@@ -99,6 +99,90 @@ describe('Upgrades', () => {
     expect(fromProtocolVersion).to.deep.equal([1, 0, 0]);
     expect(toProtocolVersion).to.deep.equal([1, 4, 0]);
   });
+
+  it('upgrades from v1.1 with initializeFrom', async () => {
+    const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
+    const currentContractFactory = new Multisig__factory(deployer);
+    const legacyContractFactory = new Multisig_V1_1__factory(deployer);
+
+    const {proxy, fromImplementation, toImplementation} =
+      await deployAndUpgradeFromToCheck(
+        deployer,
+        alice,
+        [dao.address, defaultInitData.members, defaultInitData.settings],
+        'initialize',
+        legacyContractFactory,
+        currentContractFactory,
+        PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
+        dao,
+        'initializeFrom',
+        [{target: deployer.address, operation: Operation.delegatecall}]
+      );
+    expect(toImplementation).to.not.equal(fromImplementation); // The build did change
+
+    const fromProtocolVersion = await getProtocolVersion(
+      legacyContractFactory.attach(fromImplementation)
+    );
+    const toProtocolVersion = await getProtocolVersion(
+      currentContractFactory.attach(toImplementation)
+    );
+
+    expect(fromProtocolVersion).to.not.deep.equal(toProtocolVersion);
+    expect(fromProtocolVersion).to.deep.equal([1, 0, 0]);
+    expect(toProtocolVersion).to.deep.equal([1, 4, 0]);
+
+    // expects the plugin was reinitialized
+    const newMultisig = Multisig__factory.connect(proxy.address, deployer);
+
+    expect((await newMultisig.getTargetConfig()).target).to.deep.equal(
+      deployer.address
+    );
+    expect((await newMultisig.getTargetConfig()).operation).to.deep.equal(
+      Operation.delegatecall
+    );
+  });
+
+  it('from v1.2 with initializeFrom', async () => {
+    const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
+    const currentContractFactory = new Multisig__factory(deployer);
+    const legacyContractFactory = new Multisig_V1_2__factory(deployer);
+
+    const {proxy, fromImplementation, toImplementation} =
+      await deployAndUpgradeFromToCheck(
+        deployer,
+        alice,
+        [dao.address, defaultInitData.members, defaultInitData.settings],
+        'initialize',
+        legacyContractFactory,
+        currentContractFactory,
+        PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
+        dao,
+        'initializeFrom',
+        [{target: deployer.address, operation: Operation.delegatecall}]
+      );
+    expect(toImplementation).to.not.equal(fromImplementation);
+
+    const fromProtocolVersion = await getProtocolVersion(
+      legacyContractFactory.attach(fromImplementation)
+    );
+    const toProtocolVersion = await getProtocolVersion(
+      currentContractFactory.attach(toImplementation)
+    );
+
+    expect(fromProtocolVersion).to.not.deep.equal(toProtocolVersion);
+    expect(fromProtocolVersion).to.deep.equal([1, 0, 0]);
+    expect(toProtocolVersion).to.deep.equal([1, 4, 0]);
+
+    // expects the plugin was reinitialized
+    const newMultisig = Multisig__factory.connect(proxy.address, deployer);
+
+    expect((await newMultisig.getTargetConfig()).target).to.deep.equal(
+      deployer.address
+    );
+    expect((await newMultisig.getTargetConfig()).operation).to.deep.equal(
+      Operation.delegatecall
+    );
+  });
 });
 
 type FixtureResult = {
