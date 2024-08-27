@@ -167,7 +167,7 @@ async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
 }
 
 // TODO: maybe add test for `initializeFrom` and whether it successfuly works - i.e whether reinitializer(x) is correct and so on.
-describe.only('Multisig', function () {
+describe('Multisig', function () {
   describe('initialize', async () => {
     it('reverts if trying to re-initialize', async () => {
       const {dao, initializedPlugin, defaultInitData} = await loadFixture(
