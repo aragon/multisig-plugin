@@ -284,7 +284,7 @@ contract Multisig is
             revert DateOutOfBounds({limit: _startDate, actual: _endDate});
         }
 
-        proposalId = hashProposal(_actions, _metadata);
+        proposalId = getProposalHash(_actions, _metadata);
 
         // Create the proposal
         Proposal storage proposal_ = proposals[proposalId];
@@ -433,11 +433,11 @@ contract Multisig is
         return isListed(_account);
     }
 
-    function hashProposal(
+    function getProposalHash(
         IDAO.Action[] calldata _actions,
         bytes memory _metadata
-    ) public pure returns (uint256 proposalId) {
-        proposalId = uint256(keccak256(abi.encode(_actions, _metadata)));
+    ) public pure returns (uint256) {
+        return uint256(keccak256(abi.encode(_actions, _metadata)));
     }
 
     /// @notice Internal function to execute a vote. It assumes the queried proposal exists.
