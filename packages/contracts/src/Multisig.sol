@@ -70,13 +70,9 @@ contract Multisig is
         uint16 minApprovals;
     }
 
-    // todo: since `initialize` was changed, this means it no longer supports the old interfaceId.
-    // todo this could be a breaking change.
-    // todo maybe UI was already using `supportsinterface`.
     /// @notice The [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID of the contract.
     bytes4 internal constant MULTISIG_INTERFACE_ID =
-        this.initialize.selector ^
-            this.updateMultisigSettings.selector ^
+        this.updateMultisigSettings.selector ^
             bytes4(
                 keccak256(
                     "createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)"
@@ -159,7 +155,7 @@ contract Multisig is
         address[] calldata _members,
         MultisigSettings calldata _multisigSettings,
         TargetConfig calldata _targetConfig
-    ) external initializer {
+    ) external reinitializer(2) {
         __PluginUUPSUpgradeable_init(_dao);
 
         if (_members.length > type(uint16).max) {
@@ -174,9 +170,14 @@ contract Multisig is
         _setTargetConfig(_targetConfig);
     }
 
-    // TODO: What should the number in reinitializer(x) must be ?
-    function initializeFrom(TargetConfig calldata _targetConfig) external reinitializer(2) {
-        _setTargetConfig(_targetConfig);
+    /// @notice Reinitializes the TokenVoting after an upgrade from a previous protocol version.
+    /// @param _fromBuild The build version number of the previous implementation contract this upgrade is transitioning from.
+    /// @param _initData The initialization data to be passed to via `upgradeToAndCall` (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
+    function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {
+        if (_fromBuild < 3) {
+            TargetConfig memory targetConfig = abi.decode(_initData, (TargetConfig));
+            _setTargetConfig(targetConfig);
+        }
     }
 
     /// @notice Checks if this or the parent contract supports an interface by its ID.

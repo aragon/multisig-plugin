@@ -35,9 +35,11 @@ type FixtureResult = {
   carol: SignerWithAddress;
   pluginSetup: MultisigSetup;
   defaultTargetConfig: TargetConfig;
+  updateTargetConfig: TargetConfig;
   defaultMembers: string[];
   defaultMultisigSettings: Multisig.MultisigSettingsStruct;
   prepareInstallationInputs: string;
+  prepareUpdateBuild3Inputs: string;
   prepareUninstallationInputs: string;
   dao: DAO;
 };
@@ -81,6 +83,19 @@ async function fixture(): Promise<FixtureResult> {
     []
   );
 
+  const updateTargetConfig = {
+    target: pluginSetup.address,
+    operation: op.delegatecall,
+  };
+
+  // Provide update inputs
+  const prepareUpdateBuild3Inputs = ethers.utils.defaultAbiCoder.encode(
+    getNamedTypesFromMetadata(
+      METADATA.build.pluginSetup.prepareUpdate[3].inputs
+    ),
+    [updateTargetConfig]
+  );
+
   return {
     deployer,
     alice,
@@ -89,8 +104,10 @@ async function fixture(): Promise<FixtureResult> {
     pluginSetup,
     defaultMembers,
     defaultTargetConfig,
+    updateTargetConfig,
     defaultMultisigSettings,
     prepareInstallationInputs,
+    prepareUpdateBuild3Inputs,
     prepareUninstallationInputs,
     dao,
   };
@@ -372,17 +389,10 @@ describe('MultisigSetup', function () {
 
   describe('prepareUpdate', async () => {
     it('returns the permissions expected for the update from build 1', async () => {
-      const {pluginSetup, dao, defaultTargetConfig} = await loadFixture(
+      const {pluginSetup, dao, prepareUpdateBuild3Inputs} = await loadFixture(
         fixture
       );
       const plugin = ethers.Wallet.createRandom().address;
-
-      const prepareUpdateInputs = ethers.utils.defaultAbiCoder.encode(
-        getNamedTypesFromMetadata(
-          METADATA.build.pluginSetup.prepareUpdate[3].inputs
-        ),
-        [defaultTargetConfig]
-      );
 
       // Make a static call to check that the plugin update data being returned is correct.
       const {
@@ -393,7 +403,7 @@ describe('MultisigSetup', function () {
           ethers.Wallet.createRandom().address,
           ethers.Wallet.createRandom().address,
         ],
-        data: prepareUpdateInputs,
+        data: prepareUpdateBuild3Inputs,
         plugin,
       });
 
@@ -401,7 +411,7 @@ describe('MultisigSetup', function () {
       expect(initData).to.be.eq(
         Multisig__factory.createInterface().encodeFunctionData(
           'initializeFrom',
-          [defaultTargetConfig]
+          [1, prepareUpdateBuild3Inputs]
         )
       );
       expect(permissions.length).to.be.equal(3);
@@ -433,17 +443,10 @@ describe('MultisigSetup', function () {
     });
 
     it('returns the permissions expected for the update from build 2', async () => {
-      const {pluginSetup, dao, defaultTargetConfig} = await loadFixture(
+      const {pluginSetup, dao, prepareUpdateBuild3Inputs} = await loadFixture(
         fixture
       );
       const plugin = ethers.Wallet.createRandom().address;
-
-      const prepareUpdateInputs = ethers.utils.defaultAbiCoder.encode(
-        getNamedTypesFromMetadata(
-          METADATA.build.pluginSetup.prepareUpdate[3].inputs
-        ),
-        [defaultTargetConfig]
-      );
 
       // Make a static call to check that the plugin update data being returned is correct.
       const {
@@ -454,7 +457,7 @@ describe('MultisigSetup', function () {
           ethers.Wallet.createRandom().address,
           ethers.Wallet.createRandom().address,
         ],
-        data: prepareUpdateInputs,
+        data: prepareUpdateBuild3Inputs,
         plugin,
       });
 
@@ -462,7 +465,7 @@ describe('MultisigSetup', function () {
       expect(initData).to.be.eq(
         Multisig__factory.createInterface().encodeFunctionData(
           'initializeFrom',
-          [defaultTargetConfig]
+          [2, prepareUpdateBuild3Inputs]
         )
       );
       expect(permissions.length).to.be.equal(3);

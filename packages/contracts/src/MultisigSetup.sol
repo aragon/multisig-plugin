@@ -160,10 +160,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             preparedSetupData.helpers = new address[](1);
             preparedSetupData.helpers[0] = listedCheckCondition;
 
-            initData = abi.encodeCall(
-                Multisig.initializeFrom,
-                (abi.decode(_payload.data, (PluginUUPSUpgradeable.TargetConfig)))
-            );
+            initData = abi.encodeCall(Multisig.initializeFrom, (_fromBuild, _payload.data));
         }
     }
 
