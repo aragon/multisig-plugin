@@ -1,7 +1,11 @@
 import {METADATA, VERSION} from '../../plugin-settings';
 import {MultisigSetup, Multisig__factory} from '../../typechain';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
-import {Operation, TargetConfig} from '../multisig-constants';
+import {
+  Operation,
+  TargetConfig,
+  latestInitializerVersion,
+} from '../multisig-constants';
 import {Multisig} from '../test-utils/typechain-versions';
 import {
   createDaoProxy,
@@ -214,7 +218,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       1,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
       [defaultInitData.targetConfig],
-      2 // current reinitializer version
+      latestInitializerVersion
     );
   });
 
@@ -237,7 +241,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       2,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
       [defaultInitData.targetConfig],
-      2 // current reinitializer version
+      latestInitializerVersion
     );
   });
 });
