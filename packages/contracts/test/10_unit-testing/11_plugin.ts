@@ -25,6 +25,7 @@ import {
   Operation,
   TargetConfig,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
+  latestInitializerVersion,
 } from '../multisig-constants';
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
 import {
@@ -276,53 +277,67 @@ describe('Multisig', function () {
   });
 
   describe('reinitialize', async () => {
-    it('reverts if trying to re-reinitialize', async () => {
+    it('reverts if trying to re-reinitializeFrom', async () => {
       const {uninitializedPlugin, deployer} = await loadFixture(fixture);
 
-      const dummyTarget = {
-        target: deployer.address,
-        operation: Operation.delegatecall,
-      };
+      const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'uint8'],
+        [deployer.address, Operation.delegatecall]
+      );
 
       // reinitialize the plugin.
-      await uninitializedPlugin.initializeFrom(dummyTarget);
+      await uninitializedPlugin.initializeFrom(
+        latestInitializerVersion,
+        encodedDummyTarget
+      );
 
       // Try to reinitialize the  plugin.
       await expect(
-        uninitializedPlugin.initializeFrom(dummyTarget)
+        uninitializedPlugin.initializeFrom(
+          latestInitializerVersion,
+          encodedDummyTarget
+        )
       ).to.be.revertedWith('Initializable: contract is already initialized');
     });
 
-    it('sets the `_targetConfig`', async () => {
+    it('reverts if trying to initializeFrom an initialized plugin', async () => {
+      const {initializedPlugin, deployer} = await loadFixture(fixture);
+
+      const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'uint8'],
+        [deployer.address, Operation.delegatecall]
+      );
+
+      // Try to reinitialize the  plugin.
+      await expect(
+        initializedPlugin.initializeFrom(
+          latestInitializerVersion,
+          encodedDummyTarget
+        )
+      ).to.be.revertedWith('Initializable: contract is already initialized');
+    });
+
+    // todo add test for checking that plugins already initialized on a previous version can not be initialized again
+    it('reverts if trying to initialize lower version plugin');
+
+    it('sets the `_targetConfig` when initializing an uninitialized plugin', async () => {
       const {uninitializedPlugin, deployer} = await loadFixture(fixture);
 
+      const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'uint8'],
+        [deployer.address, Operation.delegatecall]
+      );
+
       // reinitialize the plugin.
-      await uninitializedPlugin.initializeFrom({
-        target: deployer.address,
-        operation: Operation.delegatecall,
-      });
+      await uninitializedPlugin.initializeFrom(
+        latestInitializerVersion,
+        encodedDummyTarget
+      );
 
       expect((await uninitializedPlugin.getTargetConfig()).target).to.be.eq(
         deployer.address
       );
       expect((await uninitializedPlugin.getTargetConfig()).operation).to.be.eq(
-        Operation.delegatecall
-      );
-    });
-
-    it('sets the `_targetConfig` when reinitializing an initialized plugin', async () => {
-      const {initializedPlugin, deployer} = await loadFixture(fixture);
-
-      // reinitialize the plugin.
-      await initializedPlugin.initializeFrom({
-        target: deployer.address,
-        operation: Operation.delegatecall,
-      });
-
-      expect((await initializedPlugin.getTargetConfig()).target).to.be.eq(
-        deployer.address
-      );
-      expect((await initializedPlugin.getTargetConfig()).operation).to.be.eq(
         Operation.delegatecall
       );
     });
