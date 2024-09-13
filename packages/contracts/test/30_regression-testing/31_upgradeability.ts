@@ -11,6 +11,7 @@ import {
   deployAndUpgradeSelfCheck,
   getProtocolVersion,
 } from '../test-utils/uups-upgradeable';
+import {latestInitializerVersion} from './../multisig-constants';
 import {PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS} from '@aragon/osx-commons-sdk';
 import {DAO} from '@aragon/osx-ethers';
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
@@ -104,6 +105,11 @@ describe('Upgrades', () => {
     const currentContractFactory = new Multisig__factory(deployer);
     const legacyContractFactory = new Multisig_V1_1__factory(deployer);
 
+    const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
+      ['address', 'uint8'],
+      [deployer.address, Operation.delegatecall]
+    );
+
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
         deployer,
@@ -115,7 +121,7 @@ describe('Upgrades', () => {
         PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
         dao,
         'initializeFrom',
-        [{target: deployer.address, operation: Operation.delegatecall}]
+        [latestInitializerVersion, encodedDummyTarget]
       );
     expect(toImplementation).to.not.equal(fromImplementation); // The build did change
 
@@ -146,6 +152,11 @@ describe('Upgrades', () => {
     const currentContractFactory = new Multisig__factory(deployer);
     const legacyContractFactory = new Multisig_V1_2__factory(deployer);
 
+    const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
+      ['address', 'uint8'],
+      [deployer.address, Operation.delegatecall]
+    );
+
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
         deployer,
@@ -157,7 +168,7 @@ describe('Upgrades', () => {
         PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
         dao,
         'initializeFrom',
-        [{target: deployer.address, operation: Operation.delegatecall}]
+        [latestInitializerVersion, encodedDummyTarget]
       );
     expect(toImplementation).to.not.equal(fromImplementation);
 
