@@ -182,7 +182,7 @@ describe('Multisig', function () {
           defaultInitData.settings,
           defaultInitData.targetConfig
         )
-      ).to.be.revertedWith('Initializable: contract is already initialized');
+      ).to.be.revertedWithCustomError(initializedPlugin, 'AlreadyInitialized');
     });
 
     it('adds the initial addresses to the address list', async () => {
