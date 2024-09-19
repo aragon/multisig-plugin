@@ -343,14 +343,38 @@ contract Multisig is
         );
     }
 
+    /// @inheritdoc IProposal
     function createProposal(
         bytes calldata _metadata,
         IDAO.Action[] calldata _actions,
         uint64 _startDate,
-        uint64 _endDate
+        uint64 _endDate,
+        bytes memory _data
     ) external override returns (uint256 proposalId) {
-        // Calls public function for permission check.
-        proposalId = createProposal(_metadata, _actions, 0, false, false, _startDate, _endDate);
+        // Note that this calls public function for permission check.
+        if (_data.length == 0) {
+            // Proposal can still be created with default values.
+            proposalId = createProposal(_metadata, _actions, 0, false, false, _startDate, _endDate);
+        } else {
+            (uint256 allowFailureMap, bool approveProposal, bool tryExecution) = abi.decode(
+                _data,
+                (uint256, bool, bool)
+            );
+            proposalId = createProposal(
+                _metadata,
+                _actions,
+                allowFailureMap,
+                approveProposal,
+                tryExecution,
+                _startDate,
+                _endDate
+            );
+        }
+    }
+
+    /// @inheritdoc IProposal
+    function createProposalParams() external pure override returns (string memory) {
+        return "[uint256 allowFailureMap, bool approveProposal, bool tryExecution]";
     }
 
     /// @inheritdoc IMultisig

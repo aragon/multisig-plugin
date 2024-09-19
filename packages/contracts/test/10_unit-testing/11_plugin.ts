@@ -21,6 +21,8 @@ import {
 import {
   ANY_ADDR,
   CREATE_PROPOSAL_PERMISSION_ID,
+  CREATE_PROPOSAL_SIGNATURE,
+  CREATE_PROPOSAL_SIGNATURE_IProposal,
   MULTISIG_EVENTS,
   MULTISIG_INTERFACE,
   Operation,
@@ -687,19 +689,119 @@ describe('Multisig', function () {
     });
   });
 
+  // These tests ensure that overriden `createProposal` function from `IProposal`
+  // successfully creates a proposal with default values(when `data` is not passed)
+  // and with custom values when it's passed.
+  describe('Proposal creation: IProposal Interface Function', async () => {
+    let data: FixtureResult;
+    beforeEach(async () => {
+      data = await loadFixtureAndGrantCreatePermission();
+      const {deployer, dao, initializedPlugin: plugin} = data;
+
+      await dao.grant(
+        plugin.address,
+        deployer.address,
+        UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
+      );
+
+      await plugin.updateMultisigSettings({
+        onlyListed: false,
+        minApprovals: 1,
+      });
+
+      await dao.grant(
+        dao.address,
+        plugin.address,
+        DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
+      );
+    });
+
+    it('creates proposal with default values if `data` param is encoded with custom values', async () => {
+      const {
+        alice,
+        dummyMetadata,
+        dummyActions,
+        initializedPlugin: plugin,
+      } = data;
+
+      const encodedParam = ethers.utils.defaultAbiCoder.encode(
+        ['uint256', 'bool', 'bool'],
+        [1, true, true]
+      );
+
+      await plugin
+        .connect(alice)
+        [CREATE_PROPOSAL_SIGNATURE_IProposal](
+          dummyMetadata,
+          dummyActions,
+          0,
+          (await time.latest()) + TIME.HOUR,
+          encodedParam
+        );
+
+      const proposalId = await plugin.createProposalId(
+        dummyActions,
+        dummyMetadata
+      );
+      const proposal = await plugin.getProposal(proposalId);
+      expect(proposal.allowFailureMap).to.equal(1);
+
+      expect(await plugin.hasApproved(proposalId, alice.address)).to.be.true;
+      expect(proposal.executed).to.be.true;
+    });
+
+    it('creates proposal with default values if `data` param is passed as empty', async () => {
+      const {
+        alice,
+        dummyMetadata,
+        dummyActions,
+        initializedPlugin: plugin,
+      } = data;
+
+      await plugin
+        .connect(alice)
+        [CREATE_PROPOSAL_SIGNATURE_IProposal](
+          dummyMetadata,
+          dummyActions,
+          0,
+          (await time.latest()) + TIME.HOUR,
+          '0x'
+        );
+
+      const proposalId = await plugin.createProposalId(
+        dummyActions,
+        dummyMetadata
+      );
+
+      const proposal = await plugin.getProposal(proposalId);
+      expect(proposal.actions.length).to.equal(dummyActions.length);
+      expect(proposal.allowFailureMap).to.equal(0);
+
+      expect(await plugin.hasApproved(proposalId, alice.address)).to.be.false;
+      expect(proposal.executed).to.be.false;
+    });
+  });
+
   describe('createProposal', async () => {
     let data: FixtureResult;
     beforeEach(async () => {
       data = await loadFixtureAndGrantCreatePermission();
     });
+
     it('reverts if permission is not given', async () => {
       const {deployer, dao, dummyMetadata, initializedPlugin: plugin} = data;
       await dao.revoke(plugin.address, ANY_ADDR, CREATE_PROPOSAL_PERMISSION_ID);
 
       await expect(
-        plugin[
-          'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-        ]('0x', [], 0, false, false, 0, await time.latest())
+        plugin[CREATE_PROPOSAL_SIGNATURE](
+          '0x',
+          [],
+          0,
+          false,
+          false,
+          0,
+          await time.latest()
+        )
       )
         .to.be.revertedWithCustomError(plugin, 'DaoUnauthorized')
         .withArgs(
@@ -727,9 +829,15 @@ describe('Multisig', function () {
 
       await plugin
         .connect(alice)
-        [
-          'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-        ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+        [CREATE_PROPOSAL_SIGNATURE](
+          dummyMetadata,
+          dummyActions,
+          0,
+          false,
+          false,
+          0,
+          endDate
+        );
 
       // Check that proposal exists
       const proposal = await plugin.getProposal(proposalId);
@@ -752,9 +860,15 @@ describe('Multisig', function () {
       await expect(
         plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, [], 0, false, false, startDate, endDate)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            [],
+            0,
+            false,
+            false,
+            startDate,
+            endDate
+          )
       )
         .to.emit(plugin, 'ProposalCreated')
         .withArgs(
@@ -843,35 +957,27 @@ describe('Multisig', function () {
       await ethers.provider.send('evm_setAutomine', [false]);
 
       // Create and execute proposal #1 calling `updateMultisigSettings`.
-      await plugin
-        .connect(alice)
-        [
-          'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-        ](
-          dummyMetadata,
-          [updateMultisigSettingsAction],
-          0,
-          true, // approve
-          true, // execute
-          0,
-          endDate
-        );
+      await plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
+        dummyMetadata,
+        [updateMultisigSettingsAction],
+        0,
+        true, // approve
+        true, // execute
+        0,
+        endDate
+      );
 
       // Try to call update the settings a second time.
       await expect(
-        plugin
-          .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](
-            dummyMetadata,
-            [updateMultisigSettingsAction],
-            0,
-            false, // approve
-            false, // execute
-            0,
-            endDate
-          )
+        plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
+          dummyMetadata,
+          [updateMultisigSettingsAction],
+          0,
+          false, // approve
+          false, // execute
+          0,
+          endDate
+        )
       )
         .to.revertedWithCustomError(plugin, 'ProposalCreationForbidden')
         .withArgs(alice.address);
@@ -915,9 +1021,15 @@ describe('Multisig', function () {
         await expect(
           plugin
             .connect(dave) // Dave is not listed.
-            [
-              'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-            ](dummyMetadata, [], 0, false, false, startDate, endDate)
+            [CREATE_PROPOSAL_SIGNATURE](
+              dummyMetadata,
+              [],
+              0,
+              false,
+              false,
+              startDate,
+              endDate
+            )
         )
           .to.emit(plugin, 'ProposalCreated')
           .withArgs(
@@ -947,9 +1059,15 @@ describe('Multisig', function () {
         await expect(
           plugin
             .connect(dave) // Dave is not listed.
-            [
-              'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-            ](dummyMetadata, dummyActions, 0, false, false, 0, endDate)
+            [CREATE_PROPOSAL_SIGNATURE](
+              dummyMetadata,
+              dummyActions,
+              0,
+              false,
+              false,
+              0,
+              endDate
+            )
         )
           .to.be.revertedWithCustomError(plugin, 'DaoUnauthorized')
           .withArgs(
@@ -997,9 +1115,15 @@ describe('Multisig', function () {
         await expect(
           plugin
             .connect(carol)
-            [
-              'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-            ](dummyMetadata, dummyActions, 0, false, false, 0, endDate)
+            [CREATE_PROPOSAL_SIGNATURE](
+              dummyMetadata,
+              dummyActions,
+              0,
+              false,
+              false,
+              0,
+              endDate
+            )
         )
           .to.be.revertedWithCustomError(plugin, 'DaoUnauthorized')
           .withArgs(
@@ -1012,9 +1136,15 @@ describe('Multisig', function () {
         // Transaction 4: Create the proposal as Dave
         const tx4 = await plugin
           .connect(dave)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Check the listed members before the block is mined.
@@ -1074,19 +1204,15 @@ describe('Multisig', function () {
       const approveProposal = false;
 
       await expect(
-        plugin
-          .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](
-            dummyMetadata,
-            [],
-            allowFailureMap,
-            approveProposal, // false
-            false,
-            startDate,
-            endDate
-          )
+        plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
+          dummyMetadata,
+          [],
+          allowFailureMap,
+          approveProposal, // false
+          false,
+          startDate,
+          endDate
+        )
       )
         .to.emit(plugin, 'ProposalCreated')
         .withArgs(id, alice.address, startDate, endDate, dummyMetadata, [], 0);
@@ -1133,19 +1259,15 @@ describe('Multisig', function () {
 
       const id = await plugin.createProposalId([], dummyMetadata);
       await expect(
-        plugin
-          .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](
-            dummyMetadata,
-            [],
-            allowFailureMap,
-            approveProposal, // true
-            false,
-            startDate,
-            endDate
-          )
+        plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
+          dummyMetadata,
+          [],
+          allowFailureMap,
+          approveProposal, // true
+          false,
+          startDate,
+          endDate
+        )
       )
         .to.emit(plugin, 'ProposalCreated')
         .withArgs(
@@ -1201,9 +1323,7 @@ describe('Multisig', function () {
       await expect(
         plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](
+          [CREATE_PROPOSAL_SIGNATURE](
             dummyMetadata,
             dummyActions,
             0,
@@ -1231,9 +1351,15 @@ describe('Multisig', function () {
       await expect(
         plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, true, false, startDate, endDate)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            true,
+            false,
+            startDate,
+            endDate
+          )
       )
         .to.be.revertedWithCustomError(plugin, 'DateOutOfBounds')
         .withArgs(startDate, endDate);
@@ -1262,9 +1388,15 @@ describe('Multisig', function () {
 
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
 
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
@@ -1302,9 +1434,15 @@ describe('Multisig', function () {
         const endDate = (await time.latest()) + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = 0;
 
         // Check that Dave who is not listed cannot approve.
@@ -1325,9 +1463,15 @@ describe('Multisig', function () {
         // Create a proposal (with ID 0)
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         await plugin.connect(alice).approve(id, false);
@@ -1347,9 +1491,15 @@ describe('Multisig', function () {
         // Create a proposal (with ID 0)
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         expect(await plugin.canApprove(id, alice.address)).to.be.true;
@@ -1369,9 +1519,15 @@ describe('Multisig', function () {
         // Create a proposal (with ID 0)
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, startDate, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            startDate,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         expect(await plugin.canApprove(id, alice.address)).to.be.false;
@@ -1394,9 +1550,15 @@ describe('Multisig', function () {
         // Create a proposal (with ID 0)
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         expect(await plugin.canApprove(id, alice.address)).to.be.true;
@@ -1421,9 +1583,15 @@ describe('Multisig', function () {
         // Create a proposal (with ID 0)
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         expect(await plugin.hasApproved(id, alice.address)).to.be.false;
@@ -1441,9 +1609,15 @@ describe('Multisig', function () {
 
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         await plugin.connect(alice).approve(id, false);
@@ -1465,9 +1639,15 @@ describe('Multisig', function () {
         // Create a proposal (with ID 0)
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         await plugin.connect(alice).approve(id, true);
@@ -1492,9 +1672,15 @@ describe('Multisig', function () {
         // Create a proposal (with ID 0)
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
@@ -1525,9 +1711,15 @@ describe('Multisig', function () {
         // Create a proposal (with ID 0).
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Check that there are 0 approvals yet.
@@ -1558,9 +1750,15 @@ describe('Multisig', function () {
         const endDate = startDate + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, startDate, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            startDate,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Try to approve the proposal as Alice although being before the start date.
@@ -1590,9 +1788,15 @@ describe('Multisig', function () {
 
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Advance time after the end date.
@@ -1617,9 +1821,15 @@ describe('Multisig', function () {
         const endDate = (await time.latest()) + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Check that `minApprovals` isn't met yet.
@@ -1644,9 +1854,15 @@ describe('Multisig', function () {
         const endDate = (await time.latest()) + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
@@ -1681,9 +1897,15 @@ describe('Multisig', function () {
 
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         await plugin.connect(alice).approve(id, false);
@@ -1708,9 +1930,15 @@ describe('Multisig', function () {
 
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, startDate, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            startDate,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         expect(await plugin.canExecute(id)).to.be.false;
@@ -1737,9 +1965,15 @@ describe('Multisig', function () {
 
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         await plugin.connect(alice).approve(id, false);
@@ -1768,9 +2002,15 @@ describe('Multisig', function () {
         const endDate = (await time.latest()) + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
@@ -1801,9 +2041,15 @@ describe('Multisig', function () {
         const endDate = (await time.latest()) + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
@@ -1849,9 +2095,15 @@ describe('Multisig', function () {
 
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         await dao.grant(
@@ -1892,9 +2144,15 @@ describe('Multisig', function () {
         const endDate = (await time.latest()) + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
@@ -1986,9 +2244,15 @@ describe('Multisig', function () {
         const endDate = (await time.latest()) + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Grant the plugin `EXECUTE_PERMISSION_ID` on the DAO.
@@ -2024,9 +2288,15 @@ describe('Multisig', function () {
         const endDate = (await time.latest()) + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
@@ -2062,9 +2332,15 @@ describe('Multisig', function () {
         const endDate = startDate + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, startDate, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            startDate,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
@@ -2104,9 +2380,15 @@ describe('Multisig', function () {
         const endDate = startDate + TIME.HOUR;
         await plugin
           .connect(alice)
-          [
-            'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)'
-          ](dummyMetadata, dummyActions, 0, false, false, 0, endDate);
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
         const id = await plugin.createProposalId(dummyActions, dummyMetadata);
 
         // Approve the proposal but do not execute yet.
