@@ -46,7 +46,7 @@ contract Multisig is
         mapping(address => bool) approvers;
         IDAO.Action[] actions;
         uint256 allowFailureMap;
-        TargetConfig targetConfig;
+        TargetConfig targetConfig; // added in build 3.
     }
 
     /// @notice A container for the proposal parameters.
