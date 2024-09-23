@@ -19,7 +19,7 @@ import {IMultisig} from "./IMultisig.sol";
 /// @title Multisig
 /// @author Aragon X - 2022-2023
 /// @notice The on-chain multisig governance plugin in which a proposal passes if X out of Y approvals are met.
-/// @dev v1.3 (Release 1, Build 3)
+/// @dev v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required, increment the version numbers in the modifier for both the initialize and initializeFrom functions.
 /// @custom:security-contact sirt@aragon.org
 contract Multisig is
     IMultisig,
@@ -46,8 +46,7 @@ contract Multisig is
         mapping(address => bool) approvers;
         IDAO.Action[] actions;
         uint256 allowFailureMap;
-        address target; // added in v1.3.0
-        Operation operation; // added in v1.3.0
+        TargetConfig targetConfig; // added in build 3.
     }
 
     /// @notice A container for the proposal parameters.
@@ -103,6 +102,9 @@ contract Multisig is
     /// @param sender The sender address.
     error ProposalCreationForbidden(address sender);
 
+    /// @notice Thrown when initialize is called after it has already been executed.
+    error AlreadyInitialized();
+
     /// @notice Thrown if an approver is not allowed to cast an approve. This can be because the proposal
     /// - is not open,
     /// - was executed, or
@@ -145,6 +147,15 @@ contract Multisig is
     /// @param minApprovals The minimum amount of approvals needed to pass a proposal.
     event MultisigSettingsUpdated(bool onlyListed, uint16 indexed minApprovals);
 
+    /// @notice This ensures that the initialize function cannot be called during the upgrade process.
+    modifier onlyCallAtInitialization() {
+        if (_getInitializedVersion() != 0) {
+            revert AlreadyInitialized();
+        }
+
+        _;
+    }
+
     /// @notice Initializes Release 1, Build 2.
     /// @dev This method is required to support [ERC-1822](https://eips.ethereum.org/EIPS/eip-1822).
     /// @param _dao The IDAO interface of the associated DAO.
@@ -155,7 +166,7 @@ contract Multisig is
         address[] calldata _members,
         MultisigSettings calldata _multisigSettings,
         TargetConfig calldata _targetConfig
-    ) external reinitializer(2) {
+    ) external onlyCallAtInitialization reinitializer(2) {
         __PluginUUPSUpgradeable_init(_dao);
 
         if (_members.length > type(uint16).max) {
@@ -170,7 +181,8 @@ contract Multisig is
         _setTargetConfig(_targetConfig);
     }
 
-    /// @notice Reinitializes the TokenVoting after an upgrade from a previous protocol version.
+    /// @notice Reinitializes the TokenVoting after an upgrade from a previous protocol version. For each reinitialization step, use the `_fromBuild` version to decide which internal functions to call for reinitialization.
+    /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
     /// @param _fromBuild The build version number of the previous implementation contract this upgrade is transitioning from.
     /// @param _initData The initialization data to be passed to via `upgradeToAndCall` (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
     function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {
@@ -302,15 +314,7 @@ contract Multisig is
         proposal_.parameters.endDate = _endDate;
         proposal_.parameters.minApprovals = multisigSettings.minApprovals;
 
-        TargetConfig memory currentTarget = getTargetConfig();
-
-        if (currentTarget.target == address(0)) {
-            proposal_.target = address(dao());
-            proposal_.operation = Operation.Call;
-        } else {
-            proposal_.target = currentTarget.target;
-            proposal_.operation = currentTarget.operation;
-        }
+        proposal_.targetConfig = getTargetConfig();
 
         // Reduce costs
         if (_allowFailureMap != 0) {
@@ -462,11 +466,11 @@ contract Multisig is
         proposal_.executed = true;
 
         _execute(
-            proposal_.target,
+            proposal_.targetConfig.target,
             bytes32(_proposalId),
-            proposals[_proposalId].actions,
-            proposals[_proposalId].allowFailureMap,
-            proposal_.operation
+            proposal_.actions,
+            proposal_.allowFailureMap,
+            proposal_.targetConfig.operation
         );
 
         emit ProposalExecuted(_proposalId);
