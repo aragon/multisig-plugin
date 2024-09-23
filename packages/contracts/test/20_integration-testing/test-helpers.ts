@@ -26,7 +26,8 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {ContractTransaction} from 'ethers';
 import {ethers} from 'hardhat';
-import {create} from 'ipfs-http-client';
+
+const OZ_INITIALIZED_SLOT_POSITION = 0;
 
 export async function installPLugin(
   signer: SignerWithAddress,
@@ -243,7 +244,8 @@ export async function updateFromBuildTest(
   pluginSetupRefLatestBuild: PluginSetupProcessorStructs.PluginSetupRefStruct,
   build: number,
   installationInputs: any[],
-  updateInputs: any[]
+  updateInputs: any[],
+  reinitializedVersion: number
 ) {
   // Grant deployer all required permissions
   await dao
@@ -349,6 +351,16 @@ export async function updateFromBuildTest(
       deployer
     ).implementation();
   expect(await plugin.implementation()).to.equal(implementationLatestBuild);
+
+  // check the plugin was reinitialized, OZs `_initialized` at storage slot [0] is correct
+  expect(
+    ethers.BigNumber.from(
+      await ethers.provider.getStorageAt(
+        plugin.address,
+        OZ_INITIALIZED_SLOT_POSITION
+      )
+    ).toNumber()
+  ).to.equal(reinitializedVersion);
 }
 
 export async function createDaoProxy(

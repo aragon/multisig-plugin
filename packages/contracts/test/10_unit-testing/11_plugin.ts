@@ -12,7 +12,6 @@ import {
 } from '../../typechain';
 import {ExecutedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/dao/IDAO';
 import {ProxyCreatedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/utils/deployment/ProxyFactory';
-import {PluginUUPSUpgradeable} from '../../typechain/@aragon/osx-v1.0.0/core/plugin';
 import {
   ApprovedEvent,
   ProposalCreatedEvent,
@@ -26,11 +25,11 @@ import {
   Operation,
   TargetConfig,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
+  latestInitializerVersion,
 } from '../multisig-constants';
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
 import {
   getInterfaceId,
-  proposalIdToBytes32,
   findEvent,
   findEventTopicLog,
   TIME,
@@ -143,7 +142,7 @@ async function fixture(): Promise<FixtureResult> {
 }
 
 async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
-  let data = await loadFixture(fixture);
+  const data = await loadFixture(fixture);
   const {deployer, dao, initializedPlugin, uninitializedPlugin} = data;
 
   const condition = await new ListedCheckCondition__factory(deployer).deploy(
@@ -166,7 +165,6 @@ async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
   return data;
 }
 
-// TODO: maybe add test for `initializeFrom` and whether it successfuly works - i.e whether reinitializer(x) is correct and so on.
 describe('Multisig', function () {
   describe('initialize', async () => {
     it('reverts if trying to re-initialize', async () => {
@@ -275,6 +273,73 @@ describe('Multisig', function () {
           'AddresslistLengthOutOfBounds'
         )
         .withArgs(uint16MaxValue, overflowingMemberList.length);
+    });
+  });
+
+  describe('reinitialize', async () => {
+    it('reverts if trying to re-reinitializeFrom', async () => {
+      const {uninitializedPlugin, deployer} = await loadFixture(fixture);
+
+      const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'uint8'],
+        [deployer.address, Operation.delegatecall]
+      );
+
+      // reinitialize the plugin.
+      await uninitializedPlugin.initializeFrom(
+        latestInitializerVersion,
+        encodedDummyTarget
+      );
+
+      // Try to reinitialize the  plugin.
+      await expect(
+        uninitializedPlugin.initializeFrom(
+          latestInitializerVersion,
+          encodedDummyTarget
+        )
+      ).to.be.revertedWith('Initializable: contract is already initialized');
+    });
+
+    it('reverts if trying to initializeFrom an initialized plugin', async () => {
+      const {initializedPlugin, deployer} = await loadFixture(fixture);
+
+      const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'uint8'],
+        [deployer.address, Operation.delegatecall]
+      );
+
+      // Try to reinitialize the  plugin.
+      await expect(
+        initializedPlugin.initializeFrom(
+          latestInitializerVersion,
+          encodedDummyTarget
+        )
+      ).to.be.revertedWith('Initializable: contract is already initialized');
+    });
+
+    // todo add test for checking that plugins already initialized on a previous version can not be initialized again
+    it('reverts if trying to initialize lower version plugin');
+
+    it('sets the `_targetConfig` when initializing an uninitialized plugin', async () => {
+      const {uninitializedPlugin, deployer} = await loadFixture(fixture);
+
+      const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'uint8'],
+        [deployer.address, Operation.delegatecall]
+      );
+
+      // reinitialize the plugin.
+      await uninitializedPlugin.initializeFrom(
+        latestInitializerVersion,
+        encodedDummyTarget
+      );
+
+      expect((await uninitializedPlugin.getTargetConfig()).target).to.be.eq(
+        deployer.address
+      );
+      expect((await uninitializedPlugin.getTargetConfig()).operation).to.be.eq(
+        Operation.delegatecall
+      );
     });
   });
 
@@ -693,7 +758,7 @@ describe('Multisig', function () {
       data = await loadFixtureAndGrantCreatePermission();
     });
     it('reverts if permission is not given', async () => {
-      const {deployer, dao, dummyMetadata, initializedPlugin: plugin} = data;
+      const {deployer, dao, initializedPlugin: plugin} = data;
       await dao.revoke(plugin.address, ANY_ADDR, CREATE_PROPOSAL_PERMISSION_ID);
 
       await expect(
@@ -716,7 +781,6 @@ describe('Multisig', function () {
         initializedPlugin: plugin,
         dummyMetadata,
         dummyActions,
-        dao,
         defaultInitData,
       } = data;
 

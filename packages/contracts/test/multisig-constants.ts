@@ -38,3 +38,5 @@ export type TargetConfig = {
   target: string;
   operation: number;
 };
+
+export const latestInitializerVersion = 2;

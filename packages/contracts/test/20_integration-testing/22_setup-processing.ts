@@ -1,7 +1,11 @@
 import {METADATA, VERSION} from '../../plugin-settings';
 import {MultisigSetup, Multisig__factory} from '../../typechain';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
-import {Operation, TargetConfig} from '../multisig-constants';
+import {
+  Operation,
+  TargetConfig,
+  latestInitializerVersion,
+} from '../multisig-constants';
 import {Multisig} from '../test-utils/typechain-versions';
 import {
   createDaoProxy,
@@ -119,7 +123,6 @@ async function fixture(): Promise<FixtureResult> {
   };
 }
 
-// TODO: when upgrade happens, test that `initializeFrom` was called successfully.
 describe(`PluginSetup processing on network '${productionNetworkName}'`, function () {
   it('installs & uninstalls the current build', async () => {
     const {
@@ -214,7 +217,8 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       pluginSetupRefLatestBuild,
       1,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
-      [defaultInitData.targetConfig]
+      [defaultInitData.targetConfig],
+      latestInitializerVersion
     );
   });
 
@@ -236,7 +240,8 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       pluginSetupRefLatestBuild,
       2,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
-      [defaultInitData.targetConfig]
+      [defaultInitData.targetConfig],
+      latestInitializerVersion
     );
   });
 });
