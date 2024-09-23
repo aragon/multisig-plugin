@@ -495,6 +495,31 @@ describe('MultisigSetup', function () {
         ],
       ]);
     });
+
+    it('returns the permissions expected for the update from build 3', async () => {
+      const {pluginSetup, dao, prepareUpdateBuild3Inputs} = await loadFixture(
+        fixture
+      );
+      const plugin = ethers.Wallet.createRandom().address;
+
+      // Make a static call to check that the plugin update data being returned is correct.
+      const {
+        initData: initData,
+        preparedSetupData: {helpers, permissions},
+      } = await pluginSetup.callStatic.prepareUpdate(dao.address, 3, {
+        currentHelpers: [
+          ethers.Wallet.createRandom().address,
+          ethers.Wallet.createRandom().address,
+        ],
+        data: prepareUpdateBuild3Inputs,
+        plugin,
+      });
+
+      // Check the return data. There should be no permission needed for build 3.
+      expect(initData).to.be.eq('0x');
+      expect(permissions.length).to.be.equal(0);
+      expect(helpers.length).to.be.equal(0);
+    });
   });
 
   describe('prepareUninstallation', async () => {
