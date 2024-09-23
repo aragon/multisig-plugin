@@ -83,7 +83,7 @@ contract Multisig is
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
 
-    /// @notice The ID of the permission required to call the `addAddresses` and `removeAddresses` functions.
+    /// @notice The ID of the permission required to call the `createProposal` function.
     bytes32 public constant CREATE_PROPOSAL_PERMISSION_ID = keccak256("CREATE_PROPOSAL_PERMISSION");
 
     /// @notice A mapping between proposal IDs and proposal information.
