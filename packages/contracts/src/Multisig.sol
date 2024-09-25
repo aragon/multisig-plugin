@@ -352,24 +352,26 @@ contract Multisig is
         bytes memory _data
     ) external override returns (uint256 proposalId) {
         // Note that this calls public function for permission check.
-        if (_data.length == 0) {
-            // Proposal can still be created with default values.
-            proposalId = createProposal(_metadata, _actions, 0, false, false, _startDate, _endDate);
-        } else {
-            (uint256 allowFailureMap, bool approveProposal, bool tryExecution) = abi.decode(
+        // Custom parameters
+        uint256 _allowFailureMap;
+        bool _approveProposal;
+        bool _tryExecution;
+
+        if (_data.length != 0) {
+            (_allowFailureMap, _approveProposal, _tryExecution) = abi.decode(
                 _data,
                 (uint256, bool, bool)
             );
-            proposalId = createProposal(
-                _metadata,
-                _actions,
-                allowFailureMap,
-                approveProposal,
-                tryExecution,
-                _startDate,
-                _endDate
-            );
         }
+        proposalId = createProposal(
+            _metadata,
+            _actions,
+            _allowFailureMap,
+            _approveProposal,
+            _tryExecution,
+            _startDate,
+            _endDate
+        );
     }
 
     /// @inheritdoc IProposal
