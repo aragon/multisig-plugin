@@ -374,7 +374,7 @@ contract Multisig is
 
     /// @inheritdoc IProposal
     function createProposalParamsABI() external pure override returns (string memory) {
-        return "[uint256 allowFailureMap, bool approveProposal, bool tryExecution]";
+        return "(uint256 allowFailureMap, bool approveProposal, bool tryExecution)";
     }
 
     /// @inheritdoc IMultisig
