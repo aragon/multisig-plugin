@@ -1,6 +1,8 @@
 import {createDaoProxy} from '../20_integration-testing/test-helpers';
 import {
   Addresslist__factory,
+  CustomExecutorMock__factory,
+  ERC1967Proxy__factory,
   IERC165Upgradeable__factory,
   IMembership__factory,
   IMultisig__factory,
@@ -26,6 +28,7 @@ import {
   MULTISIG_EVENTS,
   MULTISIG_INTERFACE,
   Operation,
+  SET_TARGET_CONFIG_PERMISSION_ID,
   TargetConfig,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
 } from '../multisig-constants';
@@ -38,7 +41,12 @@ import {
   TIME,
   DAO_PERMISSIONS,
 } from '@aragon/osx-commons-sdk';
-import {DAO, DAOStructs, DAO__factory} from '@aragon/osx-ethers';
+import {
+  DAO,
+  DAOStructs,
+  DAO__factory,
+  PluginUUPSUpgradeableV1Mock__factory,
+} from '@aragon/osx-ethers';
 import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
@@ -2402,6 +2410,52 @@ describe('Multisig', function () {
         await expect(
           plugin.connect(bob).execute(id)
         ).to.be.revertedWithCustomError(plugin, 'ProposalExecutionForbidden');
+      });
+
+      it('executes target with delegate call', async () => {
+        const {alice, bob, dummyMetadata, dummyActions, deployer, dao} = data;
+
+        let {initializedPlugin: plugin} = data;
+
+        const executorFactory = new CustomExecutorMock__factory(deployer);
+        const executor = await executorFactory.deploy();
+
+        const abiA = CustomExecutorMock__factory.abi;
+        const abiB = Multisig__factory.abi;
+        // @ts-ignore
+        const mergedABI = abiA.concat(abiB);
+
+        await dao.grant(
+          plugin.address,
+          deployer.address,
+          SET_TARGET_CONFIG_PERMISSION_ID
+        );
+
+        await plugin.connect(deployer).setTargetConfig({
+          target: executor.address,
+          operation: Operation.delegatecall,
+        });
+
+        plugin = (await ethers.getContractAt(
+          mergedABI,
+          plugin.address
+        )) as Multisig;
+
+        const endDate = (await time.latest()) + TIME.HOUR;
+        await plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
+          dummyMetadata,
+          dummyActions,
+          1,
+          true, // approve right away.
+          false,
+          0,
+          endDate
+        );
+
+        const id = await plugin.createProposalId(dummyActions, dummyMetadata);
+        await expect(plugin.connect(bob).approve(id, true))
+          .to.emit(plugin, 'ExecutedCustom')
+          .to.emit(plugin, 'ProposalExecuted');
       });
     });
   });
