@@ -496,7 +496,7 @@ describe('MultisigSetup', function () {
       ]);
     });
 
-    it('returns the permissions expected for the update from build 3', async () => {
+    it('returns the permissions expected for the update from build 3 (empty list)', async () => {
       const {pluginSetup, dao, prepareUpdateBuild3Inputs} = await loadFixture(
         fixture
       );
