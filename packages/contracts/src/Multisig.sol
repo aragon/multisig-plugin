@@ -11,7 +11,7 @@ import {ProposalUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/exte
 import {PluginUUPSUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/PluginUUPSUpgradeable.sol";
 import {IProposal} from "@aragon/osx-commons-contracts/src/plugin/extensions/proposal/IProposal.sol";
 import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
-import {IExecutor} from "@aragon/osx-commons-contracts/src/executors/IExecutor.sol";
+import {IExecutor, Action} from "@aragon/osx-commons-contracts/src/executors/IExecutor.sol";
 
 import {IMultisig} from "./IMultisig.sol";
 
@@ -45,7 +45,7 @@ contract Multisig is
         uint16 approvals;
         ProposalParameters parameters;
         mapping(address => bool) approvers;
-        IExecutor.Action[] actions;
+        Action[] actions;
         uint256 allowFailureMap;
         TargetConfig targetConfig; // added in build 3.
     }
@@ -269,7 +269,7 @@ contract Multisig is
     // solhint-disable-next-line code-complexity
     function createProposal(
         bytes calldata _metadata,
-        IExecutor.Action[] calldata _actions,
+        Action[] calldata _actions,
         uint256 _allowFailureMap,
         bool _approveProposal,
         bool _tryExecution,
@@ -347,7 +347,7 @@ contract Multisig is
     /// @inheritdoc IProposal
     function createProposal(
         bytes calldata _metadata,
-        IExecutor.Action[] calldata _actions,
+        Action[] calldata _actions,
         uint64 _startDate,
         uint64 _endDate,
         bytes memory _data
@@ -434,7 +434,7 @@ contract Multisig is
             bool executed,
             uint16 approvals,
             ProposalParameters memory parameters,
-            IExecutor.Action[] memory actions,
+            Action[] memory actions,
             uint256 allowFailureMap
         )
     {
@@ -479,7 +479,7 @@ contract Multisig is
     /// @param _metadata The metadata of the proposal.
     /// @return proposalId The ID of the proposal.
     function createProposalId(
-        IExecutor.Action[] calldata _actions,
+        Action[] calldata _actions,
         bytes memory _metadata
     ) public pure override returns (uint256) {
         return uint256(keccak256(abi.encode(_actions, _metadata)));
