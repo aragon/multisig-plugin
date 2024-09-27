@@ -518,7 +518,7 @@ describe('MultisigSetup', function () {
       );
 
       // Check the return data.
-      expect(permissions.length).to.be.equal(5);
+      expect(permissions.length).to.be.equal(4);
       expect(permissions).to.deep.equal([
         [
           Operation.Revoke,
@@ -526,13 +526,6 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
-        ],
-        [
-          Operation.Revoke,
-          plugin,
-          dao.address,
-          AddressZero,
-          UPGRADE_PLUGIN_PERMISSION_ID,
         ],
         [
           Operation.Revoke,

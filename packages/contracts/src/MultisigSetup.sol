@@ -170,7 +170,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
         SetupPayload calldata _payload
     ) external view returns (PermissionLib.MultiTargetPermission[] memory permissions) {
         // Prepare permissions
-        permissions = new PermissionLib.MultiTargetPermission[](5);
+        permissions = new PermissionLib.MultiTargetPermission[](4);
 
         // Set permissions to be Revoked.
         permissions[0] = PermissionLib.MultiTargetPermission({
@@ -181,15 +181,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             permissionId: UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
         });
 
-        permissions[1] = PermissionLib.MultiTargetPermission(
-            PermissionLib.Operation.Revoke,
-            _payload.plugin,
-            _dao,
-            PermissionLib.NO_CONDITION,
-            UPGRADE_PLUGIN_PERMISSION_ID
-        );
-
-        permissions[2] = PermissionLib.MultiTargetPermission({
+        permissions[1] = PermissionLib.MultiTargetPermission({
             operation: PermissionLib.Operation.Revoke,
             where: _dao,
             who: _payload.plugin,
@@ -197,7 +189,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             permissionId: EXECUTE_PERMISSION_ID
         });
 
-        permissions[3] = PermissionLib.MultiTargetPermission({
+        permissions[2] = PermissionLib.MultiTargetPermission({
             operation: PermissionLib.Operation.Revoke,
             where: _payload.plugin,
             who: _dao,
@@ -205,7 +197,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             permissionId: SET_TARGET_CONFIG_PERMISSION_ID
         });
 
-        permissions[4] = PermissionLib.MultiTargetPermission(
+        permissions[3] = PermissionLib.MultiTargetPermission(
             PermissionLib.Operation.Revoke,
             _payload.plugin,
             address(type(uint160).max), // ANY_ADDR
