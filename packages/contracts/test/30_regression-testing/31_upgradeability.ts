@@ -1,8 +1,8 @@
 import {createDaoProxy} from '../20_integration-testing/test-helpers';
 import {Operation, TargetConfig} from '../multisig-constants';
 import {
-  Multisig_V1_1__factory,
-  Multisig_V1_2__factory,
+  Multisig_V1_0_0__factory,
+  Multisig_V1_3_0__factory,
   Multisig__factory,
   Multisig,
 } from '../test-utils/typechain-versions';
@@ -18,6 +18,9 @@ import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {ethers} from 'hardhat';
+
+const AlreadyInitializedSignature =
+  Multisig__factory.createInterface().encodeErrorResult('AlreadyInitialized');
 
 describe('Upgrades', () => {
   it('upgrades to a new implementation', async () => {
@@ -40,89 +43,51 @@ describe('Upgrades', () => {
     );
   });
 
-  it('upgrades from v1.1', async () => {
-    const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
+  it('upgrades from v1.0.0 with initializeFrom', async () => {
+    const {deployer, alice, dao, defaultInitData, encodedParamsForUpgrade} =
+      await loadFixture(fixture);
     const currentContractFactory = new Multisig__factory(deployer);
-    const legacyContractFactory = new Multisig_V1_1__factory(deployer);
+    const legacyContractFactory = new Multisig_V1_0_0__factory(deployer);
 
-    const {fromImplementation, toImplementation} =
+    const data = [
+      deployer,
+      alice,
+      [dao.address, defaultInitData.members, defaultInitData.settings],
+      'initialize',
+      legacyContractFactory,
+      currentContractFactory,
+      PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
+      dao,
+      'initialize',
+      [
+        dao.address,
+        defaultInitData.members,
+        defaultInitData.settings,
+        defaultInitData.targetConfig,
+      ],
+    ];
+
+    // Ensure that on the `upgrade`, `initialize` can not be called.
+    try {
       await deployAndUpgradeFromToCheck(
-        deployer,
-        alice,
-        [dao.address, defaultInitData.members, defaultInitData.settings],
-        'initialize',
-        legacyContractFactory,
-        currentContractFactory,
-        PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
-        dao
+        // @ts-ignore
+        ...data
       );
-    expect(toImplementation).to.not.equal(fromImplementation); // The build did change
+      throw new Error('');
+    } catch (err: any) {
+      expect(err.data).to.equal(AlreadyInitializedSignature);
+    }
 
-    const fromProtocolVersion = await getProtocolVersion(
-      legacyContractFactory.attach(fromImplementation)
-    );
-    const toProtocolVersion = await getProtocolVersion(
-      currentContractFactory.attach(toImplementation)
-    );
-
-    expect(fromProtocolVersion).to.not.deep.equal(toProtocolVersion);
-    expect(fromProtocolVersion).to.deep.equal([1, 0, 0]);
-    expect(toProtocolVersion).to.deep.equal([1, 4, 0]);
-  });
-
-  it('from v1.2', async () => {
-    const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
-    const currentContractFactory = new Multisig__factory(deployer);
-    const legacyContractFactory = new Multisig_V1_2__factory(deployer);
-
-    const {fromImplementation, toImplementation} =
-      await deployAndUpgradeFromToCheck(
-        deployer,
-        alice,
-        [dao.address, defaultInitData.members, defaultInitData.settings],
-        'initialize',
-        legacyContractFactory,
-        currentContractFactory,
-        PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
-        dao
-      );
-    expect(toImplementation).to.not.equal(fromImplementation);
-
-    const fromProtocolVersion = await getProtocolVersion(
-      legacyContractFactory.attach(fromImplementation)
-    );
-    const toProtocolVersion = await getProtocolVersion(
-      currentContractFactory.attach(toImplementation)
-    );
-
-    expect(fromProtocolVersion).to.not.deep.equal(toProtocolVersion);
-    expect(fromProtocolVersion).to.deep.equal([1, 0, 0]);
-    expect(toProtocolVersion).to.deep.equal([1, 4, 0]);
-  });
-
-  it('upgrades from v1.1 with initializeFrom', async () => {
-    const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
-    const currentContractFactory = new Multisig__factory(deployer);
-    const legacyContractFactory = new Multisig_V1_1__factory(deployer);
-
-    const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
-      ['address', 'uint8'],
-      [deployer.address, Operation.delegatecall]
-    );
+    data[8] = 'initializeFrom';
+    // @ts-ignore
+    data[9] = [latestInitializerVersion, encodedParamsForUpgrade];
 
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
-        deployer,
-        alice,
-        [dao.address, defaultInitData.members, defaultInitData.settings],
-        'initialize',
-        legacyContractFactory,
-        currentContractFactory,
-        PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
-        dao,
-        'initializeFrom',
-        [latestInitializerVersion, encodedDummyTarget]
+        // @ts-ignore
+        ...data
       );
+
     expect(toImplementation).to.not.equal(fromImplementation); // The build did change
 
     const fromProtocolVersion = await getProtocolVersion(
@@ -145,32 +110,65 @@ describe('Upgrades', () => {
     expect((await newMultisig.getTargetConfig()).operation).to.deep.equal(
       Operation.delegatecall
     );
+
+    // `initializeFrom` was called on the upgrade, make sure
+    // `initialize` can not be called.
+    await expect(
+      proxy.initialize(
+        dao.address,
+        defaultInitData.members,
+        defaultInitData.settings,
+        defaultInitData.targetConfig
+      )
+    ).to.be.revertedWithCustomError(proxy, 'AlreadyInitialized');
   });
 
-  it('from v1.2 with initializeFrom', async () => {
-    const {deployer, alice, dao, defaultInitData} = await loadFixture(fixture);
+  it('from v1.3.0 with initializeFrom', async () => {
+    const {deployer, alice, dao, defaultInitData, encodedParamsForUpgrade} =
+      await loadFixture(fixture);
     const currentContractFactory = new Multisig__factory(deployer);
-    const legacyContractFactory = new Multisig_V1_2__factory(deployer);
+    const legacyContractFactory = new Multisig_V1_3_0__factory(deployer);
 
-    const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
-      ['address', 'uint8'],
-      [deployer.address, Operation.delegatecall]
-    );
+    const data = [
+      deployer,
+      alice,
+      [dao.address, defaultInitData.members, defaultInitData.settings],
+      'initialize',
+      legacyContractFactory,
+      currentContractFactory,
+      PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
+      dao,
+      'initialize',
+      [
+        dao.address,
+        defaultInitData.members,
+        defaultInitData.settings,
+        defaultInitData.targetConfig,
+      ],
+    ];
+
+    // Ensure that on the `upgrade`, `initialize` can not be called.
+    try {
+      await deployAndUpgradeFromToCheck(
+        // @ts-ignore
+        ...data
+      );
+      throw new Error('');
+    } catch (err: any) {
+      expect(err.data).to.equal(AlreadyInitializedSignature);
+    }
+
+    data[8] = 'initializeFrom';
+    // @ts-ignore
+    data[9] = [latestInitializerVersion, encodedParamsForUpgrade];
 
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
-        deployer,
-        alice,
-        [dao.address, defaultInitData.members, defaultInitData.settings],
-        'initialize',
-        legacyContractFactory,
-        currentContractFactory,
-        PLUGIN_UUPS_UPGRADEABLE_PERMISSIONS.UPGRADE_PLUGIN_PERMISSION_ID,
-        dao,
-        'initializeFrom',
-        [latestInitializerVersion, encodedDummyTarget]
+        // @ts-ignore
+        ...data
       );
-    expect(toImplementation).to.not.equal(fromImplementation);
+
+    expect(toImplementation).to.not.equal(fromImplementation); // The build did change
 
     const fromProtocolVersion = await getProtocolVersion(
       legacyContractFactory.attach(fromImplementation)
@@ -192,6 +190,16 @@ describe('Upgrades', () => {
     expect((await newMultisig.getTargetConfig()).operation).to.deep.equal(
       Operation.delegatecall
     );
+    // `initializeFrom` was called on the upgrade, make sure
+    // `initialize` can not be called.
+    await expect(
+      proxy.initialize(
+        dao.address,
+        defaultInitData.members,
+        defaultInitData.settings,
+        defaultInitData.targetConfig
+      )
+    ).to.be.revertedWithCustomError(proxy, 'AlreadyInitialized');
   });
 });
 
@@ -206,6 +214,7 @@ type FixtureResult = {
     targetConfig: TargetConfig;
   };
   dao: DAO;
+  encodeDataForUpgrade: string;
 };
 
 async function fixture(): Promise<FixtureResult> {
@@ -228,6 +237,11 @@ async function fixture(): Promise<FixtureResult> {
     },
   };
 
+  const encodedParamsForUpgrade = ethers.utils.defaultAbiCoder.encode(
+    ['address', 'uint8'],
+    [deployer.address, Operation.delegatecall]
+  );
+
   return {
     deployer,
     alice,
@@ -235,5 +249,6 @@ async function fixture(): Promise<FixtureResult> {
     carol,
     dao,
     defaultInitData,
+    encodedParamsForUpgrade,
   };
 }

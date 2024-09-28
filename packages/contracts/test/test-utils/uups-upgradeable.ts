@@ -111,7 +111,7 @@ export async function deployAndUpgradeFromToCheck(
   toImplementation: string;
 }> {
   // Deploy proxy and implementation
-  const proxy = await upgrades.deployProxy(
+  let proxy = await upgrades.deployProxy(
     from.connect(deployer),
     Object.values(initArgs),
     {
@@ -166,7 +166,7 @@ export async function deployAndUpgradeFromToCheck(
   }
 
   // Upgrade the proxy to a new implementation from a different factory
-  await upgrades.upgradeProxy(proxy.address, to.connect(upgrader), {
+  proxy = await upgrades.upgradeProxy(proxy.address, to.connect(upgrader), {
     unsafeAllow: ['constructor', 'delegatecall'],
     constructorArgs: [],
     call: call,
