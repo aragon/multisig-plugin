@@ -11,7 +11,7 @@ import {ProposalUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/exte
 import {PluginUUPSUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/PluginUUPSUpgradeable.sol";
 import {IProposal} from "@aragon/osx-commons-contracts/src/plugin/extensions/proposal/IProposal.sol";
 import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
-import {IExecutor, Action} from "@aragon/osx-commons-contracts/src/executors/IExecutor.sol";
+import {Action} from "@aragon/osx-commons-contracts/src/executors/IExecutor.sol";
 
 import {IMultisig} from "./IMultisig.sol";
 
@@ -103,9 +103,6 @@ contract Multisig is
     /// @param sender The sender address.
     error ProposalCreationForbidden(address sender);
 
-    /// @notice Thrown when initialize is called after it has already been executed.
-    error AlreadyInitialized();
-
     /// @notice Thrown if an approver is not allowed to cast an approve. This can be because the proposal
     /// - is not open,
     /// - was executed, or
@@ -147,15 +144,6 @@ contract Multisig is
     /// @param onlyListed Whether only listed addresses can create a proposal.
     /// @param minApprovals The minimum amount of approvals needed to pass a proposal.
     event MultisigSettingsUpdated(bool onlyListed, uint16 indexed minApprovals);
-
-    /// @notice This ensures that the initialize function cannot be called during the upgrade process.
-    modifier onlyCallAtInitialization() {
-        if (_getInitializedVersion() != 0) {
-            revert AlreadyInitialized();
-        }
-
-        _;
-    }
 
     /// @notice Initializes Release 1, Build 2.
     /// @dev This method is required to support [ERC-1822](https://eips.ethereum.org/EIPS/eip-1822).
