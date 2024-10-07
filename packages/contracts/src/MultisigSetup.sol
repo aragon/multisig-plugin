@@ -39,6 +39,9 @@ contract MultisigSetup is PluginUpgradeableSetup {
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
 
+    /// @notice Thrown when metadata's length is 0.
+    error EmptyMetadata();
+
     /// @notice The contract constructor, that deploys the `Multisig` plugin logic contract.
     constructor() PluginUpgradeableSetup(address(new Multisig())) {}
 
@@ -51,17 +54,22 @@ contract MultisigSetup is PluginUpgradeableSetup {
         (
             address[] memory members,
             Multisig.MultisigSettings memory multisigSettings,
-            PluginUUPSUpgradeable.TargetConfig memory targetConfig
+            PluginUUPSUpgradeable.TargetConfig memory targetConfig,
+            bytes memory metadata
         ) = abi.decode(
                 _data,
-                (address[], Multisig.MultisigSettings, PluginUUPSUpgradeable.TargetConfig)
+                (address[], Multisig.MultisigSettings, PluginUUPSUpgradeable.TargetConfig, bytes)
             );
+
+        if (metadata.length == 0) {
+            revert EmptyMetadata();
+        }
 
         // Deploy and initialize the plugin UUPS proxy.
         plugin = IMPLEMENTATION.deployUUPSProxy(
             abi.encodeCall(
                 Multisig.initialize,
-                (IDAO(_dao), members, multisigSettings, targetConfig)
+                (IDAO(_dao), members, multisigSettings, targetConfig, metadata)
             )
         );
 
@@ -124,8 +132,16 @@ contract MultisigSetup is PluginUpgradeableSetup {
     {
         (initData);
 
-        // todo: multisig never been upgraded right ?
         if (_fromBuild < 3) {
+            (, bytes memory metadata) = abi.decode(
+                _payload.data,
+                (PluginUUPSUpgradeable.TargetConfig, bytes)
+            );
+
+            if (metadata.length == 0) {
+                revert EmptyMetadata();
+            }
+
             address listedCheckCondition = address(new ListedCheckCondition(_payload.plugin));
 
             PermissionLib.MultiTargetPermission[]

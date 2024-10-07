@@ -1,5 +1,7 @@
 {
   "ui": {},
+  "name": "multisig",
+  "description": "description",
   "change": "v1.3\n - Removed an unneccessary permission that allowed the Dao to upgrade the plugin, because this is supposed to happens as part of the update itself. The unnecessary permission, which was granted on installation of previous versions, will be automatically removed with the update to this version.\n",
   "pluginSetup": {
     "prepareInstallation": {
@@ -50,6 +52,12 @@
           "name": "TargetConfig",
           "type": "tuple",
           "description": "The initial target config"
+        },
+        {
+          "internalType": "bytes",
+          "name": "metadata",
+          "type": "bytes",
+          "description": "The metadata that contains the information about the multisig."
         }
       ]
     },
@@ -84,6 +92,12 @@
             "name": "TargetConfig",
             "type": "tuple",
             "description": "The initial target config"
+          },
+          {
+            "internalType": "bytes",
+            "name": "metadata",
+            "type": "bytes",
+            "description": "The metadata that contains the information about the multisig."
           }
         ]
       }
