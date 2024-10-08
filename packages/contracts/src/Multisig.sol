@@ -157,7 +157,7 @@ contract Multisig is
         address[] calldata _members,
         MultisigSettings calldata _multisigSettings,
         TargetConfig calldata _targetConfig,
-        bytes calldata _metadata
+        bytes calldata _pluginMetadata
     ) external onlyCallAtInitialization reinitializer(2) {
         __PluginUUPSUpgradeable_init(_dao);
 
