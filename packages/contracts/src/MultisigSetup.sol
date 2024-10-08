@@ -35,6 +35,9 @@ contract MultisigSetup is PluginUpgradeableSetup {
     bytes32 public constant SET_TARGET_CONFIG_PERMISSION_ID =
         keccak256("SET_TARGET_CONFIG_PERMISSION");
 
+    /// @notice The ID of the permission required to call the `updateMetadata` function.
+    bytes32 public constant UPDATE_METADATA_PERMISSION_ID = keccak256("UPDATE_METADATA_PERMISSION");
+
     /// @notice The ID of the permission required to call the `updateMultisigSettings` function.
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
@@ -51,17 +54,18 @@ contract MultisigSetup is PluginUpgradeableSetup {
         (
             address[] memory members,
             Multisig.MultisigSettings memory multisigSettings,
-            PluginUUPSUpgradeable.TargetConfig memory targetConfig
+            PluginUUPSUpgradeable.TargetConfig memory targetConfig,
+            bytes memory pluginMetadata
         ) = abi.decode(
                 _data,
-                (address[], Multisig.MultisigSettings, PluginUUPSUpgradeable.TargetConfig)
+                (address[], Multisig.MultisigSettings, PluginUUPSUpgradeable.TargetConfig, bytes)
             );
 
         // Deploy and initialize the plugin UUPS proxy.
         plugin = IMPLEMENTATION.deployUUPSProxy(
             abi.encodeCall(
                 Multisig.initialize,
-                (IDAO(_dao), members, multisigSettings, targetConfig)
+                (IDAO(_dao), members, multisigSettings, targetConfig, pluginMetadata)
             )
         );
 
@@ -69,7 +73,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
 
         // Prepare permissions
         PermissionLib.MultiTargetPermission[]
-            memory permissions = new PermissionLib.MultiTargetPermission[](4);
+            memory permissions = new PermissionLib.MultiTargetPermission[](5);
 
         // Set permissions to be granted.
         // Grant the list of permissions of the plugin to the DAO.
@@ -105,6 +109,14 @@ contract MultisigSetup is PluginUpgradeableSetup {
             permissionId: SET_TARGET_CONFIG_PERMISSION_ID
         });
 
+        permissions[4] = PermissionLib.MultiTargetPermission({
+            operation: PermissionLib.Operation.Grant,
+            where: plugin,
+            who: _dao,
+            condition: PermissionLib.NO_CONDITION,
+            permissionId: UPDATE_METADATA_PERMISSION_ID
+        });
+
         preparedSetupData.permissions = permissions;
 
         preparedSetupData.helpers = new address[](1);
@@ -124,12 +136,11 @@ contract MultisigSetup is PluginUpgradeableSetup {
     {
         (initData);
 
-        // todo: multisig never been upgraded right ?
         if (_fromBuild < 3) {
             address listedCheckCondition = address(new ListedCheckCondition(_payload.plugin));
 
             PermissionLib.MultiTargetPermission[]
-                memory permissions = new PermissionLib.MultiTargetPermission[](3);
+                memory permissions = new PermissionLib.MultiTargetPermission[](4);
 
             permissions[0] = PermissionLib.MultiTargetPermission({
                 operation: PermissionLib.Operation.Revoke,
@@ -155,6 +166,14 @@ contract MultisigSetup is PluginUpgradeableSetup {
                 permissionId: SET_TARGET_CONFIG_PERMISSION_ID
             });
 
+            permissions[3] = PermissionLib.MultiTargetPermission({
+                operation: PermissionLib.Operation.Grant,
+                where: _payload.plugin,
+                who: _dao,
+                condition: PermissionLib.NO_CONDITION,
+                permissionId: UPDATE_METADATA_PERMISSION_ID
+            });
+
             preparedSetupData.permissions = permissions;
 
             preparedSetupData.helpers = new address[](1);
@@ -170,7 +189,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
         SetupPayload calldata _payload
     ) external view returns (PermissionLib.MultiTargetPermission[] memory permissions) {
         // Prepare permissions
-        permissions = new PermissionLib.MultiTargetPermission[](4);
+        permissions = new PermissionLib.MultiTargetPermission[](5);
 
         // Set permissions to be Revoked.
         permissions[0] = PermissionLib.MultiTargetPermission({
@@ -197,7 +216,15 @@ contract MultisigSetup is PluginUpgradeableSetup {
             permissionId: SET_TARGET_CONFIG_PERMISSION_ID
         });
 
-        permissions[3] = PermissionLib.MultiTargetPermission(
+        permissions[3] = PermissionLib.MultiTargetPermission({
+            operation: PermissionLib.Operation.Revoke,
+            where: _payload.plugin,
+            who: _dao,
+            condition: PermissionLib.NO_CONDITION,
+            permissionId: UPDATE_METADATA_PERMISSION_ID
+        });
+
+        permissions[4] = PermissionLib.MultiTargetPermission(
             PermissionLib.Operation.Revoke,
             _payload.plugin,
             address(type(uint160).max), // ANY_ADDR

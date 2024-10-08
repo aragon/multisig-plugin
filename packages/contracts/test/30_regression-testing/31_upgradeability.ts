@@ -35,6 +35,7 @@ describe('Upgrades', () => {
         defaultInitData.members,
         defaultInitData.settings,
         defaultInitData.targetConfig,
+        defaultInitData.metadata,
       ],
       'initialize',
       currentContractFactory,
@@ -44,7 +45,7 @@ describe('Upgrades', () => {
   });
 
   it('upgrades from v1.0.0 with initializeFrom', async () => {
-    const {deployer, alice, dao, defaultInitData, encodedParamsForUpgrade} =
+    const {deployer, alice, dao, defaultInitData, encodeDataForUpgrade} =
       await loadFixture(fixture);
     const currentContractFactory = new Multisig__factory(deployer);
     const legacyContractFactory = new Multisig_V1_0_0__factory(deployer);
@@ -64,6 +65,7 @@ describe('Upgrades', () => {
         defaultInitData.members,
         defaultInitData.settings,
         defaultInitData.targetConfig,
+        defaultInitData.metadata,
       ],
     ];
 
@@ -80,7 +82,7 @@ describe('Upgrades', () => {
 
     data[8] = 'initializeFrom';
     // @ts-ignore
-    data[9] = [latestInitializerVersion, encodedParamsForUpgrade];
+    data[9] = [latestInitializerVersion, encodeDataForUpgrade];
 
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
@@ -118,13 +120,14 @@ describe('Upgrades', () => {
         dao.address,
         defaultInitData.members,
         defaultInitData.settings,
-        defaultInitData.targetConfig
+        defaultInitData.targetConfig,
+        defaultInitData.metadata
       )
     ).to.be.revertedWithCustomError(proxy, 'AlreadyInitialized');
   });
 
   it('from v1.3.0 with initializeFrom', async () => {
-    const {deployer, alice, dao, defaultInitData, encodedParamsForUpgrade} =
+    const {deployer, alice, dao, defaultInitData, encodeDataForUpgrade} =
       await loadFixture(fixture);
     const currentContractFactory = new Multisig__factory(deployer);
     const legacyContractFactory = new Multisig_V1_3_0__factory(deployer);
@@ -144,6 +147,7 @@ describe('Upgrades', () => {
         defaultInitData.members,
         defaultInitData.settings,
         defaultInitData.targetConfig,
+        defaultInitData.metadata,
       ],
     ];
 
@@ -160,7 +164,7 @@ describe('Upgrades', () => {
 
     data[8] = 'initializeFrom';
     // @ts-ignore
-    data[9] = [latestInitializerVersion, encodedParamsForUpgrade];
+    data[9] = [latestInitializerVersion, encodeDataForUpgrade];
 
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
@@ -197,7 +201,8 @@ describe('Upgrades', () => {
         dao.address,
         defaultInitData.members,
         defaultInitData.settings,
-        defaultInitData.targetConfig
+        defaultInitData.targetConfig,
+        defaultInitData.metadata
       )
     ).to.be.revertedWithCustomError(proxy, 'AlreadyInitialized');
   });
@@ -212,6 +217,7 @@ type FixtureResult = {
     members: string[];
     settings: Multisig.MultisigSettingsStruct;
     targetConfig: TargetConfig;
+    metadata: string;
   };
   dao: DAO;
   encodeDataForUpgrade: string;
@@ -235,11 +241,12 @@ async function fixture(): Promise<FixtureResult> {
       target: dao.address,
       operation: Operation.call,
     },
+    metadata: '0x',
   };
 
-  const encodedParamsForUpgrade = ethers.utils.defaultAbiCoder.encode(
-    ['address', 'uint8'],
-    [deployer.address, Operation.delegatecall]
+  const encodeDataForUpgrade = ethers.utils.defaultAbiCoder.encode(
+    ['address', 'uint8', 'bytes'],
+    [deployer.address, Operation.delegatecall, '0x']
   );
 
   return {
@@ -249,6 +256,6 @@ async function fixture(): Promise<FixtureResult> {
     carol,
     dao,
     defaultInitData,
-    encodedParamsForUpgrade,
+    encodeDataForUpgrade,
   };
 }

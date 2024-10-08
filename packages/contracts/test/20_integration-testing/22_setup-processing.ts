@@ -47,6 +47,7 @@ type FixtureResult = {
     members: string[];
     settings: Multisig.MultisigSettingsStruct;
     targetConfig: TargetConfig;
+    metadata: string;
   };
   psp: PluginSetupProcessor;
   pluginRepo: PluginRepo;
@@ -100,6 +101,7 @@ async function fixture(): Promise<FixtureResult> {
       target: dao.address,
       operation: Operation.call,
     },
+    metadata: '0x',
   };
 
   const pluginSetupRefLatestBuild = {
@@ -170,7 +172,12 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
         getNamedTypesFromMetadata(
           METADATA.build.pluginSetup.prepareInstallation.inputs
         ),
-        [initialMembers, multisigSettings, defaultInitData.targetConfig]
+        [
+          initialMembers,
+          multisigSettings,
+          defaultInitData.targetConfig,
+          defaultInitData.metadata,
+        ]
       )
     );
 
@@ -217,7 +224,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       pluginSetupRefLatestBuild,
       1,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
-      [defaultInitData.targetConfig],
+      [defaultInitData.targetConfig, defaultInitData.metadata],
       latestInitializerVersion
     );
   });
@@ -240,7 +247,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       pluginSetupRefLatestBuild,
       2,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
-      [defaultInitData.targetConfig],
+      [defaultInitData.targetConfig, defaultInitData.metadata],
       latestInitializerVersion
     );
   });

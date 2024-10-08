@@ -12,6 +12,7 @@ import {PluginUUPSUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/Pl
 import {IProposal} from "@aragon/osx-commons-contracts/src/plugin/extensions/proposal/IProposal.sol";
 import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
 import {Action} from "@aragon/osx-commons-contracts/src/executors/IExecutor.sol";
+import {MetadataExtensionUpgradeable} from "@aragon/osx-commons-contracts/src/utils/metadata/MetadataExtensionUpgradeable.sol";
 
 import {IMultisig} from "./IMultisig.sol";
 
@@ -25,6 +26,7 @@ import {IMultisig} from "./IMultisig.sol";
 contract Multisig is
     IMultisig,
     IMembership,
+    MetadataExtensionUpgradeable,
     PluginUUPSUpgradeable,
     ProposalUpgradeable,
     Addresslist
@@ -154,7 +156,8 @@ contract Multisig is
         IDAO _dao,
         address[] calldata _members,
         MultisigSettings calldata _multisigSettings,
-        TargetConfig calldata _targetConfig
+        TargetConfig calldata _targetConfig,
+        bytes calldata _pluginMetadata
     ) external onlyCallAtInitialization reinitializer(2) {
         __PluginUUPSUpgradeable_init(_dao);
 
@@ -166,6 +169,7 @@ contract Multisig is
         emit MembersAdded({members: _members});
 
         _updateMultisigSettings(_multisigSettings);
+        _updateMetadata(_pluginMetadata);
 
         _setTargetConfig(_targetConfig);
     }
@@ -176,8 +180,13 @@ contract Multisig is
     /// @param _initData The initialization data to be passed to via `upgradeToAndCall` (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
     function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {
         if (_fromBuild < 3) {
-            TargetConfig memory targetConfig = abi.decode(_initData, (TargetConfig));
+            (TargetConfig memory targetConfig, bytes memory pluginMetadata) = abi.decode(
+                _initData,
+                (TargetConfig, bytes)
+            );
+
             _setTargetConfig(targetConfig);
+            _updateMetadata(pluginMetadata);
         }
     }
 
@@ -186,7 +195,13 @@ contract Multisig is
     /// @return Returns `true` if the interface is supported.
     function supportsInterface(
         bytes4 _interfaceId
-    ) public view virtual override(PluginUUPSUpgradeable, ProposalUpgradeable) returns (bool) {
+    )
+        public
+        view
+        virtual
+        override(MetadataExtensionUpgradeable, PluginUUPSUpgradeable, ProposalUpgradeable)
+        returns (bool)
+    {
         return
             _interfaceId == MULTISIG_INTERFACE_ID ||
             _interfaceId == type(IMultisig).interfaceId ||
@@ -321,14 +336,13 @@ contract Multisig is
             approve(proposalId, _tryExecution);
         }
 
-        emit ProposalCreated(
-            proposalId,
-            _msgSender(),
+        _emitProposalCreatedEvent(
+            _actions,
+            _metadata,
+            _allowFailureMap,
             _startDate,
             _endDate,
-            _metadata,
-            _actions,
-            _allowFailureMap
+            proposalId
         );
     }
 
@@ -564,6 +578,26 @@ contract Multisig is
             onlyListed: _multisigSettings.onlyListed,
             minApprovals: _multisigSettings.minApprovals
         });
+    }
+
+    /// @dev Helper function to avoid stack too deep.
+    function _emitProposalCreatedEvent(
+        Action[] memory _actions,
+        bytes memory _metadata,
+        uint256 _allowFailureMap,
+        uint64 _startDate,
+        uint64 _endDate,
+        uint256 _proposalId
+    ) private {
+        emit ProposalCreated(
+            _proposalId,
+            _msgSender(),
+            _startDate,
+            _endDate,
+            _metadata,
+            _actions,
+            _allowFailureMap
+        );
     }
 
     /// @dev This empty reserved space is put in place to allow future versions to add new
