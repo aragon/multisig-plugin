@@ -180,13 +180,13 @@ contract Multisig is
     /// @param _initData The initialization data to be passed to via `upgradeToAndCall` (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
     function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {
         if (_fromBuild < 3) {
-            (TargetConfig memory targetConfig, bytes memory metadata) = abi.decode(
+            (TargetConfig memory targetConfig, bytes memory pluginMetadata) = abi.decode(
                 _initData,
                 (TargetConfig, bytes)
             );
 
             _setTargetConfig(targetConfig);
-            _updateMetadata(metadata);
+            _updateMetadata(pluginMetadata);
         }
     }
 
