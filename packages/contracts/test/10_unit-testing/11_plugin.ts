@@ -65,6 +65,7 @@ type FixtureResult = {
     members: string[];
     settings: Multisig.MultisigSettingsStruct;
     targetConfig: TargetConfig;
+    metadata: string;
   };
   dao: DAO;
   dummyActions: DAOStructs.ActionStruct[];
@@ -95,6 +96,7 @@ async function fixture(): Promise<FixtureResult> {
       target: dao.address,
       operation: Operation.call,
     },
+    metadata: '0x11',
   };
   const pluginInitdata = pluginImplementation.interface.encodeFunctionData(
     'initialize',
@@ -103,6 +105,7 @@ async function fixture(): Promise<FixtureResult> {
       defaultInitData.members,
       defaultInitData.settings,
       defaultInitData.targetConfig,
+      defaultInitData.metadata,
     ]
   );
   const deploymentTx1 = await proxyFactory.deployUUPSProxy(pluginInitdata);
@@ -188,7 +191,8 @@ describe('Multisig', function () {
           dao.address,
           defaultInitData.members,
           defaultInitData.settings,
-          defaultInitData.targetConfig
+          defaultInitData.targetConfig,
+          defaultInitData.metadata
         )
       ).to.be.revertedWithCustomError(initializedPlugin, 'AlreadyInitialized');
     });
@@ -208,7 +212,8 @@ describe('Multisig', function () {
         dao.address,
         defaultInitData.members,
         defaultInitData.settings,
-        defaultInitData.targetConfig
+        defaultInitData.targetConfig,
+        defaultInitData.metadata
       );
 
       // Check that all members from the init data have been listed as members.
@@ -230,6 +235,13 @@ describe('Multisig', function () {
       ).to.be.eq(defaultInitData.settings.minApprovals);
     });
 
+    it('sets the `metadata`', async () => {
+      const {initializedPlugin, defaultInitData} = await loadFixture(fixture);
+      expect(await initializedPlugin.getMetadata()).to.be.eq(
+        defaultInitData.metadata
+      );
+    });
+
     it('sets `onlyListed`', async () => {
       const {initializedPlugin, defaultInitData} = await loadFixture(fixture);
       expect((await initializedPlugin.multisigSettings()).onlyListed).to.be.eq(
@@ -246,7 +258,8 @@ describe('Multisig', function () {
           dao.address,
           defaultInitData.members,
           defaultInitData.settings,
-          defaultInitData.targetConfig
+          defaultInitData.targetConfig,
+          defaultInitData.metadata
         )
       )
         .to.emit(uninitializedPlugin, MULTISIG_EVENTS.MultisigSettingsUpdated)
@@ -273,6 +286,7 @@ describe('Multisig', function () {
           overflowingMemberList,
           defaultInitData.settings,
           defaultInitData.targetConfig,
+          defaultInitData.metadata,
           {
             gasLimit: BigNumber.from(10).pow(8).toNumber(),
           }
@@ -290,22 +304,22 @@ describe('Multisig', function () {
     it('reverts if trying to re-reinitializeFrom', async () => {
       const {uninitializedPlugin, deployer} = await loadFixture(fixture);
 
-      const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
-        ['address', 'uint8'],
-        [deployer.address, Operation.delegatecall]
+      const encodedData = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'uint8', 'bytes'],
+        [deployer.address, Operation.delegatecall, '0x']
       );
 
       // reinitialize the plugin.
       await uninitializedPlugin.initializeFrom(
         latestInitializerVersion,
-        encodedDummyTarget
+        encodedData
       );
 
       // Try to reinitialize the  plugin.
       await expect(
         uninitializedPlugin.initializeFrom(
           latestInitializerVersion,
-          encodedDummyTarget
+          encodedData
         )
       ).to.be.revertedWith('Initializable: contract is already initialized');
     });
@@ -333,15 +347,15 @@ describe('Multisig', function () {
     it('sets the `_targetConfig` when initializing an uninitialized plugin', async () => {
       const {uninitializedPlugin, deployer} = await loadFixture(fixture);
 
-      const encodedDummyTarget = ethers.utils.defaultAbiCoder.encode(
-        ['address', 'uint8'],
-        [deployer.address, Operation.delegatecall]
+      const encodedData = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'uint8', 'bytes'],
+        [deployer.address, Operation.delegatecall, '0x']
       );
 
       // reinitialize the plugin.
       await uninitializedPlugin.initializeFrom(
         latestInitializerVersion,
-        encodedDummyTarget
+        encodedData
       );
 
       expect((await uninitializedPlugin.getTargetConfig()).target).to.be.eq(
@@ -995,7 +1009,8 @@ describe('Multisig', function () {
           onlyListed: true,
           minApprovals: 1,
         },
-        defaultInitData.targetConfig
+        defaultInitData.targetConfig,
+        defaultInitData.metadata
       );
 
       // Grant permissions between the DAO and the plugin.

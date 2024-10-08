@@ -61,10 +61,6 @@ contract MultisigSetup is PluginUpgradeableSetup {
                 (address[], Multisig.MultisigSettings, PluginUUPSUpgradeable.TargetConfig, bytes)
             );
 
-        if (metadata.length == 0) {
-            revert EmptyMetadata();
-        }
-
         // Deploy and initialize the plugin UUPS proxy.
         plugin = IMPLEMENTATION.deployUUPSProxy(
             abi.encodeCall(
@@ -133,15 +129,6 @@ contract MultisigSetup is PluginUpgradeableSetup {
         (initData);
 
         if (_fromBuild < 3) {
-            (, bytes memory metadata) = abi.decode(
-                _payload.data,
-                (PluginUUPSUpgradeable.TargetConfig, bytes)
-            );
-
-            if (metadata.length == 0) {
-                revert EmptyMetadata();
-            }
-
             address listedCheckCondition = address(new ListedCheckCondition(_payload.plugin));
 
             PermissionLib.MultiTargetPermission[]

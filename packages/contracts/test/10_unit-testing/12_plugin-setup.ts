@@ -62,6 +62,7 @@ async function fixture(): Promise<FixtureResult> {
   };
 
   const defaultTargetConfig = {target: dao.address, operation: op.call};
+  const defaultMetadata = '0x';
 
   // Provide installation inputs
   const prepareInstallationInputs = ethers.utils.defaultAbiCoder.encode(
@@ -72,6 +73,7 @@ async function fixture(): Promise<FixtureResult> {
       defaultMembers,
       Object.values(defaultMultisigSettings),
       defaultTargetConfig,
+      defaultMetadata,
     ]
   );
 
@@ -93,7 +95,7 @@ async function fixture(): Promise<FixtureResult> {
     getNamedTypesFromMetadata(
       METADATA.build.pluginSetup.prepareUpdate[3].inputs
     ),
-    [updateTargetConfig]
+    [updateTargetConfig, defaultMetadata]
   );
 
   return {
@@ -173,7 +175,7 @@ describe('MultisigSetup', function () {
         getNamedTypesFromMetadata(
           METADATA.build.pluginSetup.prepareInstallation.inputs
         ),
-        [noMembers, defaultMultisigSettings, defaultTargetConfig]
+        [noMembers, defaultMultisigSettings, defaultTargetConfig, '0x']
       );
 
       // Anticipate the plugin proxy address that will be deployed.
@@ -215,7 +217,7 @@ describe('MultisigSetup', function () {
         getNamedTypesFromMetadata(
           METADATA.build.pluginSetup.prepareInstallation.inputs
         ),
-        [members, multisigSettings, defaultTargetConfig]
+        [members, multisigSettings, defaultTargetConfig, '0x']
       );
 
       // Anticipate the plugin proxy address that will be deployed.
@@ -258,7 +260,7 @@ describe('MultisigSetup', function () {
         getNamedTypesFromMetadata(
           METADATA.build.pluginSetup.prepareInstallation.inputs
         ),
-        [members, multisigSettings, defaultTargetConfig]
+        [members, multisigSettings, defaultTargetConfig, '0x']
       );
 
       // Anticipate the plugin proxy address that will be deployed.
