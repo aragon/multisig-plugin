@@ -39,9 +39,6 @@ contract MultisigSetup is PluginUpgradeableSetup {
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
 
-    /// @notice Thrown when metadata's length is 0.
-    error EmptyMetadata();
-
     /// @notice The contract constructor, that deploys the `Multisig` plugin logic contract.
     constructor() PluginUpgradeableSetup(address(new Multisig())) {}
 
