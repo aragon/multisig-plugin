@@ -55,7 +55,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             address[] memory members,
             Multisig.MultisigSettings memory multisigSettings,
             PluginUUPSUpgradeable.TargetConfig memory targetConfig,
-            bytes memory metadata
+            bytes memory pluginMetadata
         ) = abi.decode(
                 _data,
                 (address[], Multisig.MultisigSettings, PluginUUPSUpgradeable.TargetConfig, bytes)
@@ -65,7 +65,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
         plugin = IMPLEMENTATION.deployUUPSProxy(
             abi.encodeCall(
                 Multisig.initialize,
-                (IDAO(_dao), members, multisigSettings, targetConfig, metadata)
+                (IDAO(_dao), members, multisigSettings, targetConfig, pluginMetadata)
             )
         );
 
