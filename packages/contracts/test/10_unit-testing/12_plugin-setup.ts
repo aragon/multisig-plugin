@@ -7,6 +7,7 @@ import {
   MULTISIG_INTERFACE,
   SET_TARGET_CONFIG_PERMISSION_ID,
   TargetConfig,
+  UPDATE_METADATA_PERMISSION_ID,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
   UPGRADE_PLUGIN_PERMISSION_ID,
 } from '../multisig-constants';
@@ -314,7 +315,7 @@ describe('MultisigSetup', function () {
       // Check the return data.
       expect(plugin).to.be.equal(anticipatedPluginAddress);
       expect(helpers.length).to.be.equal(1);
-      expect(permissions.length).to.be.equal(4);
+      expect(permissions.length).to.be.equal(5);
 
       const condition = helpers[0];
 
@@ -346,6 +347,13 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           SET_TARGET_CONFIG_PERMISSION_ID,
+        ],
+        [
+          Operation.Grant,
+          plugin,
+          dao.address,
+          AddressZero,
+          UPDATE_METADATA_PERMISSION_ID,
         ],
       ]);
     });
@@ -416,7 +424,7 @@ describe('MultisigSetup', function () {
           [1, prepareUpdateBuild3Inputs]
         )
       );
-      expect(permissions.length).to.be.equal(3);
+      expect(permissions.length).to.be.equal(4);
       expect(helpers.length).to.be.equal(1);
       // check correct permission is revoked
       expect(permissions).to.deep.equal([
@@ -440,6 +448,13 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           SET_TARGET_CONFIG_PERMISSION_ID,
+        ],
+        [
+          Operation.Grant,
+          plugin,
+          dao.address,
+          AddressZero,
+          UPDATE_METADATA_PERMISSION_ID,
         ],
       ]);
     });
@@ -470,7 +485,7 @@ describe('MultisigSetup', function () {
           [2, prepareUpdateBuild3Inputs]
         )
       );
-      expect(permissions.length).to.be.equal(3);
+      expect(permissions.length).to.be.equal(4);
       expect(helpers.length).to.be.equal(1);
       // check correct permission is revoked
       expect(permissions).to.deep.equal([
@@ -494,6 +509,13 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           SET_TARGET_CONFIG_PERMISSION_ID,
+        ],
+        [
+          Operation.Grant,
+          plugin,
+          dao.address,
+          AddressZero,
+          UPDATE_METADATA_PERMISSION_ID,
         ],
       ]);
     });
@@ -520,7 +542,7 @@ describe('MultisigSetup', function () {
       );
 
       // Check the return data.
-      expect(permissions.length).to.be.equal(4);
+      expect(permissions.length).to.be.equal(5);
       expect(permissions).to.deep.equal([
         [
           Operation.Revoke,
@@ -542,6 +564,13 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           SET_TARGET_CONFIG_PERMISSION_ID,
+        ],
+        [
+          Operation.Revoke,
+          plugin,
+          dao.address,
+          AddressZero,
+          UPDATE_METADATA_PERMISSION_ID,
         ],
         [
           Operation.Revoke,
