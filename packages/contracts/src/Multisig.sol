@@ -169,7 +169,7 @@ contract Multisig is
         emit MembersAdded({members: _members});
 
         _updateMultisigSettings(_multisigSettings);
-        _updateMetadata(_metadata);
+        _updateMetadata(_pluginMetadata);
 
         _setTargetConfig(_targetConfig);
     }
