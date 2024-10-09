@@ -7,7 +7,7 @@ import {
   MULTISIG_INTERFACE,
   SET_TARGET_CONFIG_PERMISSION_ID,
   TargetConfig,
-  UPDATE_METADATA_PERMISSION_ID,
+  SET_METADATA_PERMISSION_ID,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
   UPGRADE_PLUGIN_PERMISSION_ID,
 } from '../multisig-constants';
@@ -353,7 +353,7 @@ describe('MultisigSetup', function () {
           plugin,
           dao.address,
           AddressZero,
-          UPDATE_METADATA_PERMISSION_ID,
+          SET_METADATA_PERMISSION_ID,
         ],
       ]);
     });
@@ -454,7 +454,7 @@ describe('MultisigSetup', function () {
           plugin,
           dao.address,
           AddressZero,
-          UPDATE_METADATA_PERMISSION_ID,
+          SET_METADATA_PERMISSION_ID,
         ],
       ]);
     });
@@ -515,7 +515,7 @@ describe('MultisigSetup', function () {
           plugin,
           dao.address,
           AddressZero,
-          UPDATE_METADATA_PERMISSION_ID,
+          SET_METADATA_PERMISSION_ID,
         ],
       ]);
     });
@@ -570,7 +570,7 @@ describe('MultisigSetup', function () {
           plugin,
           dao.address,
           AddressZero,
-          UPDATE_METADATA_PERMISSION_ID,
+          SET_METADATA_PERMISSION_ID,
         ],
         [
           Operation.Revoke,

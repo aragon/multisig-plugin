@@ -6,7 +6,7 @@ pragma solidity ^0.8.8;
 import {PermissionLib} from "@aragon/osx-commons-contracts/src/permission/PermissionLib.sol";
 import {IPluginSetup} from "@aragon/osx-commons-contracts/src/plugin/setup/IPluginSetup.sol";
 import {PluginUpgradeableSetup} from "@aragon/osx-commons-contracts/src/plugin/setup/PluginUpgradeableSetup.sol";
-import {PluginUUPSUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/PluginUUPSUpgradeable.sol";
+import {IPlugin} from "@aragon/osx-commons-contracts/src/plugin/IPlugin.sol";
 
 import {ProxyLib} from "@aragon/osx-commons-contracts/src/utils/deployment/ProxyLib.sol";
 import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
@@ -35,8 +35,8 @@ contract MultisigSetup is PluginUpgradeableSetup {
     bytes32 public constant SET_TARGET_CONFIG_PERMISSION_ID =
         keccak256("SET_TARGET_CONFIG_PERMISSION");
 
-    /// @notice The ID of the permission required to call the `updateMetadata` function.
-    bytes32 public constant UPDATE_METADATA_PERMISSION_ID = keccak256("UPDATE_METADATA_PERMISSION");
+    /// @notice The ID of the permission required to call the `setMetadata` function.
+    bytes32 public constant SET_METADATA_PERMISSION_ID = keccak256("SET_METADATA_PERMISSION");
 
     /// @notice The ID of the permission required to call the `updateMultisigSettings` function.
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
@@ -54,12 +54,9 @@ contract MultisigSetup is PluginUpgradeableSetup {
         (
             address[] memory members,
             Multisig.MultisigSettings memory multisigSettings,
-            PluginUUPSUpgradeable.TargetConfig memory targetConfig,
+            IPlugin.TargetConfig memory targetConfig,
             bytes memory pluginMetadata
-        ) = abi.decode(
-                _data,
-                (address[], Multisig.MultisigSettings, PluginUUPSUpgradeable.TargetConfig, bytes)
-            );
+        ) = abi.decode(_data, (address[], Multisig.MultisigSettings, IPlugin.TargetConfig, bytes));
 
         // Deploy and initialize the plugin UUPS proxy.
         plugin = IMPLEMENTATION.deployUUPSProxy(
@@ -114,7 +111,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             where: plugin,
             who: _dao,
             condition: PermissionLib.NO_CONDITION,
-            permissionId: UPDATE_METADATA_PERMISSION_ID
+            permissionId: SET_METADATA_PERMISSION_ID
         });
 
         preparedSetupData.permissions = permissions;
@@ -171,7 +168,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
                 where: _payload.plugin,
                 who: _dao,
                 condition: PermissionLib.NO_CONDITION,
-                permissionId: UPDATE_METADATA_PERMISSION_ID
+                permissionId: SET_METADATA_PERMISSION_ID
             });
 
             preparedSetupData.permissions = permissions;
@@ -221,7 +218,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             where: _payload.plugin,
             who: _dao,
             condition: PermissionLib.NO_CONDITION,
-            permissionId: UPDATE_METADATA_PERMISSION_ID
+            permissionId: SET_METADATA_PERMISSION_ID
         });
 
         permissions[4] = PermissionLib.MultiTargetPermission(
