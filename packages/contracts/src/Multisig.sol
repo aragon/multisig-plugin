@@ -302,7 +302,7 @@ contract Multisig is
             revert DateOutOfBounds({limit: _startDate, actual: _endDate});
         }
 
-        proposalId = _createProposalId(keccak256(_metadata));
+        proposalId = _createProposalId(keccak256(abi.encode(_actions, _metadata)));
 
         // Create the proposal
         Proposal storage proposal_ = proposals[proposalId];

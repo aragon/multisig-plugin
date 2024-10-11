@@ -51,6 +51,7 @@ import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {BigNumber} from 'ethers';
+import {keccak256} from 'ethers/lib/utils';
 import {ethers} from 'hardhat';
 
 type FixtureResult = {
@@ -77,19 +78,21 @@ let chainId: number;
 
 async function createProposalId(
   pluginAddress: string,
+  actions: DAOStructs.ActionStruct[],
   metadata: string
 ): Promise<BigNumber> {
   const blockNumber = (await ethers.provider.getBlock('latest')).number;
+  const salt = keccak256(
+    defaultAbiCoder.encode(
+      ['tuple(address to,uint256 value,bytes data)[]', 'bytes'],
+      [actions, metadata]
+    )
+  );
   return BigNumber.from(
-    ethers.utils.keccak256(
-      ethers.utils.defaultAbiCoder.encode(
+    keccak256(
+      defaultAbiCoder.encode(
         ['uint256', 'uint256', 'address', 'bytes32'],
-        [
-          chainId,
-          blockNumber + 1,
-          pluginAddress,
-          ethers.utils.keccak256(metadata),
-        ]
+        [chainId, blockNumber + 1, pluginAddress, salt]
       )
     )
   );
@@ -842,7 +845,11 @@ describe('Multisig', function () {
         [1, true, true]
       );
 
-      const proposalId = await createProposalId(plugin.address, dummyMetadata);
+      const proposalId = await createProposalId(
+        plugin.address,
+        dummyActions,
+        dummyMetadata
+      );
 
       await plugin
         .connect(alice)
@@ -869,7 +876,11 @@ describe('Multisig', function () {
         initializedPlugin: plugin,
       } = data;
 
-      const proposalId = await createProposalId(plugin.address, dummyMetadata);
+      const proposalId = await createProposalId(
+        plugin.address,
+        dummyActions,
+        dummyMetadata
+      );
 
       await plugin
         .connect(alice)
@@ -929,7 +940,11 @@ describe('Multisig', function () {
         defaultInitData,
       } = data;
 
-      const proposalId = await createProposalId(plugin.address, dummyMetadata);
+      const proposalId = await createProposalId(
+        plugin.address,
+        dummyActions,
+        dummyMetadata
+      );
 
       // Create a proposal as Alice.
       const endDate = (await time.latest()) + TIME.HOUR;
@@ -962,6 +977,7 @@ describe('Multisig', function () {
       const endDate = startDate + TIME.HOUR;
       const expectedProposalId = await createProposalId(
         plugin.address,
+        [],
         dummyMetadata
       );
       await expect(
@@ -1123,6 +1139,7 @@ describe('Multisig', function () {
 
         const expectedProposalId = await createProposalId(
           plugin.address,
+          [],
           dummyMetadata
         );
 
@@ -1253,7 +1270,11 @@ describe('Multisig', function () {
             0,
             endDate
           );
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         // Check the listed members before the block is mined.
         expect(await plugin.isListed(carol.address)).to.equal(true);
@@ -1307,7 +1328,7 @@ describe('Multisig', function () {
       const endDate = startDate + TIME.HOUR;
       const allowFailureMap = 0;
       await time.setNextBlockTimestamp(startDate);
-      const id = await createProposalId(plugin.address, dummyMetadata);
+      const id = await createProposalId(plugin.address, [], dummyMetadata);
 
       const approveProposal = false;
 
@@ -1365,7 +1386,7 @@ describe('Multisig', function () {
 
       await time.setNextBlockTimestamp(startDate);
 
-      const id = await createProposalId(plugin.address, dummyMetadata);
+      const id = await createProposalId(plugin.address, [], dummyMetadata);
       await expect(
         plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
           dummyMetadata,
@@ -1493,7 +1514,11 @@ describe('Multisig', function () {
         } = data;
 
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1567,7 +1592,11 @@ describe('Multisig', function () {
 
         const endDate = (await time.latest()) + TIME.HOUR;
 
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1595,7 +1624,11 @@ describe('Multisig', function () {
 
         const endDate = (await time.latest()) + TIME.HOUR;
 
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1623,7 +1656,11 @@ describe('Multisig', function () {
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
 
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1654,7 +1691,11 @@ describe('Multisig', function () {
 
         const endDate = (await time.latest()) + TIME.HOUR;
 
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1687,7 +1728,11 @@ describe('Multisig', function () {
 
         const endDate = (await time.latest()) + TIME.HOUR;
 
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1713,7 +1758,11 @@ describe('Multisig', function () {
         } = data;
 
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1743,7 +1792,11 @@ describe('Multisig', function () {
 
         const endDate = (await time.latest()) + TIME.HOUR;
 
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
         await plugin
           .connect(alice)
           [CREATE_PROPOSAL_SIGNATURE](
@@ -1775,7 +1828,11 @@ describe('Multisig', function () {
 
         const endDate = (await time.latest()) + TIME.HOUR;
 
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1814,7 +1871,11 @@ describe('Multisig', function () {
 
         const endDate = (await time.latest()) + TIME.HOUR;
 
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1854,7 +1915,11 @@ describe('Multisig', function () {
         // Create a proposal as Alice that didn't started yet.
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1892,7 +1957,11 @@ describe('Multisig', function () {
         // Create a proposal as Alice that starts now.
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1926,7 +1995,11 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -1960,7 +2033,11 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
         await plugin
           .connect(alice)
           [CREATE_PROPOSAL_SIGNATURE](
@@ -2002,7 +2079,11 @@ describe('Multisig', function () {
         } = data;
 
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2035,7 +2116,11 @@ describe('Multisig', function () {
 
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2070,7 +2155,11 @@ describe('Multisig', function () {
         } = data;
 
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2108,7 +2197,11 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2148,7 +2241,11 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2202,7 +2299,11 @@ describe('Multisig', function () {
         } = data;
 
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2252,7 +2353,11 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2351,7 +2456,11 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2396,7 +2505,11 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2441,7 +2554,11 @@ describe('Multisig', function () {
         // Create a proposal as Alice.
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2490,7 +2607,11 @@ describe('Multisig', function () {
         // Create a proposal as Alice.
         const startDate = (await time.latest()) + TIME.MINUTE;
         const endDate = startDate + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin
           .connect(alice)
@@ -2547,7 +2668,11 @@ describe('Multisig', function () {
         )) as Multisig;
 
         const endDate = (await time.latest()) + TIME.HOUR;
-        const id = await createProposalId(plugin.address, dummyMetadata);
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
 
         await plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
           dummyMetadata,
