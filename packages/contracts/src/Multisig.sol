@@ -302,7 +302,7 @@ contract Multisig is
             revert DateOutOfBounds({limit: _startDate, actual: _endDate});
         }
 
-        proposalId = createProposalId(_actions, _metadata);
+        proposalId = _createProposalId(keccak256(abi.encode(_actions, _metadata)));
 
         // Create the proposal
         Proposal storage proposal_ = proposals[proposalId];
@@ -378,7 +378,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IProposal
-    function createProposalParamsABI() external pure override returns (string memory) {
+    function customProposalParamsABI() external pure override returns (string memory) {
         return "(uint256 allowFailureMap, bool approveProposal, bool tryExecution)";
     }
 
@@ -466,25 +466,6 @@ contract Multisig is
     /// @inheritdoc IMembership
     function isMember(address _account) external view returns (bool) {
         return isListed(_account);
-    }
-
-    /// @notice Hashing function used to (re)build the proposal id from the proposal details..
-    /// @dev The proposal id is produced by hashing the ABI encoded `targets` array, the `values` array, the `calldatas` array
-    /// and the descriptionHash (bytes32 which itself is the keccak256 hash of the description string). This proposal id
-    /// can be produced from the proposal data which is part of the {ProposalCreated} event. It can even be computed in
-    /// advance, before the proposal is submitted.
-    /// The chainId and the governor address are not part of the proposal id computation. Consequently, the
-    /// same proposal (with same operation and same description) will have the same id if submitted on multiple governors
-    /// across multiple networks. This also means that in order to execute the same operation twice (on the same
-    /// governor) the proposer will have to change the description in order to avoid proposal id conflicts.
-    /// @param _actions The actions that will be executed after the proposal passes.
-    /// @param _metadata The metadata of the proposal.
-    /// @return proposalId The ID of the proposal.
-    function createProposalId(
-        Action[] calldata _actions,
-        bytes memory _metadata
-    ) public pure override returns (uint256) {
-        return uint256(keccak256(abi.encode(_actions, _metadata)));
     }
 
     /// @notice Internal function to execute a vote. It assumes the queried proposal exists.
