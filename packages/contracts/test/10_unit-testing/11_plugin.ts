@@ -24,6 +24,7 @@ import {
   CREATE_PROPOSAL_PERMISSION_ID,
   CREATE_PROPOSAL_SIGNATURE,
   CREATE_PROPOSAL_SIGNATURE_IProposal,
+  EXECUTE_PROPOSAL_PERMISSION_ID,
   MULTISIG_EVENTS,
   MULTISIG_INTERFACE,
   Operation,
@@ -164,6 +165,18 @@ async function fixture(): Promise<FixtureResult> {
     },
   ];
 
+  await dao.grant(
+    initializedPlugin.address,
+    ANY_ADDR,
+    EXECUTE_PROPOSAL_PERMISSION_ID
+  );
+
+  await dao.grant(
+    uninitializedPlugin.address,
+    ANY_ADDR,
+    EXECUTE_PROPOSAL_PERMISSION_ID
+  );
+
   return {
     deployer,
     alice,
@@ -182,7 +195,7 @@ async function fixture(): Promise<FixtureResult> {
 
 async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
   const data = await loadFixture(fixture);
-  const {deployer, dao, initializedPlugin, uninitializedPlugin} = data;
+  const {deployer, alice, dao, initializedPlugin, uninitializedPlugin} = data;
 
   const condition = await new ListedCheckCondition__factory(deployer).deploy(
     initializedPlugin.address
@@ -201,6 +214,7 @@ async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
     CREATE_PROPOSAL_PERMISSION_ID,
     condition.address
   );
+
   return data;
 }
 
@@ -2687,6 +2701,78 @@ describe('Multisig', function () {
         await expect(plugin.connect(bob).approve(id, true))
           .to.emit(plugin, 'ExecutedCustom')
           .to.emit(plugin, 'ProposalExecuted');
+      });
+
+      it('can not execute if execute permission is not granted', async () => {
+        const {
+          alice,
+          bob,
+          initializedPlugin: plugin,
+          defaultInitData,
+          dao,
+          dummyMetadata,
+          dummyActions,
+        } = data;
+
+        // Create a proposal as Alice.
+        const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+
+        await plugin
+          .connect(alice)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
+
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
+        await dao.grant(
+          dao.address,
+          plugin.address,
+          DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
+        );
+
+        // Approve with Alice and Bob.
+        await plugin.connect(alice).approve(id, false);
+        await plugin.connect(bob).approve(id, false);
+
+        // Check that the `minApprovals` threshold is met.
+        const proposal = await plugin.getProposal(id);
+        expect(proposal.parameters.minApprovals).to.equal(
+          defaultInitData.settings.minApprovals
+        );
+        expect(proposal.approvals).to.be.eq(
+          defaultInitData.settings.minApprovals
+        );
+
+        // Check that the proposal can be executed.
+        expect(await plugin.canExecute(id)).to.be.true;
+
+        // Revoke execute permission from ANY_ADDR
+        await dao.revoke(
+          plugin.address,
+          ANY_ADDR,
+          EXECUTE_PROPOSAL_PERMISSION_ID
+        );
+
+        // Check that it executes.
+        await expect(plugin.connect(alice).execute(id))
+          .to.be.revertedWithCustomError(plugin, 'DaoUnauthorized')
+          .withArgs(
+            dao.address,
+            plugin.address,
+            alice.address,
+            EXECUTE_PROPOSAL_PERMISSION_ID
+          );
       });
     });
   });

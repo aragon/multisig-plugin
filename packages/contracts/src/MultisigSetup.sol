@@ -42,6 +42,9 @@ contract MultisigSetup is PluginUpgradeableSetup {
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
 
+    /// @notice A special address encoding permissions that are valid for any address `who` or `where`.
+    address internal constant ANY_ADDR = address(type(uint160).max);
+
     /// @notice The contract constructor, that deploys the `Multisig` plugin logic contract.
     constructor() PluginUpgradeableSetup(address(new Multisig())) {}
 
@@ -70,7 +73,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
 
         // Prepare permissions
         PermissionLib.MultiTargetPermission[]
-            memory permissions = new PermissionLib.MultiTargetPermission[](5);
+            memory permissions = new PermissionLib.MultiTargetPermission[](6);
 
         // Set permissions to be granted.
         // Grant the list of permissions of the plugin to the DAO.
@@ -90,13 +93,13 @@ contract MultisigSetup is PluginUpgradeableSetup {
             permissionId: EXECUTE_PERMISSION_ID
         });
 
-        permissions[2] = PermissionLib.MultiTargetPermission(
-            PermissionLib.Operation.GrantWithCondition,
-            plugin,
-            address(type(uint160).max), // ANY_ADDR
-            listedCheckCondition,
-            Multisig(IMPLEMENTATION).CREATE_PROPOSAL_PERMISSION_ID()
-        );
+        permissions[2] = PermissionLib.MultiTargetPermission({
+            operation: PermissionLib.Operation.GrantWithCondition,
+            where: plugin,
+            who: ANY_ADDR,
+            condition: listedCheckCondition,
+            permissionId: Multisig(IMPLEMENTATION).CREATE_PROPOSAL_PERMISSION_ID()
+        });
 
         permissions[3] = PermissionLib.MultiTargetPermission({
             operation: PermissionLib.Operation.Grant,
@@ -112,6 +115,14 @@ contract MultisigSetup is PluginUpgradeableSetup {
             who: _dao,
             condition: PermissionLib.NO_CONDITION,
             permissionId: SET_METADATA_PERMISSION_ID
+        });
+
+        permissions[5] = PermissionLib.MultiTargetPermission({
+            operation: PermissionLib.Operation.Grant,
+            where: plugin,
+            who: ANY_ADDR,
+            condition: PermissionLib.NO_CONDITION,
+            permissionId: Multisig(IMPLEMENTATION).EXECUTE_PROPOSAL_PERMISSION_ID()
         });
 
         preparedSetupData.permissions = permissions;
@@ -137,7 +148,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             address listedCheckCondition = address(new ListedCheckCondition(_payload.plugin));
 
             PermissionLib.MultiTargetPermission[]
-                memory permissions = new PermissionLib.MultiTargetPermission[](4);
+                memory permissions = new PermissionLib.MultiTargetPermission[](5);
 
             permissions[0] = PermissionLib.MultiTargetPermission({
                 operation: PermissionLib.Operation.Revoke,
@@ -147,13 +158,13 @@ contract MultisigSetup is PluginUpgradeableSetup {
                 permissionId: UPGRADE_PLUGIN_PERMISSION_ID
             });
 
-            permissions[1] = PermissionLib.MultiTargetPermission(
-                PermissionLib.Operation.GrantWithCondition,
-                _payload.plugin,
-                address(type(uint160).max), // ANY_ADDR
-                listedCheckCondition,
-                Multisig(IMPLEMENTATION).CREATE_PROPOSAL_PERMISSION_ID()
-            );
+            permissions[1] = PermissionLib.MultiTargetPermission({
+                operation: PermissionLib.Operation.GrantWithCondition,
+                where: _payload.plugin,
+                who: ANY_ADDR,
+                condition: listedCheckCondition,
+                permissionId: Multisig(IMPLEMENTATION).CREATE_PROPOSAL_PERMISSION_ID()
+            });
 
             permissions[2] = PermissionLib.MultiTargetPermission({
                 operation: PermissionLib.Operation.Grant,
@@ -171,6 +182,14 @@ contract MultisigSetup is PluginUpgradeableSetup {
                 permissionId: SET_METADATA_PERMISSION_ID
             });
 
+            permissions[4] = PermissionLib.MultiTargetPermission({
+                operation: PermissionLib.Operation.Grant,
+                where: _payload.plugin,
+                who: ANY_ADDR,
+                condition: PermissionLib.NO_CONDITION,
+                permissionId: Multisig(IMPLEMENTATION).EXECUTE_PROPOSAL_PERMISSION_ID()
+            });
+
             preparedSetupData.permissions = permissions;
 
             preparedSetupData.helpers = new address[](1);
@@ -186,7 +205,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
         SetupPayload calldata _payload
     ) external view returns (PermissionLib.MultiTargetPermission[] memory permissions) {
         // Prepare permissions
-        permissions = new PermissionLib.MultiTargetPermission[](5);
+        permissions = new PermissionLib.MultiTargetPermission[](6);
 
         // Set permissions to be Revoked.
         permissions[0] = PermissionLib.MultiTargetPermission({
@@ -221,12 +240,20 @@ contract MultisigSetup is PluginUpgradeableSetup {
             permissionId: SET_METADATA_PERMISSION_ID
         });
 
-        permissions[4] = PermissionLib.MultiTargetPermission(
-            PermissionLib.Operation.Revoke,
-            _payload.plugin,
-            address(type(uint160).max), // ANY_ADDR
-            PermissionLib.NO_CONDITION,
-            Multisig(IMPLEMENTATION).CREATE_PROPOSAL_PERMISSION_ID()
-        );
+        permissions[4] = PermissionLib.MultiTargetPermission({
+            operation: PermissionLib.Operation.Revoke,
+            where: _payload.plugin,
+            who: ANY_ADDR,
+            condition: PermissionLib.NO_CONDITION,
+            permissionId: Multisig(IMPLEMENTATION).CREATE_PROPOSAL_PERMISSION_ID()
+        });
+
+        permissions[5] = PermissionLib.MultiTargetPermission({
+            operation: PermissionLib.Operation.Revoke,
+            where: _payload.plugin,
+            who: ANY_ADDR,
+            condition: PermissionLib.NO_CONDITION,
+            permissionId: Multisig(IMPLEMENTATION).EXECUTE_PROPOSAL_PERMISSION_ID()
+        });
     }
 }

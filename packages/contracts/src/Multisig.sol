@@ -89,6 +89,10 @@ contract Multisig is
     /// @notice The ID of the permission required to call the `createProposal` function.
     bytes32 public constant CREATE_PROPOSAL_PERMISSION_ID = keccak256("CREATE_PROPOSAL_PERMISSION");
 
+    /// @notice The ID of the permission required to call the `execute` functions.
+    bytes32 public constant EXECUTE_PROPOSAL_PERMISSION_ID =
+        keccak256("EXECUTE_PROPOSAL_PERMISSION");
+
     /// @notice A mapping between proposal IDs and proposal information.
     // solhint-disable-next-line named-parameters-mapping
     mapping(uint256 => Proposal) internal proposals;
@@ -401,7 +405,14 @@ contract Multisig is
 
         emit Approved({proposalId: _proposalId, approver: approver});
 
-        if (_tryExecution && _canExecute(_proposalId)) {
+        if (!_tryExecution) {
+            return;
+        }
+
+        if (
+            _canExecute(_proposalId) &&
+            dao().hasPermission(address(this), approver, EXECUTE_PROPOSAL_PERMISSION_ID, msg.data)
+        ) {
             _execute(_proposalId);
         }
     }
@@ -455,7 +466,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
-    function execute(uint256 _proposalId) public {
+    function execute(uint256 _proposalId) public auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
         if (!_canExecute(_proposalId)) {
             revert ProposalExecutionForbidden(_proposalId);
         }

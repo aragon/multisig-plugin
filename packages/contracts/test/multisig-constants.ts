@@ -31,6 +31,10 @@ export const SET_METADATA_PERMISSION_ID = ethers.utils.id(
   'SET_METADATA_PERMISSION'
 );
 
+export const EXECUTE_PROPOSAL_PERMISSION_ID = ethers.utils.id(
+  'EXECUTE_PROPOSAL_PERMISSION'
+);
+
 export const CREATE_PROPOSAL_SIGNATURE =
   'createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)';
 

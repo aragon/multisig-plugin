@@ -10,6 +10,7 @@ import {
   SET_METADATA_PERMISSION_ID,
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
   UPGRADE_PLUGIN_PERMISSION_ID,
+  EXECUTE_PROPOSAL_PERMISSION_ID,
 } from '../multisig-constants';
 import {Operation as op} from '../multisig-constants';
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
@@ -315,7 +316,7 @@ describe('MultisigSetup', function () {
       // Check the return data.
       expect(plugin).to.be.equal(anticipatedPluginAddress);
       expect(helpers.length).to.be.equal(1);
-      expect(permissions.length).to.be.equal(5);
+      expect(permissions.length).to.be.equal(6);
 
       const condition = helpers[0];
 
@@ -354,6 +355,13 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           SET_METADATA_PERMISSION_ID,
+        ],
+        [
+          Operation.Grant,
+          plugin,
+          ANY_ADDR,
+          AddressZero,
+          EXECUTE_PROPOSAL_PERMISSION_ID,
         ],
       ]);
     });
@@ -424,7 +432,7 @@ describe('MultisigSetup', function () {
           [1, prepareUpdateBuild3Inputs]
         )
       );
-      expect(permissions.length).to.be.equal(4);
+      expect(permissions.length).to.be.equal(5);
       expect(helpers.length).to.be.equal(1);
       // check correct permission is revoked
       expect(permissions).to.deep.equal([
@@ -455,6 +463,13 @@ describe('MultisigSetup', function () {
           dao.address,
           AddressZero,
           SET_METADATA_PERMISSION_ID,
+        ],
+        [
+          Operation.Grant,
+          plugin,
+          ANY_ADDR,
+          AddressZero,
+          EXECUTE_PROPOSAL_PERMISSION_ID,
         ],
       ]);
     });
@@ -485,7 +500,7 @@ describe('MultisigSetup', function () {
           [2, prepareUpdateBuild3Inputs]
         )
       );
-      expect(permissions.length).to.be.equal(4);
+      expect(permissions.length).to.be.equal(5);
       expect(helpers.length).to.be.equal(1);
       // check correct permission is revoked
       expect(permissions).to.deep.equal([
@@ -517,6 +532,13 @@ describe('MultisigSetup', function () {
           AddressZero,
           SET_METADATA_PERMISSION_ID,
         ],
+        [
+          Operation.Grant,
+          plugin,
+          ANY_ADDR,
+          AddressZero,
+          EXECUTE_PROPOSAL_PERMISSION_ID,
+        ],
       ]);
     });
   });
@@ -542,7 +564,7 @@ describe('MultisigSetup', function () {
       );
 
       // Check the return data.
-      expect(permissions.length).to.be.equal(5);
+      expect(permissions.length).to.be.equal(6);
       expect(permissions).to.deep.equal([
         [
           Operation.Revoke,
@@ -578,6 +600,13 @@ describe('MultisigSetup', function () {
           ANY_ADDR,
           AddressZero,
           CREATE_PROPOSAL_PERMISSION_ID,
+        ],
+        [
+          Operation.Revoke,
+          plugin,
+          ANY_ADDR,
+          AddressZero,
+          EXECUTE_PROPOSAL_PERMISSION_ID,
         ],
       ]);
     });
