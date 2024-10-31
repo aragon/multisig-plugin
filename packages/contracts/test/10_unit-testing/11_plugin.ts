@@ -2774,6 +2774,80 @@ describe('Multisig', function () {
             EXECUTE_PROPOSAL_PERMISSION_ID
           );
       });
+
+      it('records approve correctly without execting when tryExecution is selected & execute permission is not granted', async () => {
+        const {
+          alice,
+          bob,
+          initializedPlugin: plugin,
+          defaultInitData,
+          dao,
+          dummyMetadata,
+          dummyActions,
+        } = data;
+
+        // Create a proposal as Alice.
+        const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+
+        await plugin
+          .connect(alice)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
+
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
+        await dao.grant(
+          dao.address,
+          plugin.address,
+          DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
+        );
+
+        // Check that the no one submited an approve yet.
+        let proposal = await plugin.getProposal(id);
+        expect(proposal.approvals).to.be.equal(0);
+
+        // Approve with Alice, but without try execution..
+        await plugin.connect(alice).approve(id, false);
+
+        // Check that the `minApprovals` threshold is not met yet.
+        expect(proposal.parameters.minApprovals).to.equal(
+          defaultInitData.settings.minApprovals
+        );
+        expect(proposal.approvals).to.be.lt(
+          defaultInitData.settings.minApprovals
+        );
+        proposal = await plugin.getProposal(id);
+        expect(proposal.approvals).to.be.equal(1);
+
+        // Revoke execute permission from ANY_ADDR
+        await dao.revoke(
+          plugin.address,
+          ANY_ADDR,
+          EXECUTE_PROPOSAL_PERMISSION_ID
+        );
+
+        // Approve with Bob and try execution.
+        await plugin.connect(bob).approve(id, true);
+
+        // Check that the `minApprovals` threshold is met.
+        proposal = await plugin.getProposal(id);
+        expect(proposal.approvals).to.be.equal(
+          defaultInitData.settings.minApprovals
+        );
+        expect(proposal.approvals).to.be.equal(2);
+        expect(proposal.executed).to.be.equal(false);
+      });
     });
   });
 });
