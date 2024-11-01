@@ -2775,7 +2775,7 @@ describe('Multisig', function () {
           );
       });
 
-      it.only('records approve correctly without execting when tryExecution is selected & execute permission is not granted', async () => {
+      it('records approve correctly without execting when tryExecution is selected & execute permission is not granted', async () => {
         const {
           alice,
           bob,
