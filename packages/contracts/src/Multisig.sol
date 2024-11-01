@@ -89,7 +89,7 @@ contract Multisig is
     /// @notice The ID of the permission required to call the `createProposal` function.
     bytes32 public constant CREATE_PROPOSAL_PERMISSION_ID = keccak256("CREATE_PROPOSAL_PERMISSION");
 
-    /// @notice The ID of the permission required to call the `execute` functions.
+    /// @notice The ID of the permission required to call the `execute` function.
     bytes32 public constant EXECUTE_PROPOSAL_PERMISSION_ID =
         keccak256("EXECUTE_PROPOSAL_PERMISSION");
 

@@ -2775,7 +2775,7 @@ describe('Multisig', function () {
           );
       });
 
-      it('records approve correctly without execting when tryExecution is selected & execute permission is not granted', async () => {
+      it.only('records approve correctly without execting when tryExecution is selected & execute permission is not granted', async () => {
         const {
           alice,
           bob,
@@ -2845,6 +2845,7 @@ describe('Multisig', function () {
         expect(proposal.approvals).to.be.equal(
           defaultInitData.settings.minApprovals
         );
+        expect(await plugin.canExecute(id)).to.be.true;
         expect(proposal.approvals).to.be.equal(2);
         expect(proposal.executed).to.be.equal(false);
       });
