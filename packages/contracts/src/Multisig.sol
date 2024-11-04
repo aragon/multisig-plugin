@@ -423,10 +423,15 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
-    function canExecute(
-        uint256 _proposalId
-    ) external view override(IMultisig, IProposal) returns (bool) {
+    function canExecute(uint256 _proposalId) external view virtual override returns (bool) {
         return _canExecute(_proposalId);
+    }
+
+    /// @inheritdoc IProposal
+    function hasSucceeded(uint256 _proposalId) external view virtual override returns (bool) {
+        Proposal storage proposal_ = proposals[_proposalId];
+
+        return proposal_.approvals >= proposal_.parameters.minApprovals;
     }
 
     /// @notice Returns all information for a proposal vote by its ID.

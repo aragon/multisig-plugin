@@ -1998,6 +1998,132 @@ describe('Multisig', function () {
       });
     });
 
+    describe('hasSucceeded', async () => {
+      it('returns `false` if the proposal has not reached the minimum approval yet', async () => {
+        const {
+          alice,
+          initializedPlugin: plugin,
+          dummyMetadata,
+          dummyActions,
+        } = data;
+
+        // Create a proposal as Alice.
+        const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+
+        await plugin
+          .connect(alice)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
+
+        // Check that `minApprovals` isn't met yet.
+        const proposal = await plugin.getProposal(id);
+        expect(proposal.approvals).to.be.lt(proposal.parameters.minApprovals);
+
+        // Check that the proposal can not be executed.
+        expect(await plugin.hasSucceeded(id)).to.be.false;
+      });
+
+      it('returns `true` if threshold is met even if the proposal is already executed', async () => {
+        const {
+          alice,
+          bob,
+          initializedPlugin: plugin,
+          dao,
+          dummyMetadata,
+          dummyActions,
+        } = data;
+
+        // Create a proposal as Alice.
+        const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+        await plugin
+          .connect(alice)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
+
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
+        await dao.grant(
+          dao.address,
+          plugin.address,
+          DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
+        );
+
+        // Approve as Alice.
+        await plugin.connect(alice).approve(id, false);
+        // Approve and execute as Bob.
+        await plugin.connect(bob).approve(id, true);
+
+        // Check that the proposal got executed.
+        expect((await plugin.getProposal(id)).executed).to.be.true;
+
+        // Check that it cannot be executed again.
+        expect(await plugin.hasSucceeded(id)).to.be.true;
+      });
+
+      it('returns `true` if threshold is met and time window expired', async () => {
+        const {
+          alice,
+          bob,
+          initializedPlugin: plugin,
+          dao,
+          dummyMetadata,
+          dummyActions,
+        } = data;
+
+        // Create a proposal as Alice.
+        const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+        await plugin
+          .connect(alice)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
+
+        // Approve as Alice.
+        await plugin.connect(alice).approve(id, false);
+        // Approve and execute as Bob.
+        await plugin.connect(bob).approve(id, false);
+
+        await time.increaseTo(endDate + 1);
+
+        // Check that it cannot be executed again.
+        expect(await plugin.hasSucceeded(id)).to.be.true;
+      });
+    });
+
     describe('canExecute', async () => {
       it('returns `false` if the proposal has not reached the minimum approval yet', async () => {
         const {
