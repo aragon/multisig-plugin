@@ -218,7 +218,7 @@ async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
   return data;
 }
 
-describe('Multisig', function () {
+describe.only('Multisig', function () {
   before(async () => {
     chainId = (await ethers.provider.getNetwork()).chainId;
   });
@@ -1516,6 +1516,15 @@ describe('Multisig', function () {
     });
 
     describe('canApprove', async () => {
+      it('reverts if proposal does not exist', async () => {
+        const {initializedPlugin: plugin} = data;
+        const id = 10;
+
+        await expect(plugin.canApprove(id, plugin.address))
+          .to.be.revertedWithCustomError(plugin, 'NonexistentProposal')
+          .withArgs(id);
+      });
+
       it('returns `false` if the proposal is already executed', async () => {
         const {
           alice,
@@ -1578,6 +1587,12 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+
         await plugin
           .connect(alice)
           [CREATE_PROPOSAL_SIGNATURE](
@@ -1589,7 +1604,6 @@ describe('Multisig', function () {
             0,
             endDate
           );
-        const id = 0;
 
         // Check that Dave who is not listed cannot approve.
         expect(await plugin.isListed(dave.address)).to.be.false;
@@ -1999,6 +2013,15 @@ describe('Multisig', function () {
     });
 
     describe('hasSucceeded', async () => {
+      it('reverts if proposal does not exist', async () => {
+        const {initializedPlugin: plugin} = data;
+        const id = 10;
+
+        await expect(plugin.hasSucceeded(id))
+          .to.be.revertedWithCustomError(plugin, 'NonexistentProposal')
+          .withArgs(id);
+      });
+
       it('returns `false` if the proposal has not reached the minimum approval yet', async () => {
         const {
           alice,
@@ -2131,6 +2154,15 @@ describe('Multisig', function () {
     });
 
     describe('canExecute', async () => {
+      it('reverts if proposal does not exist', async () => {
+        const {initializedPlugin: plugin} = data;
+        const id = 10;
+
+        await expect(plugin.canExecute(id))
+          .to.be.revertedWithCustomError(plugin, 'NonexistentProposal')
+          .withArgs(id);
+      });
+
       it('returns `false` if the proposal has not reached the minimum approval yet', async () => {
         const {
           alice,

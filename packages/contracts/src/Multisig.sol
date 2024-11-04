@@ -109,6 +109,10 @@ contract Multisig is
     /// @param sender The sender address.
     error ProposalCreationForbidden(address sender);
 
+    /// @notice Thrown when a proposal doesn't exist.
+    /// @param proposalId The ID of the proposal which doesn't exist.
+    error NonexistentProposal(uint256 proposalId);
+
     /// @notice Thrown if an approver is not allowed to cast an approve. This can be because the proposal
     /// - is not open,
     /// - was executed, or
@@ -132,7 +136,7 @@ contract Multisig is
     /// @param actual The actual value.
     error AddresslistLengthOutOfBounds(uint16 limit, uint256 actual);
 
-    /// @notice Thrown if the proposal with same actions and metadata already exists.
+    /// @notice Thrown if the proposal with the same id already exists.
     /// @param proposalId The id of the proposal.
     error ProposalAlreadyExists(uint256 proposalId);
 
@@ -419,16 +423,28 @@ contract Multisig is
 
     /// @inheritdoc IMultisig
     function canApprove(uint256 _proposalId, address _account) external view returns (bool) {
+        if (!_proposalExists(_proposalId)) {
+            revert NonexistentProposal(_proposalId);
+        }
+
         return _canApprove(_proposalId, _account);
     }
 
     /// @inheritdoc IMultisig
     function canExecute(uint256 _proposalId) external view virtual override returns (bool) {
+        if (!_proposalExists(_proposalId)) {
+            revert NonexistentProposal(_proposalId);
+        }
+
         return _canExecute(_proposalId);
     }
 
     /// @inheritdoc IProposal
     function hasSucceeded(uint256 _proposalId) external view virtual override returns (bool) {
+        if (!_proposalExists(_proposalId)) {
+            revert NonexistentProposal(_proposalId);
+        }
+
         Proposal storage proposal_ = proposals[_proposalId];
 
         return proposal_.approvals >= proposal_.parameters.minApprovals;
@@ -500,6 +516,13 @@ contract Multisig is
         );
 
         emit ProposalExecuted(_proposalId);
+    }
+
+    /// @notice Checks if proposal exists or not.
+    /// @param _proposalId The ID of the proposal.
+    /// @return Returns `true` if proposal exists, otherwise false.
+    function _proposalExists(uint256 _proposalId) private view returns (bool) {
+        return proposals[_proposalId].parameters.snapshotBlock != 0;
     }
 
     /// @notice Internal function to check if an account can approve. It assumes the queried proposal exists.
