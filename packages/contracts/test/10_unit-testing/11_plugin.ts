@@ -2031,11 +2031,11 @@ describe('Multisig', function () {
         const proposal = await plugin.getProposal(id);
         expect(proposal.approvals).to.be.lt(proposal.parameters.minApprovals);
 
-        // Check that the proposal can not be executed.
+        // Check that the proposal has not yet succeeded.
         expect(await plugin.hasSucceeded(id)).to.be.false;
       });
 
-      it('returns `true` if threshold is met even if the proposal is already executed', async () => {
+      it('returns `true` if threshold is met even if the proposal is executed or not', async () => {
         const {
           alice,
           bob,
@@ -2074,12 +2074,17 @@ describe('Multisig', function () {
         // Approve as Alice.
         await plugin.connect(alice).approve(id, false);
         // Approve and execute as Bob.
-        await plugin.connect(bob).approve(id, true);
+        await plugin.connect(bob).approve(id, false);
+
+        // It must still return true even if proposal is not executed yet.
+        expect(await plugin.hasSucceeded(id)).to.be.true;
+
+        await plugin.execute(id);
 
         // Check that the proposal got executed.
         expect((await plugin.getProposal(id)).executed).to.be.true;
 
-        // Check that it cannot be executed again.
+        // It must still return true even if proposal has been executed.
         expect(await plugin.hasSucceeded(id)).to.be.true;
       });
 
@@ -2119,7 +2124,8 @@ describe('Multisig', function () {
 
         await time.increaseTo(endDate + 1);
 
-        // Check that it cannot be executed again.
+        // Check that it still returns true even after time windows are expired.
+        // Ensures that this function doesn't depend on time checks.
         expect(await plugin.hasSucceeded(id)).to.be.true;
       });
     });
