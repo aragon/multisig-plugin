@@ -1516,6 +1516,15 @@ describe('Multisig', function () {
     });
 
     describe('canApprove', async () => {
+      it('reverts if proposal does not exist', async () => {
+        const {initializedPlugin: plugin} = data;
+        const id = 10;
+
+        await expect(plugin.canApprove(id, plugin.address))
+          .to.be.revertedWithCustomError(plugin, 'NonexistentProposal')
+          .withArgs(id);
+      });
+
       it('returns `false` if the proposal is already executed', async () => {
         const {
           alice,
@@ -1578,6 +1587,12 @@ describe('Multisig', function () {
 
         // Create a proposal as Alice.
         const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+
         await plugin
           .connect(alice)
           [CREATE_PROPOSAL_SIGNATURE](
@@ -1589,7 +1604,6 @@ describe('Multisig', function () {
             0,
             endDate
           );
-        const id = 0;
 
         // Check that Dave who is not listed cannot approve.
         expect(await plugin.isListed(dave.address)).to.be.false;
@@ -1998,7 +2012,157 @@ describe('Multisig', function () {
       });
     });
 
+    describe('hasSucceeded', async () => {
+      it('reverts if proposal does not exist', async () => {
+        const {initializedPlugin: plugin} = data;
+        const id = 10;
+
+        await expect(plugin.hasSucceeded(id))
+          .to.be.revertedWithCustomError(plugin, 'NonexistentProposal')
+          .withArgs(id);
+      });
+
+      it('returns `false` if the proposal has not reached the minimum approval yet', async () => {
+        const {
+          alice,
+          initializedPlugin: plugin,
+          dummyMetadata,
+          dummyActions,
+        } = data;
+
+        // Create a proposal as Alice.
+        const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+
+        await plugin
+          .connect(alice)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
+
+        // Check that `minApprovals` isn't met yet.
+        const proposal = await plugin.getProposal(id);
+        expect(proposal.approvals).to.be.lt(proposal.parameters.minApprovals);
+
+        // Check that the proposal has not yet succeeded.
+        expect(await plugin.hasSucceeded(id)).to.be.false;
+      });
+
+      it('returns `true` if threshold is met even if the proposal is executed or not', async () => {
+        const {
+          alice,
+          bob,
+          initializedPlugin: plugin,
+          dao,
+          dummyMetadata,
+          dummyActions,
+        } = data;
+
+        // Create a proposal as Alice.
+        const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+        await plugin
+          .connect(alice)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
+
+        // Grant the plugin `EXECUTE_PERMISSION_ID` permission on the DAO.
+        await dao.grant(
+          dao.address,
+          plugin.address,
+          DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
+        );
+
+        // Approve as Alice.
+        await plugin.connect(alice).approve(id, false);
+        // Approve and execute as Bob.
+        await plugin.connect(bob).approve(id, false);
+
+        // It must still return true even if proposal is not executed yet.
+        expect(await plugin.hasSucceeded(id)).to.be.true;
+
+        await plugin.execute(id);
+
+        // Check that the proposal got executed.
+        expect((await plugin.getProposal(id)).executed).to.be.true;
+
+        // It must still return true even if proposal has been executed.
+        expect(await plugin.hasSucceeded(id)).to.be.true;
+      });
+
+      it('returns `true` if threshold is met and time window expired', async () => {
+        const {
+          alice,
+          bob,
+          initializedPlugin: plugin,
+          dao,
+          dummyMetadata,
+          dummyActions,
+        } = data;
+
+        // Create a proposal as Alice.
+        const endDate = (await time.latest()) + TIME.HOUR;
+        const id = await createProposalId(
+          plugin.address,
+          dummyActions,
+          dummyMetadata
+        );
+        await plugin
+          .connect(alice)
+          [CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            dummyActions,
+            0,
+            false,
+            false,
+            0,
+            endDate
+          );
+
+        // Approve as Alice.
+        await plugin.connect(alice).approve(id, false);
+        // Approve and execute as Bob.
+        await plugin.connect(bob).approve(id, false);
+
+        await time.increaseTo(endDate + 1);
+
+        // Check that it still returns true even after time windows are expired.
+        // Ensures that this function doesn't depend on time checks.
+        expect(await plugin.hasSucceeded(id)).to.be.true;
+      });
+    });
+
     describe('canExecute', async () => {
+      it('reverts if proposal does not exist', async () => {
+        const {initializedPlugin: plugin} = data;
+        const id = 10;
+
+        await expect(plugin.canExecute(id))
+          .to.be.revertedWithCustomError(plugin, 'NonexistentProposal')
+          .withArgs(id);
+      });
+
       it('returns `false` if the proposal has not reached the minimum approval yet', async () => {
         const {
           alice,
