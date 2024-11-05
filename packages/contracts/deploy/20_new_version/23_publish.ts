@@ -64,6 +64,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // Check build number
   const latestBuild = (await pluginRepo.buildCount(VERSION.release)).toNumber();
+
   if (VERSION.build < latestBuild) {
     throw Error(
       `Publishing with build number ${VERSION.build} is not possible. The latest build is ${latestBuild}. Aborting publication...`
@@ -142,8 +143,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
           createVersion: {
             _release: VERSION.release,
             _pluginSetup: setup.address,
-            _buildMetadata: buildMetadataURI,
-            _releaseMetadata: releaseMetadataURI,
+            _buildMetadata: ethers.utils.hexlify(
+              ethers.utils.toUtf8Bytes(buildMetadataURI)
+            ),
+            _releaseMetadata: ethers.utils.hexlify(
+              ethers.utils.toUtf8Bytes(releaseMetadataURI)
+            ),
           },
         },
       ],

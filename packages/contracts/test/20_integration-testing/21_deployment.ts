@@ -79,6 +79,8 @@ describe(`Deployment on network '${productionNetworkName}'`, function () {
       expect(results.buildMetadata).to.equal(
         ethers.utils.hexlify(ethers.utils.toUtf8Bytes(buildMetadataURI))
       );
+
+      expect(results.tag.build).to.equal(VERSION.build);
     });
   });
 });

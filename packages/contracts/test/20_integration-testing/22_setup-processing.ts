@@ -1,6 +1,11 @@
 import {METADATA, VERSION} from '../../plugin-settings';
 import {MultisigSetup, Multisig__factory} from '../../typechain';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
+import {
+  Operation,
+  TargetConfig,
+  latestInitializerVersion,
+} from '../multisig-constants';
 import {Multisig} from '../test-utils/typechain-versions';
 import {
   createDaoProxy,
@@ -41,6 +46,8 @@ type FixtureResult = {
   defaultInitData: {
     members: string[];
     settings: Multisig.MultisigSettingsStruct;
+    targetConfig: TargetConfig;
+    metadata: string;
   };
   psp: PluginSetupProcessor;
   pluginRepo: PluginRepo;
@@ -90,6 +97,11 @@ async function fixture(): Promise<FixtureResult> {
       onlyListed: true,
       minApprovals: 1,
     },
+    targetConfig: {
+      target: dao.address,
+      operation: Operation.call,
+    },
+    metadata: '0x',
   };
 
   const pluginSetupRefLatestBuild = {
@@ -115,8 +127,15 @@ async function fixture(): Promise<FixtureResult> {
 
 describe(`PluginSetup processing on network '${productionNetworkName}'`, function () {
   it('installs & uninstalls the current build', async () => {
-    const {alice, bob, deployer, psp, dao, pluginSetupRefLatestBuild} =
-      await loadFixture(fixture);
+    const {
+      alice,
+      bob,
+      deployer,
+      psp,
+      dao,
+      pluginSetupRefLatestBuild,
+      defaultInitData,
+    } = await loadFixture(fixture);
 
     // Grant deployer all required permissions
     await dao
@@ -153,7 +172,12 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
         getNamedTypesFromMetadata(
           METADATA.build.pluginSetup.prepareInstallation.inputs
         ),
-        [initialMembers, multisigSettings]
+        [
+          initialMembers,
+          multisigSettings,
+          defaultInitData.targetConfig,
+          defaultInitData.metadata,
+        ]
       )
     );
 
@@ -162,7 +186,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       deployer
     );
 
-    // Check that the setup worked
+    // // Check that the setup worked
     expect(await plugin.isMember(alice.address)).to.be.true;
 
     // Uninstall the current build.
@@ -178,7 +202,7 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
         ),
         []
       ),
-      []
+      results.preparedEvent.args.preparedSetupData.helpers
     );
   });
 
@@ -200,7 +224,8 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       pluginSetupRefLatestBuild,
       1,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
-      []
+      [defaultInitData.targetConfig, defaultInitData.metadata],
+      latestInitializerVersion
     );
   });
 
@@ -222,7 +247,8 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
       pluginSetupRefLatestBuild,
       2,
       [defaultInitData.members, Object.values(defaultInitData.settings)],
-      []
+      [defaultInitData.targetConfig, defaultInitData.metadata],
+      latestInitializerVersion
     );
   });
 });

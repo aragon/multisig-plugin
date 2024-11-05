@@ -9,20 +9,25 @@ import {IMembership} from "@aragon/osx-commons-contracts/src/plugin/extensions/m
 import {Addresslist} from "@aragon/osx-commons-contracts/src/plugin/extensions/governance/Addresslist.sol";
 import {ProposalUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/extensions/proposal/ProposalUpgradeable.sol";
 import {PluginUUPSUpgradeable} from "@aragon/osx-commons-contracts/src/plugin/PluginUUPSUpgradeable.sol";
+import {IProposal} from "@aragon/osx-commons-contracts/src/plugin/extensions/proposal/IProposal.sol";
 import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
+import {Action} from "@aragon/osx-commons-contracts/src/executors/IExecutor.sol";
+import {MetadataExtensionUpgradeable} from "@aragon/osx-commons-contracts/src/utils/metadata/MetadataExtensionUpgradeable.sol";
 
 import {IMultisig} from "./IMultisig.sol";
 
 /* solhint-enable max-line-length */
 
 /// @title Multisig
-/// @author Aragon X - 2022-2023
+/// @author Aragon X - 2022-2024
 /// @notice The on-chain multisig governance plugin in which a proposal passes if X out of Y approvals are met.
-/// @dev v1.3 (Release 1, Build 3)
+/// @dev v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required,
+/// increment the version numbers in the modifier for both the initialize and initializeFrom functions.
 /// @custom:security-contact sirt@aragon.org
 contract Multisig is
     IMultisig,
     IMembership,
+    MetadataExtensionUpgradeable,
     PluginUUPSUpgradeable,
     ProposalUpgradeable,
     Addresslist
@@ -43,8 +48,9 @@ contract Multisig is
         uint16 approvals;
         ProposalParameters parameters;
         mapping(address => bool) approvers;
-        IDAO.Action[] actions;
+        Action[] actions;
         uint256 allowFailureMap;
+        TargetConfig targetConfig; // added in build 3.
     }
 
     /// @notice A container for the proposal parameters.
@@ -69,14 +75,24 @@ contract Multisig is
 
     /// @notice The [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID of the contract.
     bytes4 internal constant MULTISIG_INTERFACE_ID =
-        this.initialize.selector ^
-            this.updateMultisigSettings.selector ^
-            this.createProposal.selector ^
+        this.updateMultisigSettings.selector ^
+            bytes4(
+                keccak256(
+                    "createProposal(bytes,(address,uint256,bytes)[],uint256,bool,bool,uint64,uint64)"
+                )
+            ) ^
             this.getProposal.selector;
 
     /// @notice The ID of the permission required to call the `addAddresses` and `removeAddresses` functions.
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
+
+    /// @notice The ID of the permission required to call the `createProposal` function.
+    bytes32 public constant CREATE_PROPOSAL_PERMISSION_ID = keccak256("CREATE_PROPOSAL_PERMISSION");
+
+    /// @notice The ID of the permission required to call the `execute` function.
+    bytes32 public constant EXECUTE_PROPOSAL_PERMISSION_ID =
+        keccak256("EXECUTE_PROPOSAL_PERMISSION");
 
     /// @notice A mapping between proposal IDs and proposal information.
     // solhint-disable-next-line named-parameters-mapping
@@ -93,6 +109,10 @@ contract Multisig is
     /// @notice Thrown when a sender is not allowed to create a proposal.
     /// @param sender The sender address.
     error ProposalCreationForbidden(address sender);
+
+    /// @notice Thrown when a proposal doesn't exist.
+    /// @param proposalId The ID of the proposal which doesn't exist.
+    error NonexistentProposal(uint256 proposalId);
 
     /// @notice Thrown if an approver is not allowed to cast an approve. This can be because the proposal
     /// - is not open,
@@ -117,6 +137,10 @@ contract Multisig is
     /// @param actual The actual value.
     error AddresslistLengthOutOfBounds(uint16 limit, uint256 actual);
 
+    /// @notice Thrown if the proposal with the same id already exists.
+    /// @param proposalId The id of the proposal.
+    error ProposalAlreadyExists(uint256 proposalId);
+
     /// @notice Thrown if a date is out of bounds.
     /// @param limit The limit value.
     /// @param actual The actual value.
@@ -140,8 +164,10 @@ contract Multisig is
     function initialize(
         IDAO _dao,
         address[] calldata _members,
-        MultisigSettings calldata _multisigSettings
-    ) external initializer {
+        MultisigSettings calldata _multisigSettings,
+        TargetConfig calldata _targetConfig,
+        bytes calldata _pluginMetadata
+    ) external onlyCallAtInitialization reinitializer(2) {
         __PluginUUPSUpgradeable_init(_dao);
 
         if (_members.length > type(uint16).max) {
@@ -152,6 +178,28 @@ contract Multisig is
         emit MembersAdded({members: _members});
 
         _updateMultisigSettings(_multisigSettings);
+        _setMetadata(_pluginMetadata);
+
+        _setTargetConfig(_targetConfig);
+    }
+
+    /// @notice Reinitializes the TokenVoting after an upgrade from a previous protocol version. For each
+    /// reinitialization step, use the `_fromBuild` version to decide which internal functions to call
+    /// for reinitialization.
+    /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
+    /// incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
+    /// @param _fromBuild The build version number of the previous implementation contract this upgrade is transitioning from.
+    /// @param _initData The initialization data to be passed to via `upgradeToAndCall` (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
+    function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {
+        if (_fromBuild < 3) {
+            (TargetConfig memory targetConfig, bytes memory pluginMetadata) = abi.decode(
+                _initData,
+                (TargetConfig, bytes)
+            );
+
+            _setTargetConfig(targetConfig);
+            _setMetadata(pluginMetadata);
+        }
     }
 
     /// @notice Checks if this or the parent contract supports an interface by its ID.
@@ -159,7 +207,13 @@ contract Multisig is
     /// @return Returns `true` if the interface is supported.
     function supportsInterface(
         bytes4 _interfaceId
-    ) public view virtual override(PluginUUPSUpgradeable, ProposalUpgradeable) returns (bool) {
+    )
+        public
+        view
+        virtual
+        override(MetadataExtensionUpgradeable, PluginUUPSUpgradeable, ProposalUpgradeable)
+        returns (bool)
+    {
         return
             _interfaceId == MULTISIG_INTERFACE_ID ||
             _interfaceId == type(IMultisig).interfaceId ||
@@ -230,17 +284,13 @@ contract Multisig is
     // solhint-disable-next-line code-complexity
     function createProposal(
         bytes calldata _metadata,
-        IDAO.Action[] calldata _actions,
+        Action[] calldata _actions,
         uint256 _allowFailureMap,
         bool _approveProposal,
         bool _tryExecution,
         uint64 _startDate,
         uint64 _endDate
-    ) external returns (uint256 proposalId) {
-        if (multisigSettings.onlyListed && !isListed(_msgSender())) {
-            revert ProposalCreationForbidden(_msgSender());
-        }
-
+    ) public auth(CREATE_PROPOSAL_PERMISSION_ID) returns (uint256 proposalId) {
         uint64 snapshotBlock;
         unchecked {
             // The snapshot block must be mined already to protect the transaction against backrunning transactions
@@ -264,22 +314,23 @@ contract Multisig is
             revert DateOutOfBounds({limit: _startDate, actual: _endDate});
         }
 
-        proposalId = _createProposal({
-            _creator: _msgSender(),
-            _metadata: _metadata,
-            _startDate: _startDate,
-            _endDate: _endDate,
-            _actions: _actions,
-            _allowFailureMap: _allowFailureMap
-        });
+        proposalId = _createProposalId(keccak256(abi.encode(_actions, _metadata)));
 
         // Create the proposal
         Proposal storage proposal_ = proposals[proposalId];
+
+        // Multisig doesn't allow `minApprovals` settings to be less than 0.
+        // If it is, that means proposal hasn't been created yet.
+        if (proposal_.parameters.minApprovals != 0) {
+            revert ProposalAlreadyExists(proposalId);
+        }
 
         proposal_.parameters.snapshotBlock = snapshotBlock;
         proposal_.parameters.startDate = _startDate;
         proposal_.parameters.endDate = _endDate;
         proposal_.parameters.minApprovals = multisigSettings.minApprovals;
+
+        proposal_.targetConfig = getTargetConfig();
 
         // Reduce costs
         if (_allowFailureMap != 0) {
@@ -296,6 +347,51 @@ contract Multisig is
         if (_approveProposal) {
             approve(proposalId, _tryExecution);
         }
+
+        _emitProposalCreatedEvent(
+            _actions,
+            _metadata,
+            _allowFailureMap,
+            _startDate,
+            _endDate,
+            proposalId
+        );
+    }
+
+    /// @inheritdoc IProposal
+    function createProposal(
+        bytes calldata _metadata,
+        Action[] calldata _actions,
+        uint64 _startDate,
+        uint64 _endDate,
+        bytes memory _data
+    ) external override returns (uint256 proposalId) {
+        // Note that this calls public function for permission check.
+        // Custom parameters
+        uint256 _allowFailureMap;
+        bool _approveProposal;
+        bool _tryExecution;
+
+        if (_data.length != 0) {
+            (_allowFailureMap, _approveProposal, _tryExecution) = abi.decode(
+                _data,
+                (uint256, bool, bool)
+            );
+        }
+        proposalId = createProposal(
+            _metadata,
+            _actions,
+            _allowFailureMap,
+            _approveProposal,
+            _tryExecution,
+            _startDate,
+            _endDate
+        );
+    }
+
+    /// @inheritdoc IProposal
+    function customProposalParamsABI() external pure override returns (string memory) {
+        return "(uint256 allowFailureMap, bool approveProposal, bool tryExecution)";
     }
 
     /// @inheritdoc IMultisig
@@ -317,19 +413,45 @@ contract Multisig is
 
         emit Approved({proposalId: _proposalId, approver: approver});
 
-        if (_tryExecution && _canExecute(_proposalId)) {
+        if (!_tryExecution) {
+            return;
+        }
+
+        if (
+            _canExecute(_proposalId) &&
+            dao().hasPermission(address(this), approver, EXECUTE_PROPOSAL_PERMISSION_ID, msg.data)
+        ) {
             _execute(_proposalId);
         }
     }
 
     /// @inheritdoc IMultisig
     function canApprove(uint256 _proposalId, address _account) external view returns (bool) {
+        if (!_proposalExists(_proposalId)) {
+            revert NonexistentProposal(_proposalId);
+        }
+
         return _canApprove(_proposalId, _account);
     }
 
     /// @inheritdoc IMultisig
-    function canExecute(uint256 _proposalId) external view returns (bool) {
+    function canExecute(uint256 _proposalId) external view virtual override returns (bool) {
+        if (!_proposalExists(_proposalId)) {
+            revert NonexistentProposal(_proposalId);
+        }
+
         return _canExecute(_proposalId);
+    }
+
+    /// @inheritdoc IProposal
+    function hasSucceeded(uint256 _proposalId) external view virtual override returns (bool) {
+        if (!_proposalExists(_proposalId)) {
+            revert NonexistentProposal(_proposalId);
+        }
+
+        Proposal storage proposal_ = proposals[_proposalId];
+
+        return proposal_.approvals >= proposal_.parameters.minApprovals;
     }
 
     /// @notice Returns all information for a proposal vote by its ID.
@@ -350,7 +472,7 @@ contract Multisig is
             bool executed,
             uint16 approvals,
             ProposalParameters memory parameters,
-            IDAO.Action[] memory actions,
+            Action[] memory actions,
             uint256 allowFailureMap
         )
     {
@@ -369,7 +491,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
-    function execute(uint256 _proposalId) public {
+    function execute(uint256 _proposalId) public auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
         if (!_canExecute(_proposalId)) {
             revert ProposalExecutionForbidden(_proposalId);
         }
@@ -389,12 +511,22 @@ contract Multisig is
 
         proposal_.executed = true;
 
-        _executeProposal(
-            dao(),
-            _proposalId,
-            proposals[_proposalId].actions,
-            proposals[_proposalId].allowFailureMap
+        _execute(
+            proposal_.targetConfig.target,
+            bytes32(_proposalId),
+            proposal_.actions,
+            proposal_.allowFailureMap,
+            proposal_.targetConfig.operation
         );
+
+        emit ProposalExecuted(_proposalId);
+    }
+
+    /// @notice Checks if proposal exists or not.
+    /// @param _proposalId The ID of the proposal.
+    /// @return Returns `true` if proposal exists, otherwise false.
+    function _proposalExists(uint256 _proposalId) private view returns (bool) {
+        return proposals[_proposalId].parameters.snapshotBlock != 0;
     }
 
     /// @notice Internal function to check if an account can approve. It assumes the queried proposal exists.
@@ -470,6 +602,26 @@ contract Multisig is
             onlyListed: _multisigSettings.onlyListed,
             minApprovals: _multisigSettings.minApprovals
         });
+    }
+
+    /// @dev Helper function to avoid stack too deep.
+    function _emitProposalCreatedEvent(
+        Action[] memory _actions,
+        bytes memory _metadata,
+        uint256 _allowFailureMap,
+        uint64 _startDate,
+        uint64 _endDate,
+        uint256 _proposalId
+    ) private {
+        emit ProposalCreated(
+            _proposalId,
+            _msgSender(),
+            _startDate,
+            _endDate,
+            _metadata,
+            _actions,
+            _allowFailureMap
+        );
     }
 
     /// @dev This empty reserved space is put in place to allow future versions to add new
