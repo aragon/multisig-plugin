@@ -54,3 +54,4 @@ export type TargetConfig = {
 };
 
 export const latestInitializerVersion = 2;
+export const latestPluginBuild = 3;

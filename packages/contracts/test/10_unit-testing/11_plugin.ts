@@ -384,9 +384,6 @@ describe('Multisig', function () {
       ).to.be.revertedWith('Initializable: contract is already initialized');
     });
 
-    // todo add test for checking that plugins already initialized on a previous version can not be initialized again
-    it('reverts if trying to initialize lower version plugin');
-
     it('sets the `_targetConfig` when initializing an uninitialized plugin', async () => {
       const {uninitializedPlugin, deployer} = await loadFixture(fixture);
 

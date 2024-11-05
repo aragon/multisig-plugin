@@ -6,6 +6,7 @@ import {
 } from '../../typechain';
 import {ProxyCreatedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/utils/deployment/ProxyFactory';
 import {PluginUUPSUpgradeable__factory} from '../../typechain/factories/@aragon/osx-v1.0.0/core/plugin';
+import {latestPluginBuild} from '../multisig-constants';
 import {
   DAO_PERMISSIONS,
   PLUGIN_SETUP_PROCESSOR_PERMISSIONS,
@@ -333,7 +334,7 @@ export async function updateFromBuildTest(
       pluginSetupRefLatestBuild,
       ethers.utils.defaultAbiCoder.encode(
         getNamedTypesFromMetadata(
-          METADATA.build.pluginSetup.prepareUpdate[3].inputs
+          METADATA.build.pluginSetup.prepareUpdate[latestPluginBuild].inputs
         ),
         updateInputs
       )
