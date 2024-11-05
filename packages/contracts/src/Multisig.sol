@@ -21,7 +21,8 @@ import {IMultisig} from "./IMultisig.sol";
 /// @title Multisig
 /// @author Aragon X - 2022-2023
 /// @notice The on-chain multisig governance plugin in which a proposal passes if X out of Y approvals are met.
-/// @dev v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required, increment the version numbers in the modifier for both the initialize and initializeFrom functions.
+/// @dev v1.3 (Release 1, Build 4). For each upgrade, if the reinitialization step is required,
+/// increment the version numbers in the modifier for both the initialize and initializeFrom functions.
 /// @custom:security-contact sirt@aragon.org
 contract Multisig is
     IMultisig,

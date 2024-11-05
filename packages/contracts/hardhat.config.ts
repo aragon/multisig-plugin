@@ -20,6 +20,7 @@ import {
 import type {NetworkUserConfig} from 'hardhat/types';
 import {resolve} from 'path';
 import 'solidity-coverage';
+import 'solidity-docgen';
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || '../../.env';
 dotenvConfig({path: resolve(__dirname, dotenvConfigPath), override: true});
@@ -154,7 +155,6 @@ const config: HardhatUserConfig = {
     tests: './test',
     deploy: './deploy',
   },
-
   solidity: {
     version: '0.8.17',
     settings: {
@@ -174,6 +174,13 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: 'typechain',
     target: 'ethers-v5',
+  },
+  docgen: {
+    outputDir: 'docs',
+    theme: 'markdown',
+    pages: 'files',
+    collapseNewlines: true,
+    exclude: ['test', 'mocks'],
   },
 };
 
