@@ -19,7 +19,7 @@ import {IMultisig} from "./IMultisig.sol";
 /* solhint-enable max-line-length */
 
 /// @title Multisig
-/// @author Aragon X - 2022-2023
+/// @author Aragon X - 2022-2024
 /// @notice The on-chain multisig governance plugin in which a proposal passes if X out of Y approvals are met.
 /// @dev v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required,
 /// increment the version numbers in the modifier for both the initialize and initializeFrom functions.
@@ -183,8 +183,10 @@ contract Multisig is
         _setTargetConfig(_targetConfig);
     }
 
-    /// @notice Reinitializes the TokenVoting after an upgrade from a previous protocol version. For each reinitialization step, use the `_fromBuild` version to decide which internal functions to call for reinitialization.
-    /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
+    /// @notice Reinitializes the TokenVoting after an upgrade from a previous protocol version. For each reinitialization step,
+    /// use the `_fromBuild` version to decide which internal functions to call for reinitialization.
+    /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not incorrectly passed,
+    /// and that the appropriate permissions for the upgrade are properly configured.
     /// @param _fromBuild The build version number of the previous implementation contract this upgrade is transitioning from.
     /// @param _initData The initialization data to be passed to via `upgradeToAndCall` (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
     function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {

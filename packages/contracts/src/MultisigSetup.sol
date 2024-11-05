@@ -18,7 +18,7 @@ import {Multisig} from "./Multisig.sol";
 /* solhint-enable max-line-length */
 
 /// @title MultisigSetup
-/// @author Aragon X - 2022-2023
+/// @author Aragon X - 2022-2024
 /// @notice The setup contract of the `Multisig` plugin.
 /// @dev v1.3 (Release 1, Build 3)
 /// @custom:security-contact sirt@aragon.org
