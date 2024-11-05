@@ -1,5 +1,7 @@
 {
   "ui": {},
+  "name": "multisig",
+  "description": "description",
   "change": "v1.3\n - Removed an unneccessary permission that allowed the Dao to upgrade the plugin, because this is supposed to happens as part of the update itself. The unnecessary permission, which was granted on installation of previous versions, will be automatically removed with the update to this version.\n",
   "pluginSetup": {
     "prepareInstallation": {
@@ -30,6 +32,32 @@
           "name": "multisigSettings",
           "type": "tuple",
           "description": "The initial multisig settings."
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "target",
+              "type": "address",
+              "description": "The target contract to which actions will be forwarded to for execution."
+            },
+            {
+              "internalType": "uint8",
+              "name": "operation",
+              "type": "uint8",
+              "description": "The operation type(either `call` or `delegatecall`) that will be used for execution forwarding."
+            }
+          ],
+          "internalType": "struct Multisig.TargetConfig",
+          "name": "TargetConfig",
+          "type": "tuple",
+          "description": "The initial target config"
+        },
+        {
+          "internalType": "bytes",
+          "name": "metadata",
+          "type": "bytes",
+          "description": "The metadata that contains the information about the multisig."
         }
       ]
     },
@@ -41,6 +69,37 @@
       "2": {
         "description": "No input is required for the update.",
         "inputs": []
+      },
+      "3": {
+        "description": "No input is required for the update.",
+        "inputs": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "target",
+                "type": "address",
+                "description": "The target contract to which actions will be forwarded to for execution."
+              },
+              {
+                "internalType": "uint8",
+                "name": "operation",
+                "type": "uint8",
+                "description": "The operation type(either `call` or `delegatecall`) that will be used for execution forwarding."
+              }
+            ],
+            "internalType": "struct Multisig.TargetConfig",
+            "name": "TargetConfig",
+            "type": "tuple",
+            "description": "The initial target config"
+          },
+          {
+            "internalType": "bytes",
+            "name": "metadata",
+            "type": "bytes",
+            "description": "The metadata that contains the information about the multisig."
+          }
+        ]
       }
     },
     "prepareUninstallation": {
