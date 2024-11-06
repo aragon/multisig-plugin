@@ -20,35 +20,37 @@ interface IMultisig {
     function removeAddresses(address[] calldata _members) external;
 
     /// @notice Records an approval for a proposal and, if specified, attempts execution if certain conditions are met.
+    /// @param _proposalId The ID of the proposal to approve.
+    /// @param _tryExecution If `true`, attempts execution of the proposal after approval, without reverting on failure.
     /// @dev If `_tryExecution` is `true`, the function attempts execution after recording the approval.
     /// Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met, and the
     /// caller has been granted execution permission. If execution conditions are not met, the function does not revert.
-    /// @param _proposalId The ID of the proposal to approve.
-    /// @param _tryExecution If `true`, attempts execution of the proposal after approval, without reverting on failure.
     function approve(uint256 _proposalId, bool _tryExecution) external;
 
-    /// @notice Checks if an account can participate on a proposal vote. This can be because the vote
-    /// - was executed, or
-    /// - the voter is not listed.
-    /// @param _proposalId The proposal Id.
-    /// @param _account The address of the user to check.
-    /// @return Returns true if the account is allowed to vote.
-    /// @dev The function assumes the queried proposal exists.
+    /// @notice Checks if an account is eligible to participate in a proposal vote.
+    /// Confirms that the proposal is open, the account is listed as a member,
+    /// and the account has not previously voted or approved this proposal.
+    /// @param _proposalId The ID of the proposal.
+    /// @param _account The address of the account to check.
+    /// @return True if the account is eligible to vote.
+    /// @dev Reverts if the proposal with the given `_proposalId` does not exist.
     function canApprove(uint256 _proposalId, address _account) external view returns (bool);
 
     /// @notice Checks if a proposal can be executed.
     /// @param _proposalId The ID of the proposal to be checked.
     /// @return True if the proposal can be executed, false otherwise.
+    /// @dev Reverts if the proposal with the given `_proposalId` does not exist.
     function canExecute(uint256 _proposalId) external view returns (bool);
 
-    /// @notice Returns whether the account has approved the proposal. Note, that this does not check
-    // if the account is listed.
+    /// @notice Returns whether the account has approved the proposal.
     /// @param _proposalId The ID of the proposal.
     /// @param _account The account address to be checked.
     /// @return The vote option cast by a voter for a certain proposal.
+    /// @dev Note, that this does not check if the account is listed.
     function hasApproved(uint256 _proposalId, address _account) external view returns (bool);
 
-    /// @notice Executes a proposal.
+    /// @notice Executes a proposal if all execution conditions are met.
     /// @param _proposalId The ID of the proposal to be executed.
+    /// @dev Reverts if the proposal is still open or if the minimum approval threshold has not been met.
     function execute(uint256 _proposalId) external;
 }
