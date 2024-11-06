@@ -29,8 +29,9 @@ import {
   PluginSetupProcessorStructs,
   PluginSetupProcessor__factory,
   DAO,
-  MultisigSetup__factory,
 } from '@aragon/osx-ethers';
+import {MultisigSetup__factory} from '../../typechain';
+
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
