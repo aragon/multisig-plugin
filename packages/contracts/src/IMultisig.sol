@@ -19,10 +19,12 @@ interface IMultisig {
     /// @param _members The addresses of the members to be removed.
     function removeAddresses(address[] calldata _members) external;
 
-    /// @notice Approves and, optionally, executes the proposal.
-    /// @param _proposalId The ID of the proposal.
-    /// @param _tryExecution If `true`, execution is tried after the approval cast.
-    /// The call does not revert if execution is not possible.
+    /// @notice Records an approval for a proposal and, if specified, attempts execution if certain conditions are met.
+    /// @dev If `_tryExecution` is `true`, the function attempts execution after recording the approval.
+    /// Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met, and the
+    /// caller has been granted execution permission. If execution conditions are not met, the function does not revert.
+    /// @param _proposalId The ID of the proposal to approve.
+    /// @param _tryExecution If `true`, attempts execution of the proposal after approval, without reverting on failure.
     function approve(uint256 _proposalId, bool _tryExecution) external;
 
     /// @notice Checks if an account can participate on a proposal vote. This can be because the vote
