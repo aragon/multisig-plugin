@@ -228,6 +228,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
+    /// @dev Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
     function addAddresses(
         address[] calldata _members
     ) external auth(UPDATE_MULTISIG_SETTINGS_PERMISSION_ID) {
@@ -248,6 +249,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
+    /// @dev Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
     function removeAddresses(
         address[] calldata _members
     ) external auth(UPDATE_MULTISIG_SETTINGS_PERMISSION_ID) {
@@ -267,6 +269,7 @@ contract Multisig is
     }
 
     /// @notice Updates the plugin settings.
+    /// @dev Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
     /// @param _multisigSettings The new settings.
     function updateMultisigSettings(
         MultisigSettings calldata _multisigSettings
@@ -275,6 +278,7 @@ contract Multisig is
     }
 
     /// @notice Creates a new multisig proposal.
+    /// @dev Requires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
     /// @param _metadata The metadata of the proposal.
     /// @param _actions The actions that will be executed after the proposal passes.
     /// @param _allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
@@ -363,6 +367,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IProposal
+    /// @dev Calls a public function that equires the `EXECUTE_PROPOSAL_PERMISSION_ID` permission.
     function createProposal(
         bytes calldata _metadata,
         Action[] calldata _actions,
@@ -370,7 +375,6 @@ contract Multisig is
         uint64 _endDate,
         bytes memory _data
     ) external override returns (uint256 proposalId) {
-        // Note that this calls public function for permission check.
         // Custom parameters
         uint256 _allowFailureMap;
         bool _approveProposal;
@@ -382,6 +386,8 @@ contract Multisig is
                 (uint256, bool, bool)
             );
         }
+
+        // Calls a public function for permission check.
         proposalId = createProposal(
             _metadata,
             _actions,
@@ -407,7 +413,7 @@ contract Multisig is
 
         Proposal storage proposal_ = proposals[_proposalId];
 
-        // As the list can never become more than type(uint16).max(due to addAddresses check)
+        // As the list can never become more than type(uint16).max (because to addAddresses check)
         // It's safe to use unchecked as it would never overflow.
         unchecked {
             proposal_.approvals += 1;
@@ -458,11 +464,11 @@ contract Multisig is
         return proposal_.approvals >= proposal_.parameters.minApprovals;
     }
 
-    /// @notice Returns all information for a proposal vote by its ID.
+    /// @notice Returns all information for a proposal by its ID.
     /// @param _proposalId The ID of the proposal.
     /// @return executed Whether the proposal is executed or not.
     /// @return approvals The number of approvals casted.
-    /// @return parameters The parameters of the proposal vote.
+    /// @return parameters The parameters of the proposal.
     /// @return actions The actions to be executed in the associated DAO after the proposal has passed.
     /// @param allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
     /// If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
@@ -495,6 +501,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
+    /// @dev Requires the `EXECUTE_PROPOSAL_PERMISSION_ID` permission.
     function execute(uint256 _proposalId) public auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
         if (!_canExecute(_proposalId)) {
             revert ProposalExecutionForbidden(_proposalId);
@@ -508,8 +515,9 @@ contract Multisig is
         return isListed(_account);
     }
 
-    /// @notice Internal function to execute a vote. It assumes the queried proposal exists.
+    /// @notice Internal function to execute a proposal.
     /// @param _proposalId The ID of the proposal.
+    /// @dev It assumes the queried proposal exists.
     function _execute(uint256 _proposalId) internal {
         Proposal storage proposal_ = proposals[_proposalId];
 
@@ -529,14 +537,16 @@ contract Multisig is
     /// @notice Checks if proposal exists or not.
     /// @param _proposalId The ID of the proposal.
     /// @return Returns `true` if proposal exists, otherwise false.
+    /// @dev A proposal is considered to exist if its `snapshotBlock` in `parameters` is non-zero.
     function _proposalExists(uint256 _proposalId) private view returns (bool) {
         return proposals[_proposalId].parameters.snapshotBlock != 0;
     }
 
-    /// @notice Internal function to check if an account can approve. It assumes the queried proposal exists.
+    /// @notice Internal function to check if an account can approve.
     /// @param _proposalId The ID of the proposal.
     /// @param _account The account to check.
     /// @return Returns `true` if the given account can approve on a certain proposal and `false` otherwise.
+    /// @dev It assumes the queried proposal exists.
     function _canApprove(uint256 _proposalId, address _account) internal view returns (bool) {
         Proposal storage proposal_ = proposals[_proposalId];
 
@@ -558,9 +568,10 @@ contract Multisig is
         return true;
     }
 
-    /// @notice Internal function to check if a proposal can be executed. It assumes the queried proposal exists.
+    /// @notice Internal function to check if a proposal can be executed.
     /// @param _proposalId The ID of the proposal.
     /// @return Returns `true` if the proposal can be executed and `false` otherwise.
+    /// @dev It assumes the queried proposal exists.
     function _canExecute(uint256 _proposalId) internal view returns (bool) {
         Proposal storage proposal_ = proposals[_proposalId];
 
@@ -572,9 +583,9 @@ contract Multisig is
         return proposal_.approvals >= proposal_.parameters.minApprovals;
     }
 
-    /// @notice Internal function to check if a proposal vote is still open.
+    /// @notice Internal function to check if a proposal is still open.
     /// @param proposal_ The proposal struct.
-    /// @return True if the proposal vote is open, false otherwise.
+    /// @return True if the proposal is open, false otherwise.
     function _isProposalOpen(Proposal storage proposal_) internal view returns (bool) {
         uint64 currentTimestamp64 = block.timestamp.toUint64();
         return
