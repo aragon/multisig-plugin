@@ -319,9 +319,8 @@ contract Multisig is
         // Create the proposal
         Proposal storage proposal_ = proposals[proposalId];
 
-        // Multisig doesn't allow `minApprovals` settings to be less than 0.
-        // If it is, that means proposal hasn't been created yet.
-        if (proposal_.parameters.minApprovals != 0) {
+        // Revert if a proposal with the given `proposalId` already exists.
+        if (_proposalExists(proposalId)) {
             revert ProposalAlreadyExists(proposalId);
         }
 
