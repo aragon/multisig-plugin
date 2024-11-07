@@ -491,7 +491,9 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
-    function execute(uint256 _proposalId) public auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
+    function execute(
+        uint256 _proposalId
+    ) public override(IMultisig, IProposal) auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
         if (!_canExecute(_proposalId)) {
             revert ProposalExecutionForbidden(_proposalId);
         }
