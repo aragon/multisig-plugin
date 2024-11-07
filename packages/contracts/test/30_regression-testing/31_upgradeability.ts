@@ -81,7 +81,7 @@ describe('Upgrades', () => {
     }
 
     data[8] = 'initializeFrom';
-    // @ts-expect-error
+    // @ts-expect-error types castings will work
     data[9] = [latestInitializerVersion, encodeDataForUpgrade];
 
     const {proxy, fromImplementation, toImplementation} =
