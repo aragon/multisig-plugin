@@ -46,7 +46,7 @@ interface IMultisig {
     /// @param _proposalId The ID of the proposal.
     /// @param _account The account address to be checked.
     /// @return The vote option cast by a voter for a certain proposal.
-    /// @dev Note, that this does not check if the account is listed.
+    /// @dev May return false if the `_proposalId` or `_account` do not exist, as the function does not verify their existence.
     function hasApproved(uint256 _proposalId, address _account) external view returns (bool);
 
     /// @notice Executes a proposal if all execution conditions are met.

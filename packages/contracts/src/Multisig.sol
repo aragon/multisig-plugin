@@ -40,9 +40,12 @@ contract Multisig is
     /// @param parameters The proposal-specific approve settings at the time of the proposal creation.
     /// @param approvers The approves casted by the approvers.
     /// @param actions The actions to be executed when the proposal passes.
-    /// @param _allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
+    /// @param allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
     /// If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
     /// A failure map value of 0 requires every action to not revert.
+    /// @param targetConfig Configuration for the execution target, specifying the target address and operation type
+    ///        (either `Call` or `DelegateCall`). Defined by `TargetConfig` in the `IPlugin` interface,
+    ///        part of the `osx-commons-contracts` package, added in build 3.
     struct Proposal {
         bool executed;
         uint16 approvals;
@@ -83,7 +86,7 @@ contract Multisig is
             ) ^
             this.getProposal.selector;
 
-    /// @notice The ID of the permission required to call the `addAddresses` and `removeAddresses` functions.
+    /// @notice The ID of the permission required to call the `addAddresses`, `removeAddresses` and `updateMultisigSettings` functions.
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
 
@@ -156,11 +159,13 @@ contract Multisig is
     /// @param minApprovals The minimum amount of approvals needed to pass a proposal.
     event MultisigSettingsUpdated(bool onlyListed, uint16 indexed minApprovals);
 
-    /// @notice Initializes Release 1, Build 2.
+    /// @notice Initializes Release 1, Build 3.
     /// @dev This method is required to support [ERC-1822](https://eips.ethereum.org/EIPS/eip-1822).
     /// @param _dao The IDAO interface of the associated DAO.
     /// @param _members The addresses of the initial members to be added.
     /// @param _multisigSettings The multisig settings.
+    /// @param _targetConfig The configuration for the execution target.
+    /// @param _pluginMetadata The plugin specific information encoded in bytes.
     function initialize(
         IDAO _dao,
         address[] calldata _members,
@@ -183,7 +188,7 @@ contract Multisig is
         _setTargetConfig(_targetConfig);
     }
 
-    /// @notice Reinitializes the TokenVoting after an upgrade from a previous protocol version. For each
+    /// @notice Reinitializes the Multisig after an upgrade from a previous protocol version. For each
     /// reinitialization step, use the `_fromBuild` version to decide which internal functions to call
     /// for reinitialization.
     /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
@@ -276,7 +281,7 @@ contract Multisig is
     /// If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
     /// A failure map value of 0 requires every action to not revert.
     /// @param _approveProposal If `true`, the sender will approve the proposal.
-    /// @param _tryExecution If `true`, execution is tried after the vote cast. The call does not revert if early
+    /// @param _tryExecution If `true`, execution is tried after the vote cast. The call does not revert if
     /// execution is not possible.
     /// @param _startDate The start date of the proposal.
     /// @param _endDate The end date of the proposal.
