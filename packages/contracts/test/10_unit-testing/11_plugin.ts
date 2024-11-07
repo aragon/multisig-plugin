@@ -2822,7 +2822,7 @@ describe('Multisig', function () {
 
         const abiA = CustomExecutorMock__factory.abi;
         const abiB = Multisig__factory.abi;
-        
+
         // @ts-expect-error correct abi type
         const mergedABI = abiA.concat(abiB);
 
