@@ -435,7 +435,9 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
-    function canExecute(uint256 _proposalId) external view virtual override returns (bool) {
+    function canExecute(
+        uint256 _proposalId
+    ) external view virtual override(IMultisig, IProposal) returns (bool) {
         if (!_proposalExists(_proposalId)) {
             revert NonexistentProposal(_proposalId);
         }
