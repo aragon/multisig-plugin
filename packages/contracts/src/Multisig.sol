@@ -86,7 +86,8 @@ contract Multisig is
             ) ^
             this.getProposal.selector;
 
-    /// @notice The ID of the permission required to call the `addAddresses`, `removeAddresses` and `updateMultisigSettings` functions.
+    /// @notice The ID of the permission required to call the
+    /// `addAddresses`, `removeAddresses` and `updateMultisigSettings` functions.
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
 
@@ -193,8 +194,10 @@ contract Multisig is
     /// for reinitialization.
     /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
     /// incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
-    /// @param _fromBuild The build version number of the previous implementation contract this upgrade is transitioning from.
-    /// @param _initData The initialization data to be passed to via `upgradeToAndCall` (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
+    /// @param _fromBuild The build version number
+    /// of the previous implementation contract this upgrade is transitioning from.
+    /// @param _initData The initialization data to be passed to via `upgradeToAndCall`
+    /// (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
     function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {
         if (_fromBuild < 3) {
             (TargetConfig memory targetConfig, bytes memory pluginMetadata) = abi.decode(

@@ -23,8 +23,9 @@ interface IMultisig {
     /// @param _proposalId The ID of the proposal to approve.
     /// @param _tryExecution If `true`, attempts execution of the proposal after approval, without reverting on failure.
     /// @dev If `_tryExecution` is `true`, the function attempts execution after recording the approval.
-    /// Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met, and the
-    /// caller has been granted execution permission. If execution conditions are not met, the function does not revert.
+    /// Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met,
+    /// and the caller has been granted execution permission. If execution conditions are not met,
+    /// the function does not revert.
     function approve(uint256 _proposalId, bool _tryExecution) external;
 
     /// @notice Checks if an account is eligible to participate in a proposal vote.
@@ -46,7 +47,8 @@ interface IMultisig {
     /// @param _proposalId The ID of the proposal.
     /// @param _account The account address to be checked.
     /// @return The vote option cast by a voter for a certain proposal.
-    /// @dev May return false if the `_proposalId` or `_account` do not exist, as the function does not verify their existence.
+    /// @dev May return false if the `_proposalId` or `_account` do not exist,
+    /// as the function does not verify their existence.
     function hasApproved(uint256 _proposalId, address _account) external view returns (bool);
 
     /// @notice Executes a proposal if all execution conditions are met.
