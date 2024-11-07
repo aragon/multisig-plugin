@@ -1,5 +1,6 @@
 import {METADATA, VERSION} from '../../plugin-settings';
 import {MultisigSetup, Multisig__factory} from '../../typechain';
+import {MultisigSetup__factory} from '../../typechain';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
 import {
   Operation,
@@ -30,8 +31,6 @@ import {
   PluginSetupProcessor__factory,
   DAO,
 } from '@aragon/osx-ethers';
-import {MultisigSetup__factory} from '../../typechain';
-
 import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';

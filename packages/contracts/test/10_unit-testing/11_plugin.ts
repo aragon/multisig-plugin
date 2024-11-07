@@ -195,7 +195,7 @@ async function fixture(): Promise<FixtureResult> {
 
 async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
   const data = await loadFixture(fixture);
-  const {deployer, alice, dao, initializedPlugin, uninitializedPlugin} = data;
+  const {deployer, dao, initializedPlugin, uninitializedPlugin} = data;
 
   const condition = await new ListedCheckCondition__factory(deployer).deploy(
     initializedPlugin.address
@@ -2113,7 +2113,6 @@ describe('Multisig', function () {
           alice,
           bob,
           initializedPlugin: plugin,
-          dao,
           dummyMetadata,
           dummyActions,
         } = data;
@@ -2823,7 +2822,8 @@ describe('Multisig', function () {
 
         const abiA = CustomExecutorMock__factory.abi;
         const abiB = Multisig__factory.abi;
-        // @ts-ignore
+
+        // @ts-expect-error correct abi type
         const mergedABI = abiA.concat(abiB);
 
         await dao.grant(
