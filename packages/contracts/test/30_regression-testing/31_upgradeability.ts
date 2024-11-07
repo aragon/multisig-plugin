@@ -72,7 +72,7 @@ describe('Upgrades', () => {
     // Ensure that on the `upgrade`, `initialize` can not be called.
     try {
       await deployAndUpgradeFromToCheck(
-        // @ts-ignore
+        // @ts-expect-error correct data type
         ...data
       );
       throw new Error('');
@@ -81,12 +81,12 @@ describe('Upgrades', () => {
     }
 
     data[8] = 'initializeFrom';
-    // @ts-ignore
+    // @ts-expect-error types castings will work
     data[9] = [latestInitializerVersion, encodeDataForUpgrade];
 
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
-        // @ts-ignore
+        // @ts-expect-error correct data type
         ...data
       );
 
@@ -154,7 +154,7 @@ describe('Upgrades', () => {
     // Ensure that on the `upgrade`, `initialize` can not be called.
     try {
       await deployAndUpgradeFromToCheck(
-        // @ts-ignore
+        // @ts-expect-error correct data type
         ...data
       );
       throw new Error('');
@@ -163,12 +163,12 @@ describe('Upgrades', () => {
     }
 
     data[8] = 'initializeFrom';
-    // @ts-ignore
+    // @ts-expect-error types castings will work
     data[9] = [latestInitializerVersion, encodeDataForUpgrade];
 
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
-        // @ts-ignore
+        // @ts-expect-error correct data type
         ...data
       );
 
