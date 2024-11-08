@@ -3,7 +3,7 @@
 pragma solidity ^0.8.8;
 
 /// @title IMultisig
-/// @author Aragon X - 2023
+/// @author Aragon X - 2022-2024
 /// @notice An interface for an on-chain multisig governance plugin in which a proposal passes
 /// if X out of Y approvals are met.
 /// @custom:security-contact sirt@aragon.org
