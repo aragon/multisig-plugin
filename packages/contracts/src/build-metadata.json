@@ -57,7 +57,7 @@
           "name": "metadata",
           "type": "bytes",
           "internalType": "bytes",
-          "description": "The metadata that contains the information about the multisig."
+          "description": "The metadata that contains the information about the multisig plugin."
         }
       ]
     },
@@ -97,7 +97,7 @@
             "name": "metadata",
             "type": "bytes",
             "internalType": "bytes",
-            "description": "The metadata that contains the information about the multisig."
+            "description": "The metadata that contains the information about the multisig plugin."
           }
         ]
       }
