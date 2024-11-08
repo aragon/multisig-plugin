@@ -142,8 +142,6 @@ contract MultisigSetup is PluginUpgradeableSetup {
         override
         returns (bytes memory initData, PreparedSetupData memory preparedSetupData)
     {
-        (initData);
-
         if (_fromBuild < 3) {
             address listedCheckCondition = address(new ListedCheckCondition(_payload.plugin));
 
