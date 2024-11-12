@@ -22,7 +22,7 @@ import {IMultisig} from "./IMultisig.sol";
 /// @author Aragon X - 2022-2024
 /// @notice The on-chain multisig governance plugin in which a proposal passes if X out of Y approvals are met.
 /// @dev v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required,
-/// increment the version numbers in the modifier for both the initialize and initializeFrom functions.
+///     increment the version numbers in the modifier for both the initialize and initializeFrom functions.
 /// @custom:security-contact sirt@aragon.org
 contract Multisig is
     IMultisig,
@@ -41,8 +41,8 @@ contract Multisig is
     /// @param approvers The approves casted by the approvers.
     /// @param actions The actions to be executed when the proposal passes.
     /// @param allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
-    /// If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
-    /// A failure map value of 0 requires every action to not revert.
+    ///     If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
+    ///     A failure map value of 0 requires every action to not revert.
     /// @param targetConfig Configuration for the execution target, specifying the target address and operation type
     ///        (either `Call` or `DelegateCall`). Defined by `TargetConfig` in the `IPlugin` interface,
     ///        part of the `osx-commons-contracts` package, added in build 3.
@@ -107,7 +107,7 @@ contract Multisig is
 
     /// @notice Keeps track at which block number the multisig settings have been changed the last time.
     /// @dev This variable prevents a proposal from being created in the same block in which the multisig
-    /// settings change.
+    ///     settings change.
     uint64 public lastMultisigSettingsChange;
 
     /// @notice Thrown when a sender is not allowed to create a proposal.
@@ -131,7 +131,7 @@ contract Multisig is
     error ProposalExecutionForbidden(uint256 proposalId);
 
     /// @notice Thrown if the minimal approvals value is out of bounds (less than 1 or greater than the number of
-    /// members in the address list).
+    ///     members in the address list).
     /// @param limit The maximal value.
     /// @param actual The actual value.
     error MinApprovalsOutOfBounds(uint16 limit, uint16 actual);
@@ -189,15 +189,15 @@ contract Multisig is
         _setTargetConfig(_targetConfig);
     }
 
-    /// @notice Reinitializes the Multisig after an upgrade from a previous protocol version. For each
-    /// reinitialization step, use the `_fromBuild` version to decide which internal functions to call
-    /// for reinitialization.
+    /// @notice Reinitializes the Multisig after an upgrade from a previous build version. For each
+    ///     reinitialization step, use the `_fromBuild` version to decide which internal functions to call
+    ///     for reinitialization.
     /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
-    /// incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
+    ///     incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
     /// @param _fromBuild The build version number
-    /// of the previous implementation contract this upgrade is transitioning from.
+    ///     of the previous implementation contract this upgrade is transitioning from.
     /// @param _initData The initialization data to be passed to via `upgradeToAndCall`
-    /// (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
+    ///     (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
     function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {
         if (_fromBuild < 3) {
             (TargetConfig memory targetConfig, bytes memory pluginMetadata) = abi.decode(
@@ -285,11 +285,11 @@ contract Multisig is
     /// @param _metadata The metadata of the proposal.
     /// @param _actions The actions that will be executed after the proposal passes.
     /// @param _allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
-    /// If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
-    /// A failure map value of 0 requires every action to not revert.
+    ///     If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
+    ///     A failure map value of 0 requires every action to not revert.
     /// @param _approveProposal If `true`, the sender will approve the proposal.
     /// @param _tryExecution If `true`, execution is tried after the vote cast. The call does not revert if
-    /// execution is not possible.
+    ///     execution is not possible.
     /// @param _startDate The start date of the proposal.
     /// @param _endDate The end date of the proposal.
     /// @return proposalId The ID of the proposal.
@@ -474,8 +474,8 @@ contract Multisig is
     /// @return parameters The parameters of the proposal.
     /// @return actions The actions to be executed in the associated DAO after the proposal has passed.
     /// @param allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
-    /// If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
-    /// A failure map value of 0 requires every action to not revert.
+    ///     If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
+    ///     A failure map value of 0 requires every action to not revert.
     function getProposal(
         uint256 _proposalId
     )
