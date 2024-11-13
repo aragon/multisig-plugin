@@ -448,7 +448,9 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
-    function canExecute(uint256 _proposalId) external view virtual override returns (bool) {
+    function canExecute(
+        uint256 _proposalId
+    ) external view virtual override(IMultisig, IProposal) returns (bool) {
         if (!_proposalExists(_proposalId)) {
             revert NonexistentProposal(_proposalId);
         }
@@ -505,7 +507,9 @@ contract Multisig is
 
     /// @inheritdoc IMultisig
     /// @dev Requires the `EXECUTE_PROPOSAL_PERMISSION_ID` permission.
-    function execute(uint256 _proposalId) public auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
+    function execute(
+        uint256 _proposalId
+    ) public override(IMultisig, IProposal) auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
         if (!_canExecute(_proposalId)) {
             revert ProposalExecutionForbidden(_proposalId);
         }
