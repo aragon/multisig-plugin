@@ -8,56 +8,56 @@
       "description": "The information required for the installation.",
       "inputs": [
         {
-          "internalType": "address[]",
           "name": "members",
           "type": "address[]",
+          "internalType": "address[]",
           "description": "The addresses of the initial members to be added."
         },
         {
           "components": [
             {
-              "internalType": "bool",
               "name": "onlyListed",
               "type": "bool",
+              "internalType": "bool",
               "description": "Whether only listed addresses can create a proposal or not."
             },
             {
-              "internalType": "uint16",
               "name": "minApprovals",
               "type": "uint16",
+              "internalType": "uint16",
               "description": "The minimal number of approvals required for a proposal to pass."
             }
           ],
-          "internalType": "struct Multisig.MultisigSettings",
           "name": "multisigSettings",
           "type": "tuple",
+          "internalType": "struct Multisig.MultisigSettings",
           "description": "The initial multisig settings."
         },
         {
           "components": [
             {
-              "internalType": "address",
               "name": "target",
               "type": "address",
+              "internalType": "address",
               "description": "The target contract to which actions will be forwarded to for execution."
             },
             {
-              "internalType": "uint8",
               "name": "operation",
               "type": "uint8",
+              "internalType": "uint8",
               "description": "The operation type(either `call` or `delegatecall`) that will be used for execution forwarding."
             }
           ],
-          "internalType": "struct Multisig.TargetConfig",
           "name": "TargetConfig",
           "type": "tuple",
+          "internalType": "struct Multisig.TargetConfig",
           "description": "The initial target config"
         },
         {
-          "internalType": "bytes",
           "name": "metadata",
           "type": "bytes",
-          "description": "The metadata that contains the information about the multisig."
+          "internalType": "bytes",
+          "description": "The metadata that contains the information about the multisig plugin."
         }
       ]
     },
@@ -76,28 +76,28 @@
           {
             "components": [
               {
-                "internalType": "address",
                 "name": "target",
                 "type": "address",
+                "internalType": "address",
                 "description": "The target contract to which actions will be forwarded to for execution."
               },
               {
-                "internalType": "uint8",
                 "name": "operation",
                 "type": "uint8",
+                "internalType": "uint8",
                 "description": "The operation type(either `call` or `delegatecall`) that will be used for execution forwarding."
               }
             ],
-            "internalType": "struct Multisig.TargetConfig",
             "name": "TargetConfig",
             "type": "tuple",
+            "internalType": "struct Multisig.TargetConfig",
             "description": "The initial target config"
           },
           {
-            "internalType": "bytes",
             "name": "metadata",
             "type": "bytes",
-            "description": "The metadata that contains the information about the multisig."
+            "internalType": "bytes",
+            "description": "The metadata that contains the information about the multisig plugin."
           }
         ]
       }
