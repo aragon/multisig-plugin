@@ -25,7 +25,7 @@ import {Multisig} from "./Multisig.sol";
 contract MultisigSetup is PluginUpgradeableSetup {
     using ProxyLib for address;
 
-    /// @notice The ID of the permission required to call the `execute` function.
+    /// @notice The ID of the permission required to call the `execute` function on a DAO.
     bytes32 internal constant EXECUTE_PERMISSION_ID = keccak256("EXECUTE_PERMISSION");
 
     /// @notice The ID of the permission required to call the `upgradeToAndCall` function.
@@ -35,7 +35,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
     bytes32 public constant SET_TARGET_CONFIG_PERMISSION_ID =
         keccak256("SET_TARGET_CONFIG_PERMISSION");
 
-    /// @notice The ID of the permission required to call the `setMetadata` function.
+    /// @notice The ID of the permission required to call the `setMetadata` function on a DAO.
     bytes32 public constant SET_METADATA_PERMISSION_ID = keccak256("SET_METADATA_PERMISSION");
 
     /// @notice The ID of the permission required to call the `updateMultisigSettings` function.
@@ -69,6 +69,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
             )
         );
 
+        // Deploy a ListedCheckCondition contract.
         address listedCheckCondition = address(new ListedCheckCondition(plugin));
 
         // Prepare permissions
