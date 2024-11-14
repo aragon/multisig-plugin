@@ -165,8 +165,11 @@ contract Multisig is
     /// @param _dao The IDAO interface of the associated DAO.
     /// @param _members The addresses of the initial members to be added.
     /// @param _multisigSettings The multisig settings.
-    /// @param _targetConfig The configuration for the execution target.
+    /// @param _targetConfig Configuration for the execution target, specifying the target address and
+    ///     operation type(either `Call` or `DelegateCall`). Defined by `TargetConfig` in the `IPlugin`
+    ///     interface of `osx-commons-contracts` package, added in build 3.
     /// @param _pluginMetadata The plugin specific information encoded in bytes.
+    ///     This can also be an ipfs cid encoded in bytes.
     function initialize(
         IDAO _dao,
         address[] calldata _members,
@@ -194,8 +197,8 @@ contract Multisig is
     ///         for reinitialization.
     /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
     ///      incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
-    /// @param _fromBuild The build version number
-    ///     of the previous implementation contract this upgrade is transitioning from.
+    /// @param _fromBuild The build version number of the previous implementation contract
+    ///     this upgrade is transitioning from.
     /// @param _initData The initialization data to be passed to via `upgradeToAndCall`
     ///     (see [ERC-1967](https://docs.openzeppelin.com/contracts/4.x/api/proxy#ERC1967Upgrade)).
     function initializeFrom(uint16 _fromBuild, bytes calldata _initData) external reinitializer(2) {
@@ -370,7 +373,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IProposal
-    /// @dev Calls a public function that equires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
+    /// @dev Calls a public function that requires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
     function createProposal(
         bytes calldata _metadata,
         Action[] calldata _actions,
@@ -420,7 +423,7 @@ contract Multisig is
 
         Proposal storage proposal_ = proposals[_proposalId];
 
-        // As the list can never become more than type(uint16).max (because to addAddresses check)
+        // As the list can never become more than type(uint16).max (due to `addAddresses` check)
         // It's safe to use unchecked as it would never overflow.
         unchecked {
             proposal_.approvals += 1;

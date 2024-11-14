@@ -28,7 +28,7 @@ contract MultisigSetup is PluginUpgradeableSetup {
     /// @notice The ID of the permission required to call the `execute` function on a DAO.
     bytes32 internal constant EXECUTE_PERMISSION_ID = keccak256("EXECUTE_PERMISSION");
 
-    /// @notice The ID of the permission required to call the `upgradeToAndCall` function on a DAO.
+    /// @notice The ID of the permission required to call the `upgradeToAndCall` function.
     bytes32 internal constant UPGRADE_PLUGIN_PERMISSION_ID = keccak256("UPGRADE_PLUGIN_PERMISSION");
 
     /// @notice The ID of the permission required to call the `setTargetConfig` function.
