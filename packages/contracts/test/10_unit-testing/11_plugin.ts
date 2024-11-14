@@ -1373,7 +1373,10 @@ describe('Multisig', function () {
       expect(proposal.parameters.endDate).to.equal(endDate);
       expect(proposal.actions.length).to.equal(0);
       expect(proposal.approvals).to.equal(0);
-
+      expect(proposal.targetConfig).to.deep.equal([
+        defaultInitData.targetConfig.target,
+        defaultInitData.targetConfig.operation,
+      ]);
       // Check that Alice hasn't approved the proposal yet.
       expect(await plugin.canApprove(id, alice.address)).to.be.true;
       // Check that, e.g., Bob hasn't approved the proposal yet.
@@ -1438,6 +1441,10 @@ describe('Multisig', function () {
       expect(proposal.parameters.endDate).to.equal(endDate);
       expect(proposal.actions.length).to.equal(0);
       expect(proposal.approvals).to.equal(1);
+      expect(proposal.targetConfig).to.deep.equal([
+        defaultInitData.targetConfig.target,
+        defaultInitData.targetConfig.operation,
+      ]);
 
       // Check that Alice has approved the proposal already.
       expect(await plugin.canApprove(id, alice.address)).to.be.false;

@@ -483,10 +483,11 @@ contract Multisig is
     /// @return executed Whether the proposal is executed or not.
     /// @return approvals The number of approvals casted.
     /// @return parameters The parameters of the proposal.
-    /// @return actions The actions to be executed in the associated DAO after the proposal has passed.
-    /// @param allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
+    /// @return actions The actions to be executed to the `target` contract address.
+    /// @return allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
     ///     If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
     ///     A failure map value of 0 requires every action to not revert.
+    /// @return targetConfig Execution configuration that was applied to the proposal when it was created. Added in build 3.
     function getProposal(
         uint256 _proposalId
     )
@@ -497,7 +498,8 @@ contract Multisig is
             uint16 approvals,
             ProposalParameters memory parameters,
             Action[] memory actions,
-            uint256 allowFailureMap
+            uint256 allowFailureMap,
+            TargetConfig memory targetConfig
         )
     {
         Proposal storage proposal_ = proposals[_proposalId];
@@ -507,6 +509,7 @@ contract Multisig is
         parameters = proposal_.parameters;
         actions = proposal_.actions;
         allowFailureMap = proposal_.allowFailureMap;
+        targetConfig = proposal_.targetConfig;
     }
 
     /// @inheritdoc IMultisig
