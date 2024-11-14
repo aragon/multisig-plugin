@@ -22,7 +22,7 @@ import {IMultisig} from "./IMultisig.sol";
 /// @author Aragon X - 2022-2024
 /// @notice The on-chain multisig governance plugin in which a proposal passes if X out of Y approvals are met.
 /// @dev v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required,
-///     increment the version numbers in the modifier for both the initialize and initializeFrom functions.
+///      increment the version numbers in the modifier for both the initialize and initializeFrom functions.
 /// @custom:security-contact sirt@aragon.org
 contract Multisig is
     IMultisig,
@@ -44,8 +44,8 @@ contract Multisig is
     ///     If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
     ///     A failure map value of 0 requires every action to not revert.
     /// @param targetConfig Configuration for the execution target, specifying the target address and operation type
-    ///        (either `Call` or `DelegateCall`). Defined by `TargetConfig` in the `IPlugin` interface,
-    ///        part of the `osx-commons-contracts` package, added in build 3.
+    ///     (either `Call` or `DelegateCall`). Defined by `TargetConfig` in the `IPlugin` interface,
+    ///     part of the `osx-commons-contracts` package, added in build 3.
     struct Proposal {
         bool executed;
         uint16 approvals;
@@ -87,7 +87,7 @@ contract Multisig is
             this.getProposal.selector;
 
     /// @notice The ID of the permission required to call the
-    /// `addAddresses`, `removeAddresses` and `updateMultisigSettings` functions.
+    ///         `addAddresses`, `removeAddresses` and `updateMultisigSettings` functions.
     bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
 
@@ -107,7 +107,7 @@ contract Multisig is
 
     /// @notice Keeps track at which block number the multisig settings have been changed the last time.
     /// @dev This variable prevents a proposal from being created in the same block in which the multisig
-    ///     settings change.
+    ///      settings change.
     uint64 public lastMultisigSettingsChange;
 
     /// @notice Thrown when a sender is not allowed to create a proposal.
@@ -119,9 +119,9 @@ contract Multisig is
     error NonexistentProposal(uint256 proposalId);
 
     /// @notice Thrown if an approver is not allowed to cast an approve. This can be because the proposal
-    /// - is not open,
-    /// - was executed, or
-    /// - the approver is not on the address list
+    ///         - is not open,
+    ///         - was executed, or
+    ///         - the approver is not on the address list
     /// @param proposalId The ID of the proposal.
     /// @param sender The address of the sender.
     error ApprovalCastForbidden(uint256 proposalId, address sender);
@@ -131,7 +131,7 @@ contract Multisig is
     error ProposalExecutionForbidden(uint256 proposalId);
 
     /// @notice Thrown if the minimal approvals value is out of bounds (less than 1 or greater than the number of
-    ///     members in the address list).
+    ///         members in the address list).
     /// @param limit The maximal value.
     /// @param actual The actual value.
     error MinApprovalsOutOfBounds(uint16 limit, uint16 actual);
@@ -190,10 +190,10 @@ contract Multisig is
     }
 
     /// @notice Reinitializes the Multisig after an upgrade from a previous build version. For each
-    ///     reinitialization step, use the `_fromBuild` version to decide which internal functions to call
-    ///     for reinitialization.
+    ///         reinitialization step, use the `_fromBuild` version to decide which internal functions to call
+    ///         for reinitialization.
     /// @dev WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
-    ///     incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
+    ///      incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
     /// @param _fromBuild The build version number
     ///     of the previous implementation contract this upgrade is transitioning from.
     /// @param _initData The initialization data to be passed to via `upgradeToAndCall`
@@ -408,6 +408,10 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
+    /// @dev If `_tryExecution` is `true`, the function attempts execution after recording the approval.
+    ///      Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met,
+    ///      and the caller has been granted execution permission. If execution conditions are not met,
+    ///      the function does not revert.
     function approve(uint256 _proposalId, bool _tryExecution) public {
         address approver = _msgSender();
         if (!_canApprove(_proposalId, approver)) {
@@ -439,6 +443,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
+    /// @dev Reverts if the proposal with the given `_proposalId` does not exist.
     function canApprove(uint256 _proposalId, address _account) external view returns (bool) {
         if (!_proposalExists(_proposalId)) {
             revert NonexistentProposal(_proposalId);
@@ -448,6 +453,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
+    /// @dev Reverts if the proposal with the given `_proposalId` does not exist.
     function canExecute(
         uint256 _proposalId
     ) external view virtual override(IMultisig, IProposal) returns (bool) {
@@ -501,12 +507,15 @@ contract Multisig is
     }
 
     /// @inheritdoc IMultisig
+    /// @dev May return false if the `_proposalId` or `_account` do not exist,
+    ///     as the function does not verify their existence.
     function hasApproved(uint256 _proposalId, address _account) public view returns (bool) {
         return proposals[_proposalId].approvers[_account];
     }
 
     /// @inheritdoc IMultisig
     /// @dev Requires the `EXECUTE_PROPOSAL_PERMISSION_ID` permission.
+    /// @dev Reverts if the proposal is still open or if the minimum approval threshold has not been met.
     function execute(
         uint256 _proposalId
     ) public override(IMultisig, IProposal) auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
@@ -523,8 +532,8 @@ contract Multisig is
     }
 
     /// @notice Internal function to execute a proposal.
-    /// @param _proposalId The ID of the proposal.
     /// @dev It assumes the queried proposal exists.
+    /// @param _proposalId The ID of the proposal.
     function _execute(uint256 _proposalId) internal {
         Proposal storage proposal_ = proposals[_proposalId];
 
@@ -542,18 +551,18 @@ contract Multisig is
     }
 
     /// @notice Checks if proposal exists or not.
+    /// @dev A proposal is considered to exist if its `snapshotBlock` in `parameters` is non-zero.
     /// @param _proposalId The ID of the proposal.
     /// @return Returns `true` if proposal exists, otherwise false.
-    /// @dev A proposal is considered to exist if its `snapshotBlock` in `parameters` is non-zero.
     function _proposalExists(uint256 _proposalId) private view returns (bool) {
         return proposals[_proposalId].parameters.snapshotBlock != 0;
     }
 
     /// @notice Internal function to check if an account can approve.
+    /// @dev It assumes the queried proposal exists.
     /// @param _proposalId The ID of the proposal.
     /// @param _account The account to check.
     /// @return Returns `true` if the given account can approve on a certain proposal and `false` otherwise.
-    /// @dev It assumes the queried proposal exists.
     function _canApprove(uint256 _proposalId, address _account) internal view returns (bool) {
         Proposal storage proposal_ = proposals[_proposalId];
 
@@ -576,9 +585,9 @@ contract Multisig is
     }
 
     /// @notice Internal function to check if a proposal can be executed.
+    /// @dev It assumes the queried proposal exists.
     /// @param _proposalId The ID of the proposal.
     /// @return Returns `true` if the proposal can be executed and `false` otherwise.
-    /// @dev It assumes the queried proposal exists.
     function _canExecute(uint256 _proposalId) internal view returns (bool) {
         Proposal storage proposal_ = proposals[_proposalId];
 
