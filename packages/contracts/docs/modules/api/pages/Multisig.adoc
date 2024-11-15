@@ -1,0 +1,720 @@
+:github-icon: pass:[<svg class='icon'><use href='#github-icon' /></svg>]
+:xref-Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-: xref:Multisig.adoc#Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-
+:xref-Multisig-initializeFrom-uint16-bytes-: xref:Multisig.adoc#Multisig-initializeFrom-uint16-bytes-
+:xref-Multisig-supportsInterface-bytes4-: xref:Multisig.adoc#Multisig-supportsInterface-bytes4-
+:xref-Multisig-addAddresses-address---: xref:Multisig.adoc#Multisig-addAddresses-address---
+:xref-Multisig-removeAddresses-address---: xref:Multisig.adoc#Multisig-removeAddresses-address---
+:xref-Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-: xref:Multisig.adoc#Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-
+:xref-Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-: xref:Multisig.adoc#Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-
+:xref-Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-: xref:Multisig.adoc#Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-
+:xref-Multisig-customProposalParamsABI--: xref:Multisig.adoc#Multisig-customProposalParamsABI--
+:xref-Multisig-approve-uint256-bool-: xref:Multisig.adoc#Multisig-approve-uint256-bool-
+:xref-Multisig-canApprove-uint256-address-: xref:Multisig.adoc#Multisig-canApprove-uint256-address-
+:xref-Multisig-canExecute-uint256-: xref:Multisig.adoc#Multisig-canExecute-uint256-
+:xref-Multisig-hasSucceeded-uint256-: xref:Multisig.adoc#Multisig-hasSucceeded-uint256-
+:xref-Multisig-getProposal-uint256-: xref:Multisig.adoc#Multisig-getProposal-uint256-
+:xref-Multisig-hasApproved-uint256-address-: xref:Multisig.adoc#Multisig-hasApproved-uint256-address-
+:xref-Multisig-execute-uint256-: xref:Multisig.adoc#Multisig-execute-uint256-
+:xref-Multisig-isMember-address-: xref:Multisig.adoc#Multisig-isMember-address-
+:xref-Multisig-_execute-uint256-: xref:Multisig.adoc#Multisig-_execute-uint256-
+:xref-Multisig-_canApprove-uint256-address-: xref:Multisig.adoc#Multisig-_canApprove-uint256-address-
+:xref-Multisig-_canExecute-uint256-: xref:Multisig.adoc#Multisig-_canExecute-uint256-
+:xref-Multisig-_isProposalOpen-struct-Multisig-Proposal-: xref:Multisig.adoc#Multisig-_isProposalOpen-struct-Multisig-Proposal-
+:xref-Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-: xref:Multisig.adoc#Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-
+:xref-Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32: xref:Multisig.adoc#Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32
+:xref-Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32: xref:Multisig.adoc#Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32
+:xref-Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32: xref:Multisig.adoc#Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32
+:xref-Multisig-multisigSettings-struct-Multisig-MultisigSettings: xref:Multisig.adoc#Multisig-multisigSettings-struct-Multisig-MultisigSettings
+:xref-Multisig-lastMultisigSettingsChange-uint64: xref:Multisig.adoc#Multisig-lastMultisigSettingsChange-uint64
+:xref-Multisig-Approved-uint256-address-: xref:Multisig.adoc#Multisig-Approved-uint256-address-
+:xref-Multisig-MultisigSettingsUpdated-bool-uint16-: xref:Multisig.adoc#Multisig-MultisigSettingsUpdated-bool-uint16-
+:xref-Multisig-ProposalCreationForbidden-address-: xref:Multisig.adoc#Multisig-ProposalCreationForbidden-address-
+:xref-Multisig-NonexistentProposal-uint256-: xref:Multisig.adoc#Multisig-NonexistentProposal-uint256-
+:xref-Multisig-ApprovalCastForbidden-uint256-address-: xref:Multisig.adoc#Multisig-ApprovalCastForbidden-uint256-address-
+:xref-Multisig-ProposalExecutionForbidden-uint256-: xref:Multisig.adoc#Multisig-ProposalExecutionForbidden-uint256-
+:xref-Multisig-MinApprovalsOutOfBounds-uint16-uint16-: xref:Multisig.adoc#Multisig-MinApprovalsOutOfBounds-uint16-uint16-
+:xref-Multisig-AddresslistLengthOutOfBounds-uint16-uint256-: xref:Multisig.adoc#Multisig-AddresslistLengthOutOfBounds-uint16-uint256-
+:xref-Multisig-ProposalAlreadyExists-uint256-: xref:Multisig.adoc#Multisig-ProposalAlreadyExists-uint256-
+:xref-Multisig-DateOutOfBounds-uint64-uint64-: xref:Multisig.adoc#Multisig-DateOutOfBounds-uint64-uint64-
+:xref-Multisig-MULTISIG_INTERFACE_ID-bytes4: xref:Multisig.adoc#Multisig-MULTISIG_INTERFACE_ID-bytes4
+:xref-Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-: xref:Multisig.adoc#Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-
+:xref-MultisigSetup-constructor--: xref:Multisig.adoc#MultisigSetup-constructor--
+:xref-MultisigSetup-prepareInstallation-address-bytes-: xref:Multisig.adoc#MultisigSetup-prepareInstallation-address-bytes-
+:xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-
+:xref-MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-
+:xref-IMultisig-addAddresses-address---: xref:Multisig.adoc#IMultisig-addAddresses-address---
+:xref-IMultisig-removeAddresses-address---: xref:Multisig.adoc#IMultisig-removeAddresses-address---
+:xref-IMultisig-approve-uint256-bool-: xref:Multisig.adoc#IMultisig-approve-uint256-bool-
+:xref-IMultisig-canApprove-uint256-address-: xref:Multisig.adoc#IMultisig-canApprove-uint256-address-
+:xref-IMultisig-canExecute-uint256-: xref:Multisig.adoc#IMultisig-canExecute-uint256-
+:xref-IMultisig-hasApproved-uint256-address-: xref:Multisig.adoc#IMultisig-hasApproved-uint256-address-
+:xref-IMultisig-execute-uint256-: xref:Multisig.adoc#IMultisig-execute-uint256-
+:xref-ListedCheckCondition-constructor-address-: xref:Multisig.adoc#ListedCheckCondition-constructor-address-
+:xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-: xref:Multisig.adoc#ListedCheckCondition-isGranted-address-address-bytes32-bytes-
+  = The title here
+
+This is for testing purposes.
+
+== Core
+
+  :Proposal: pass:normal[xref:#Multisig-Proposal[`++Proposal++`]]
+  :ProposalParameters: pass:normal[xref:#Multisig-ProposalParameters[`++ProposalParameters++`]]
+  :MultisigSettings: pass:normal[xref:#Multisig-MultisigSettings[`++MultisigSettings++`]]
+  :MULTISIG_INTERFACE_ID: pass:normal[xref:#Multisig-MULTISIG_INTERFACE_ID-bytes4[`++MULTISIG_INTERFACE_ID++`]]
+  :UPDATE_MULTISIG_SETTINGS_PERMISSION_ID: pass:normal[xref:#Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32[`++UPDATE_MULTISIG_SETTINGS_PERMISSION_ID++`]]
+  :CREATE_PROPOSAL_PERMISSION_ID: pass:normal[xref:#Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32[`++CREATE_PROPOSAL_PERMISSION_ID++`]]
+  :EXECUTE_PROPOSAL_PERMISSION_ID: pass:normal[xref:#Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32[`++EXECUTE_PROPOSAL_PERMISSION_ID++`]]
+  :proposals: pass:normal[xref:#Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-[`++proposals++`]]
+  :multisigSettings: pass:normal[xref:#Multisig-multisigSettings-struct-Multisig-MultisigSettings[`++multisigSettings++`]]
+  :lastMultisigSettingsChange: pass:normal[xref:#Multisig-lastMultisigSettingsChange-uint64[`++lastMultisigSettingsChange++`]]
+  :ProposalCreationForbidden: pass:normal[xref:#Multisig-ProposalCreationForbidden-address-[`++ProposalCreationForbidden++`]]
+  :NonexistentProposal: pass:normal[xref:#Multisig-NonexistentProposal-uint256-[`++NonexistentProposal++`]]
+  :ApprovalCastForbidden: pass:normal[xref:#Multisig-ApprovalCastForbidden-uint256-address-[`++ApprovalCastForbidden++`]]
+  :ProposalExecutionForbidden: pass:normal[xref:#Multisig-ProposalExecutionForbidden-uint256-[`++ProposalExecutionForbidden++`]]
+  :MinApprovalsOutOfBounds: pass:normal[xref:#Multisig-MinApprovalsOutOfBounds-uint16-uint16-[`++MinApprovalsOutOfBounds++`]]
+  :AddresslistLengthOutOfBounds: pass:normal[xref:#Multisig-AddresslistLengthOutOfBounds-uint16-uint256-[`++AddresslistLengthOutOfBounds++`]]
+  :ProposalAlreadyExists: pass:normal[xref:#Multisig-ProposalAlreadyExists-uint256-[`++ProposalAlreadyExists++`]]
+  :DateOutOfBounds: pass:normal[xref:#Multisig-DateOutOfBounds-uint64-uint64-[`++DateOutOfBounds++`]]
+  :Approved: pass:normal[xref:#Multisig-Approved-uint256-address-[`++Approved++`]]
+  :MultisigSettingsUpdated: pass:normal[xref:#Multisig-MultisigSettingsUpdated-bool-uint16-[`++MultisigSettingsUpdated++`]]
+  :initialize: pass:normal[xref:#Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-[`++initialize++`]]
+  :initializeFrom: pass:normal[xref:#Multisig-initializeFrom-uint16-bytes-[`++initializeFrom++`]]
+  :supportsInterface: pass:normal[xref:#Multisig-supportsInterface-bytes4-[`++supportsInterface++`]]
+  :addAddresses: pass:normal[xref:#Multisig-addAddresses-address---[`++addAddresses++`]]
+  :removeAddresses: pass:normal[xref:#Multisig-removeAddresses-address---[`++removeAddresses++`]]
+  :updateMultisigSettings: pass:normal[xref:#Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-[`++updateMultisigSettings++`]]
+  :createProposal: pass:normal[xref:#Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-[`++createProposal++`]]
+  :createProposal: pass:normal[xref:#Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-[`++createProposal++`]]
+  :customProposalParamsABI: pass:normal[xref:#Multisig-customProposalParamsABI--[`++customProposalParamsABI++`]]
+  :approve: pass:normal[xref:#Multisig-approve-uint256-bool-[`++approve++`]]
+  :canApprove: pass:normal[xref:#Multisig-canApprove-uint256-address-[`++canApprove++`]]
+  :canExecute: pass:normal[xref:#Multisig-canExecute-uint256-[`++canExecute++`]]
+  :hasSucceeded: pass:normal[xref:#Multisig-hasSucceeded-uint256-[`++hasSucceeded++`]]
+  :getProposal: pass:normal[xref:#Multisig-getProposal-uint256-[`++getProposal++`]]
+  :hasApproved: pass:normal[xref:#Multisig-hasApproved-uint256-address-[`++hasApproved++`]]
+  :execute: pass:normal[xref:#Multisig-execute-uint256-[`++execute++`]]
+  :isMember: pass:normal[xref:#Multisig-isMember-address-[`++isMember++`]]
+  :_execute: pass:normal[xref:#Multisig-_execute-uint256-[`++_execute++`]]
+  :_canApprove: pass:normal[xref:#Multisig-_canApprove-uint256-address-[`++_canApprove++`]]
+  :_canExecute: pass:normal[xref:#Multisig-_canExecute-uint256-[`++_canExecute++`]]
+  :_isProposalOpen: pass:normal[xref:#Multisig-_isProposalOpen-struct-Multisig-Proposal-[`++_isProposalOpen++`]]
+  :_updateMultisigSettings: pass:normal[xref:#Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-[`++_updateMultisigSettings++`]]
+
+[.contract] [[Multisig]] === `++Multisig++`
+link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/Multisig.sol[{github-icon},role=heading-link]
+[.hljs-theme-light.nopadding] ```solidity import "@openzeppelin/src/Multisig.sol";
+```
+
+v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required,
+     increment the version numbers in the modifier for both the initialize and initializeFrom functions.
+
+  [.contract-index] .Functions --
+      * {xref-Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-}[`++initialize(_dao, _members, _multisigSettings, _targetConfig, _pluginMetadata)++`]
+      * {xref-Multisig-initializeFrom-uint16-bytes-}[`++initializeFrom(_fromBuild, _initData)++`]
+      * {xref-Multisig-supportsInterface-bytes4-}[`++supportsInterface(_interfaceId)++`]
+      * {xref-Multisig-addAddresses-address---}[`++addAddresses(_members)++`]
+      * {xref-Multisig-removeAddresses-address---}[`++removeAddresses(_members)++`]
+      * {xref-Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-}[`++updateMultisigSettings(_multisigSettings)++`]
+      * {xref-Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-}[`++createProposal(_metadata, _actions, _allowFailureMap, _approveProposal, _tryExecution, _startDate, _endDate)++`]
+      * {xref-Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-}[`++createProposal(_metadata, _actions, _startDate, _endDate, _data)++`]
+      * {xref-Multisig-customProposalParamsABI--}[`++customProposalParamsABI()++`]
+      * {xref-Multisig-approve-uint256-bool-}[`++approve(_proposalId, _tryExecution)++`]
+      * {xref-Multisig-canApprove-uint256-address-}[`++canApprove(_proposalId, _account)++`]
+      * {xref-Multisig-canExecute-uint256-}[`++canExecute(_proposalId)++`]
+      * {xref-Multisig-hasSucceeded-uint256-}[`++hasSucceeded(_proposalId)++`]
+      * {xref-Multisig-getProposal-uint256-}[`++getProposal(_proposalId)++`]
+      * {xref-Multisig-hasApproved-uint256-address-}[`++hasApproved(_proposalId, _account)++`]
+      * {xref-Multisig-execute-uint256-}[`++execute(_proposalId)++`]
+      * {xref-Multisig-isMember-address-}[`++isMember(_account)++`]
+      * {xref-Multisig-_execute-uint256-}[`++_execute(_proposalId)++`]
+      * {xref-Multisig-_canApprove-uint256-address-}[`++_canApprove(_proposalId, _account)++`]
+      * {xref-Multisig-_canExecute-uint256-}[`++_canExecute(_proposalId)++`]
+      * {xref-Multisig-_isProposalOpen-struct-Multisig-Proposal-}[`++_isProposalOpen(proposal_)++`]
+      * {xref-Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-}[`++_updateMultisigSettings(_multisigSettings)++`]
+      * {xref-Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32}[`++UPDATE_MULTISIG_SETTINGS_PERMISSION_ID()++`]
+      * {xref-Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32}[`++CREATE_PROPOSAL_PERMISSION_ID()++`]
+      * {xref-Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32}[`++EXECUTE_PROPOSAL_PERMISSION_ID()++`]
+      * {xref-Multisig-multisigSettings-struct-Multisig-MultisigSettings}[`++multisigSettings()++`]
+      * {xref-Multisig-lastMultisigSettingsChange-uint64}[`++lastMultisigSettingsChange()++`]
+
+      [.contract-subindex-inherited] .Addresslist
+      * {xref-Addresslist-isListedAtBlock-address-uint256-}[`++isListedAtBlock(_account, _blockNumber)++`]
+      * {xref-Addresslist-isListed-address-}[`++isListed(_account)++`]
+      * {xref-Addresslist-addresslistLengthAtBlock-uint256-}[`++addresslistLengthAtBlock(_blockNumber)++`]
+      * {xref-Addresslist-addresslistLength--}[`++addresslistLength()++`]
+      * {xref-Addresslist-_addAddresses-address---}[`++_addAddresses(_newAddresses)++`]
+      * {xref-Addresslist-_removeAddresses-address---}[`++_removeAddresses(_exitingAddresses)++`]
+
+      [.contract-subindex-inherited] .ProposalUpgradeable
+      * {xref-ProposalUpgradeable-proposalCount--}[`++proposalCount()++`]
+      * {xref-ProposalUpgradeable-_createProposalId-bytes32-}[`++_createProposalId(_salt)++`]
+
+      [.contract-subindex-inherited] .PluginUUPSUpgradeable
+      * {xref-PluginUUPSUpgradeable-pluginType--}[`++pluginType()++`]
+      * {xref-PluginUUPSUpgradeable-getCurrentTargetConfig--}[`++getCurrentTargetConfig()++`]
+      * {xref-PluginUUPSUpgradeable-getTargetConfig--}[`++getTargetConfig()++`]
+      * {xref-PluginUUPSUpgradeable-__PluginUUPSUpgradeable_init-contract-IDAO-}[`++__PluginUUPSUpgradeable_init(_dao)++`]
+      * {xref-PluginUUPSUpgradeable-setTargetConfig-struct-IPlugin-TargetConfig-}[`++setTargetConfig(_targetConfig)++`]
+      * {xref-PluginUUPSUpgradeable-implementation--}[`++implementation()++`]
+      * {xref-PluginUUPSUpgradeable-_setTargetConfig-struct-IPlugin-TargetConfig-}[`++_setTargetConfig(_targetConfig)++`]
+      * {xref-PluginUUPSUpgradeable-_execute-bytes32-struct-Action---uint256-}[`++_execute(_callId, _actions, _allowFailureMap)++`]
+      * {xref-PluginUUPSUpgradeable-_execute-address-bytes32-struct-Action---uint256-enum-IPlugin-Operation-}[`++_execute(_target, _callId, _actions, _allowFailureMap, _op)++`]
+      * {xref-PluginUUPSUpgradeable-_authorizeUpgrade-address-}[`++_authorizeUpgrade()++`]
+      * {xref-PluginUUPSUpgradeable-SET_TARGET_CONFIG_PERMISSION_ID-bytes32}[`++SET_TARGET_CONFIG_PERMISSION_ID()++`]
+      * {xref-PluginUUPSUpgradeable-UPGRADE_PLUGIN_PERMISSION_ID-bytes32}[`++UPGRADE_PLUGIN_PERMISSION_ID()++`]
+
+      [.contract-subindex-inherited] .ProtocolVersion
+      * {xref-ProtocolVersion-protocolVersion--}[`++protocolVersion()++`]
+
+      [.contract-subindex-inherited] .IProtocolVersion
+
+      [.contract-subindex-inherited] .MetadataExtensionUpgradeable
+      * {xref-MetadataExtensionUpgradeable-setMetadata-bytes-}[`++setMetadata(_metadata)++`]
+      * {xref-MetadataExtensionUpgradeable-getMetadata--}[`++getMetadata()++`]
+      * {xref-MetadataExtensionUpgradeable-_setMetadata-bytes-}[`++_setMetadata(_metadata)++`]
+      * {xref-MetadataExtensionUpgradeable-SET_METADATA_PERMISSION_ID-bytes32}[`++SET_METADATA_PERMISSION_ID()++`]
+
+      [.contract-subindex-inherited] .DaoAuthorizableUpgradeable
+      * {xref-DaoAuthorizableUpgradeable-__DaoAuthorizableUpgradeable_init-contract-IDAO-}[`++__DaoAuthorizableUpgradeable_init(_dao)++`]
+      * {xref-DaoAuthorizableUpgradeable-dao--}[`++dao()++`]
+
+      [.contract-subindex-inherited] .ContextUpgradeable
+      * {xref-ContextUpgradeable-__Context_init--}[`++__Context_init()++`]
+      * {xref-ContextUpgradeable-__Context_init_unchained--}[`++__Context_init_unchained()++`]
+      * {xref-ContextUpgradeable-_msgSender--}[`++_msgSender()++`]
+      * {xref-ContextUpgradeable-_msgData--}[`++_msgData()++`]
+      * {xref-ContextUpgradeable-_contextSuffixLength--}[`++_contextSuffixLength()++`]
+
+      [.contract-subindex-inherited] .UUPSUpgradeable
+      * {xref-UUPSUpgradeable-__UUPSUpgradeable_init--}[`++__UUPSUpgradeable_init()++`]
+      * {xref-UUPSUpgradeable-__UUPSUpgradeable_init_unchained--}[`++__UUPSUpgradeable_init_unchained()++`]
+      * {xref-UUPSUpgradeable-proxiableUUID--}[`++proxiableUUID()++`]
+      * {xref-UUPSUpgradeable-upgradeTo-address-}[`++upgradeTo(newImplementation)++`]
+      * {xref-UUPSUpgradeable-upgradeToAndCall-address-bytes-}[`++upgradeToAndCall(newImplementation, data)++`]
+
+      [.contract-subindex-inherited] .ERC1967UpgradeUpgradeable
+      * {xref-ERC1967UpgradeUpgradeable-__ERC1967Upgrade_init--}[`++__ERC1967Upgrade_init()++`]
+      * {xref-ERC1967UpgradeUpgradeable-__ERC1967Upgrade_init_unchained--}[`++__ERC1967Upgrade_init_unchained()++`]
+      * {xref-ERC1967UpgradeUpgradeable-_getImplementation--}[`++_getImplementation()++`]
+      * {xref-ERC1967UpgradeUpgradeable-_upgradeTo-address-}[`++_upgradeTo(newImplementation)++`]
+      * {xref-ERC1967UpgradeUpgradeable-_upgradeToAndCall-address-bytes-bool-}[`++_upgradeToAndCall(newImplementation, data, forceCall)++`]
+      * {xref-ERC1967UpgradeUpgradeable-_upgradeToAndCallUUPS-address-bytes-bool-}[`++_upgradeToAndCallUUPS(newImplementation, data, forceCall)++`]
+      * {xref-ERC1967UpgradeUpgradeable-_getAdmin--}[`++_getAdmin()++`]
+      * {xref-ERC1967UpgradeUpgradeable-_changeAdmin-address-}[`++_changeAdmin(newAdmin)++`]
+      * {xref-ERC1967UpgradeUpgradeable-_getBeacon--}[`++_getBeacon()++`]
+      * {xref-ERC1967UpgradeUpgradeable-_upgradeBeaconToAndCall-address-bytes-bool-}[`++_upgradeBeaconToAndCall(newBeacon, data, forceCall)++`]
+
+      [.contract-subindex-inherited] .IERC1967Upgradeable
+
+      [.contract-subindex-inherited] .IERC1822ProxiableUpgradeable
+
+      [.contract-subindex-inherited] .ERC165Upgradeable
+      * {xref-ERC165Upgradeable-__ERC165_init--}[`++__ERC165_init()++`]
+      * {xref-ERC165Upgradeable-__ERC165_init_unchained--}[`++__ERC165_init_unchained()++`]
+
+      [.contract-subindex-inherited] .IERC165Upgradeable
+
+      [.contract-subindex-inherited] .Initializable
+      * {xref-Initializable-_disableInitializers--}[`++_disableInitializers()++`]
+      * {xref-Initializable-_getInitializedVersion--}[`++_getInitializedVersion()++`]
+      * {xref-Initializable-_isInitializing--}[`++_isInitializing()++`]
+
+      [.contract-subindex-inherited] .IProposal
+
+      [.contract-subindex-inherited] .IPlugin
+
+      [.contract-subindex-inherited] .IMembership
+
+      [.contract-subindex-inherited] .IMultisig
+
+  --
+
+  [.contract-index] .Events --
+      * {xref-Multisig-Approved-uint256-address-}[`++Approved(proposalId, approver)++`]
+      * {xref-Multisig-MultisigSettingsUpdated-bool-uint16-}[`++MultisigSettingsUpdated(onlyListed, minApprovals)++`]
+
+      [.contract-subindex-inherited] .Addresslist
+
+      [.contract-subindex-inherited] .ProposalUpgradeable
+
+      [.contract-subindex-inherited] .PluginUUPSUpgradeable
+      * {xref-PluginUUPSUpgradeable-TargetSet-struct-IPlugin-TargetConfig-}[`++TargetSet(newTargetConfig)++`]
+
+      [.contract-subindex-inherited] .ProtocolVersion
+
+      [.contract-subindex-inherited] .IProtocolVersion
+
+      [.contract-subindex-inherited] .MetadataExtensionUpgradeable
+      * {xref-MetadataExtensionUpgradeable-MetadataSet-bytes-}[`++MetadataSet(metadata)++`]
+
+      [.contract-subindex-inherited] .DaoAuthorizableUpgradeable
+
+      [.contract-subindex-inherited] .ContextUpgradeable
+
+      [.contract-subindex-inherited] .UUPSUpgradeable
+
+      [.contract-subindex-inherited] .ERC1967UpgradeUpgradeable
+
+      [.contract-subindex-inherited] .IERC1967Upgradeable
+      * {xref-IERC1967Upgradeable-Upgraded-address-}[`++Upgraded(implementation)++`]
+      * {xref-IERC1967Upgradeable-AdminChanged-address-address-}[`++AdminChanged(previousAdmin, newAdmin)++`]
+      * {xref-IERC1967Upgradeable-BeaconUpgraded-address-}[`++BeaconUpgraded(beacon)++`]
+
+      [.contract-subindex-inherited] .IERC1822ProxiableUpgradeable
+
+      [.contract-subindex-inherited] .ERC165Upgradeable
+
+      [.contract-subindex-inherited] .IERC165Upgradeable
+
+      [.contract-subindex-inherited] .Initializable
+      * {xref-Initializable-Initialized-uint8-}[`++Initialized(version)++`]
+
+      [.contract-subindex-inherited] .IProposal
+      * {xref-IProposal-ProposalCreated-uint256-address-uint64-uint64-bytes-struct-Action---uint256-}[`++ProposalCreated(proposalId, creator, startDate, endDate, metadata, actions, allowFailureMap)++`]
+      * {xref-IProposal-ProposalExecuted-uint256-}[`++ProposalExecuted(proposalId)++`]
+
+      [.contract-subindex-inherited] .IPlugin
+
+      [.contract-subindex-inherited] .IMembership
+      * {xref-IMembership-MembersAdded-address---}[`++MembersAdded(members)++`]
+      * {xref-IMembership-MembersRemoved-address---}[`++MembersRemoved(members)++`]
+      * {xref-IMembership-MembershipContractAnnounced-address-}[`++MembershipContractAnnounced(definingContract)++`]
+
+      [.contract-subindex-inherited] .IMultisig
+
+  --
+
+  [.contract-index] .Errors --
+      * {xref-Multisig-ProposalCreationForbidden-address-}[`++ProposalCreationForbidden(sender)++`]
+      * {xref-Multisig-NonexistentProposal-uint256-}[`++NonexistentProposal(proposalId)++`]
+      * {xref-Multisig-ApprovalCastForbidden-uint256-address-}[`++ApprovalCastForbidden(proposalId, sender)++`]
+      * {xref-Multisig-ProposalExecutionForbidden-uint256-}[`++ProposalExecutionForbidden(proposalId)++`]
+      * {xref-Multisig-MinApprovalsOutOfBounds-uint16-uint16-}[`++MinApprovalsOutOfBounds(limit, actual)++`]
+      * {xref-Multisig-AddresslistLengthOutOfBounds-uint16-uint256-}[`++AddresslistLengthOutOfBounds(limit, actual)++`]
+      * {xref-Multisig-ProposalAlreadyExists-uint256-}[`++ProposalAlreadyExists(proposalId)++`]
+      * {xref-Multisig-DateOutOfBounds-uint64-uint64-}[`++DateOutOfBounds(limit, actual)++`]
+
+      [.contract-subindex-inherited] .Addresslist
+      * {xref-Addresslist-InvalidAddresslistUpdate-address-}[`++InvalidAddresslistUpdate(member)++`]
+
+      [.contract-subindex-inherited] .ProposalUpgradeable
+      * {xref-ProposalUpgradeable-FunctionDeprecated--}[`++FunctionDeprecated()++`]
+
+      [.contract-subindex-inherited] .PluginUUPSUpgradeable
+      * {xref-PluginUUPSUpgradeable-InvalidTargetConfig-struct-IPlugin-TargetConfig-}[`++InvalidTargetConfig(targetConfig)++`]
+      * {xref-PluginUUPSUpgradeable-DelegateCallFailed--}[`++DelegateCallFailed()++`]
+      * {xref-PluginUUPSUpgradeable-AlreadyInitialized--}[`++AlreadyInitialized()++`]
+
+      [.contract-subindex-inherited] .ProtocolVersion
+
+      [.contract-subindex-inherited] .IProtocolVersion
+
+      [.contract-subindex-inherited] .MetadataExtensionUpgradeable
+
+      [.contract-subindex-inherited] .DaoAuthorizableUpgradeable
+
+      [.contract-subindex-inherited] .ContextUpgradeable
+
+      [.contract-subindex-inherited] .UUPSUpgradeable
+
+      [.contract-subindex-inherited] .ERC1967UpgradeUpgradeable
+
+      [.contract-subindex-inherited] .IERC1967Upgradeable
+
+      [.contract-subindex-inherited] .IERC1822ProxiableUpgradeable
+
+      [.contract-subindex-inherited] .ERC165Upgradeable
+
+      [.contract-subindex-inherited] .IERC165Upgradeable
+
+      [.contract-subindex-inherited] .Initializable
+
+      [.contract-subindex-inherited] .IProposal
+
+      [.contract-subindex-inherited] .IPlugin
+
+      [.contract-subindex-inherited] .IMembership
+
+      [.contract-subindex-inherited] .IMultisig
+
+  --
+
+  [.contract-index] .Internal Variables --
+      * {xref-Multisig-MULTISIG_INTERFACE_ID-bytes4}[`++bytes4
+      constant
+      MULTISIG_INTERFACE_ID++`]
+      * {xref-Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-}[`++mapping(uint256 &#x3D;&gt; struct Multisig.Proposal)
+      
+      proposals++`]
+
+      [.contract-subindex-inherited] .Addresslist
+
+      [.contract-subindex-inherited] .ProposalUpgradeable
+
+      [.contract-subindex-inherited] .PluginUUPSUpgradeable
+
+      [.contract-subindex-inherited] .ProtocolVersion
+
+      [.contract-subindex-inherited] .IProtocolVersion
+
+      [.contract-subindex-inherited] .MetadataExtensionUpgradeable
+
+      [.contract-subindex-inherited] .DaoAuthorizableUpgradeable
+
+      [.contract-subindex-inherited] .ContextUpgradeable
+
+      [.contract-subindex-inherited] .UUPSUpgradeable
+
+      [.contract-subindex-inherited] .ERC1967UpgradeUpgradeable
+      * {xref-ERC1967UpgradeUpgradeable-_IMPLEMENTATION_SLOT-bytes32}[`++bytes32
+      constant
+      _IMPLEMENTATION_SLOT++`]
+      * {xref-ERC1967UpgradeUpgradeable-_ADMIN_SLOT-bytes32}[`++bytes32
+      constant
+      _ADMIN_SLOT++`]
+      * {xref-ERC1967UpgradeUpgradeable-_BEACON_SLOT-bytes32}[`++bytes32
+      constant
+      _BEACON_SLOT++`]
+
+      [.contract-subindex-inherited] .IERC1967Upgradeable
+
+      [.contract-subindex-inherited] .IERC1822ProxiableUpgradeable
+
+      [.contract-subindex-inherited] .ERC165Upgradeable
+
+      [.contract-subindex-inherited] .IERC165Upgradeable
+
+      [.contract-subindex-inherited] .Initializable
+
+      [.contract-subindex-inherited] .IProposal
+
+      [.contract-subindex-inherited] .IPlugin
+
+      [.contract-subindex-inherited] .IMembership
+
+      [.contract-subindex-inherited] .IMultisig
+
+  --
+
+  [.contract-item] [[Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-]] ==== `[.contract-item-name]#++initialize++#++(contract IDAO _dao, address[] _members, struct Multisig.MultisigSettings _multisigSettings, struct IPlugin.TargetConfig _targetConfig, bytes _pluginMetadata)++` [.item-kind]#external#
+
+  This method is required to support [ERC-1822](https://eips.ethereum.org/EIPS/eip-1822).
+
+  [.contract-item] [[Multisig-initializeFrom-uint16-bytes-]] ==== `[.contract-item-name]#++initializeFrom++#++(uint16 _fromBuild, bytes _initData)++` [.item-kind]#external#
+
+  WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
+     incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
+
+  [.contract-item] [[Multisig-supportsInterface-bytes4-]] ==== `[.contract-item-name]#++supportsInterface++#++(bytes4 _interfaceId) → bool++` [.item-kind]#public#
+
+  
+
+  [.contract-item] [[Multisig-addAddresses-address---]] ==== `[.contract-item-name]#++addAddresses++#++(address[] _members)++` [.item-kind]#external#
+
+  Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
+
+  [.contract-item] [[Multisig-removeAddresses-address---]] ==== `[.contract-item-name]#++removeAddresses++#++(address[] _members)++` [.item-kind]#external#
+
+  Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
+
+  [.contract-item] [[Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-]] ==== `[.contract-item-name]#++updateMultisigSettings++#++(struct Multisig.MultisigSettings _multisigSettings)++` [.item-kind]#external#
+
+  Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
+
+  [.contract-item] [[Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-]] ==== `[.contract-item-name]#++createProposal++#++(bytes _metadata, struct Action[] _actions, uint256 _allowFailureMap, bool _approveProposal, bool _tryExecution, uint64 _startDate, uint64 _endDate) → uint256 proposalId++` [.item-kind]#public#
+
+  Requires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
+
+  [.contract-item] [[Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-]] ==== `[.contract-item-name]#++createProposal++#++(bytes _metadata, struct Action[] _actions, uint64 _startDate, uint64 _endDate, bytes _data) → uint256 proposalId++` [.item-kind]#external#
+
+  Calls a public function that requires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
+
+  [.contract-item] [[Multisig-customProposalParamsABI--]] ==== `[.contract-item-name]#++customProposalParamsABI++#++() → string++` [.item-kind]#external#
+
+  Used for UI to easily detect what extra params the contract expects.
+
+  [.contract-item] [[Multisig-approve-uint256-bool-]] ==== `[.contract-item-name]#++approve++#++(uint256 _proposalId, bool _tryExecution)++` [.item-kind]#public#
+
+  If `_tryExecution` is `true`, the function attempts execution after recording the approval.
+     Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met,
+     and the caller has been granted execution permission. If execution conditions are not met,
+     the function does not revert.
+
+  [.contract-item] [[Multisig-canApprove-uint256-address-]] ==== `[.contract-item-name]#++canApprove++#++(uint256 _proposalId, address _account) → bool++` [.item-kind]#external#
+
+  Reverts if the proposal with the given `_proposalId` does not exist.
+
+  [.contract-item] [[Multisig-canExecute-uint256-]] ==== `[.contract-item-name]#++canExecute++#++(uint256 _proposalId) → bool++` [.item-kind]#external#
+
+  Reverts if the proposal with the given `_proposalId` does not exist.
+
+  [.contract-item] [[Multisig-hasSucceeded-uint256-]] ==== `[.contract-item-name]#++hasSucceeded++#++(uint256 _proposalId) → bool++` [.item-kind]#external#
+
+  Note that this must not include time window checks and only make a decision based on the thresholds.
+
+  [.contract-item] [[Multisig-getProposal-uint256-]] ==== `[.contract-item-name]#++getProposal++#++(uint256 _proposalId) → bool executed, uint16 approvals, struct Multisig.ProposalParameters parameters, struct Action[] actions, uint256 allowFailureMap, struct IPlugin.TargetConfig targetConfig++` [.item-kind]#public#
+
+  
+
+  [.contract-item] [[Multisig-hasApproved-uint256-address-]] ==== `[.contract-item-name]#++hasApproved++#++(uint256 _proposalId, address _account) → bool++` [.item-kind]#public#
+
+  May return false if the `_proposalId` or `_account` do not exist,
+    as the function does not verify their existence.
+
+  [.contract-item] [[Multisig-execute-uint256-]] ==== `[.contract-item-name]#++execute++#++(uint256 _proposalId)++` [.item-kind]#public#
+
+  Requires the `EXECUTE_PROPOSAL_PERMISSION_ID` permission.
+Reverts if the proposal is still open or if the minimum approval threshold has not been met.
+
+  [.contract-item] [[Multisig-isMember-address-]] ==== `[.contract-item-name]#++isMember++#++(address _account) → bool++` [.item-kind]#external#
+
+  This function must be implemented in the plugin contract that introduces the members to the DAO.
+
+  [.contract-item] [[Multisig-_execute-uint256-]] ==== `[.contract-item-name]#++_execute++#++(uint256 _proposalId)++` [.item-kind]#internal#
+
+  It assumes the queried proposal exists.
+
+  [.contract-item] [[Multisig-_canApprove-uint256-address-]] ==== `[.contract-item-name]#++_canApprove++#++(uint256 _proposalId, address _account) → bool++` [.item-kind]#internal#
+
+  It assumes the queried proposal exists.
+
+  [.contract-item] [[Multisig-_canExecute-uint256-]] ==== `[.contract-item-name]#++_canExecute++#++(uint256 _proposalId) → bool++` [.item-kind]#internal#
+
+  It assumes the queried proposal exists.
+
+  [.contract-item] [[Multisig-_isProposalOpen-struct-Multisig-Proposal-]] ==== `[.contract-item-name]#++_isProposalOpen++#++(struct Multisig.Proposal proposal_) → bool++` [.item-kind]#internal#
+
+  
+
+  [.contract-item] [[Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-]] ==== `[.contract-item-name]#++_updateMultisigSettings++#++(struct Multisig.MultisigSettings _multisigSettings)++` [.item-kind]#internal#
+
+  
+
+  [.contract-item] [[Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32]] ==== `[.contract-item-name]#++UPDATE_MULTISIG_SETTINGS_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
+
+  
+
+  [.contract-item] [[Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32]] ==== `[.contract-item-name]#++CREATE_PROPOSAL_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
+
+  
+
+  [.contract-item] [[Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32]] ==== `[.contract-item-name]#++EXECUTE_PROPOSAL_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
+
+  
+
+  [.contract-item] [[Multisig-multisigSettings-struct-Multisig-MultisigSettings]] ==== `[.contract-item-name]#++multisigSettings++#++() → struct Multisig.MultisigSettings++` [.item-kind]#public#
+
+  
+
+  [.contract-item] [[Multisig-lastMultisigSettingsChange-uint64]] ==== `[.contract-item-name]#++lastMultisigSettingsChange++#++() → uint64++` [.item-kind]#public#
+
+  This variable prevents a proposal from being created in the same block in which the multisig
+     settings change.
+
+  [.contract-item] [[Multisig-Approved-uint256-address-]] ==== `[.contract-item-name]#++Approved++#++(uint256 indexed proposalId, address indexed approver)++` [.item-kind]#event#
+
+  
+
+  [.contract-item] [[Multisig-MultisigSettingsUpdated-bool-uint16-]] ==== `[.contract-item-name]#++MultisigSettingsUpdated++#++(bool onlyListed, uint16 indexed minApprovals)++` [.item-kind]#event#
+
+  
+
+  [.contract-item] [[Multisig-ProposalCreationForbidden-address-]] ==== `[.contract-item-name]#++ProposalCreationForbidden++#++(address sender)++` [.item-kind]#error#
+
+  
+
+  [.contract-item] [[Multisig-NonexistentProposal-uint256-]] ==== `[.contract-item-name]#++NonexistentProposal++#++(uint256 proposalId)++` [.item-kind]#error#
+
+  
+
+  [.contract-item] [[Multisig-ApprovalCastForbidden-uint256-address-]] ==== `[.contract-item-name]#++ApprovalCastForbidden++#++(uint256 proposalId, address sender)++` [.item-kind]#error#
+
+  
+
+  [.contract-item] [[Multisig-ProposalExecutionForbidden-uint256-]] ==== `[.contract-item-name]#++ProposalExecutionForbidden++#++(uint256 proposalId)++` [.item-kind]#error#
+
+  
+
+  [.contract-item] [[Multisig-MinApprovalsOutOfBounds-uint16-uint16-]] ==== `[.contract-item-name]#++MinApprovalsOutOfBounds++#++(uint16 limit, uint16 actual)++` [.item-kind]#error#
+
+  
+
+  [.contract-item] [[Multisig-AddresslistLengthOutOfBounds-uint16-uint256-]] ==== `[.contract-item-name]#++AddresslistLengthOutOfBounds++#++(uint16 limit, uint256 actual)++` [.item-kind]#error#
+
+  
+
+  [.contract-item] [[Multisig-ProposalAlreadyExists-uint256-]] ==== `[.contract-item-name]#++ProposalAlreadyExists++#++(uint256 proposalId)++` [.item-kind]#error#
+
+  
+
+  [.contract-item] [[Multisig-DateOutOfBounds-uint64-uint64-]] ==== `[.contract-item-name]#++DateOutOfBounds++#++(uint64 limit, uint64 actual)++` [.item-kind]#error#
+
+  
+
+  [.contract-item] [[Multisig-MULTISIG_INTERFACE_ID-bytes4]] ==== `bytes4
+  [.contract-item-name]#++MULTISIG_INTERFACE_ID++#` [.item-kind]#internal
+    constant#
+
+  
+
+  [.contract-item] [[Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-]] ==== `mapping(uint256 &#x3D;&gt; struct Multisig.Proposal)
+  [.contract-item-name]#++proposals++#` [.item-kind]#internal#
+
+  
+
+  :constructor: pass:normal[xref:#MultisigSetup-constructor--[`++constructor++`]]
+  :prepareInstallation: pass:normal[xref:#MultisigSetup-prepareInstallation-address-bytes-[`++prepareInstallation++`]]
+  :prepareUpdate: pass:normal[xref:#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-[`++prepareUpdate++`]]
+  :prepareUninstallation: pass:normal[xref:#MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-[`++prepareUninstallation++`]]
+
+[.contract] [[MultisigSetup]] === `++MultisigSetup++`
+link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/MultisigSetup.sol[{github-icon},role=heading-link]
+[.hljs-theme-light.nopadding] ```solidity import "@openzeppelin/src/MultisigSetup.sol";
+```
+
+v1.3 (Release 1, Build 3)
+
+  [.contract-index] .Functions --
+      * {xref-MultisigSetup-constructor--}[`++constructor()++`]
+      * {xref-MultisigSetup-prepareInstallation-address-bytes-}[`++prepareInstallation(_dao, _data)++`]
+      * {xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-}[`++prepareUpdate(_dao, _fromBuild, _payload)++`]
+      * {xref-MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-}[`++prepareUninstallation(_dao, _payload)++`]
+
+      [.contract-subindex-inherited] .PluginUpgradeableSetup
+      * {xref-PluginUpgradeableSetup-supportsInterface-bytes4-}[`++supportsInterface(_interfaceId)++`]
+      * {xref-PluginUpgradeableSetup-implementation--}[`++implementation()++`]
+
+      [.contract-subindex-inherited] .ProtocolVersion
+      * {xref-ProtocolVersion-protocolVersion--}[`++protocolVersion()++`]
+
+      [.contract-subindex-inherited] .IProtocolVersion
+
+      [.contract-subindex-inherited] .IPluginSetup
+
+      [.contract-subindex-inherited] .ERC165
+
+      [.contract-subindex-inherited] .IERC165
+
+  --
+
+  [.contract-index] .Errors --
+
+      [.contract-subindex-inherited] .PluginUpgradeableSetup
+      * {xref-PluginUpgradeableSetup-InvalidUpdatePath-uint16-uint16-}[`++InvalidUpdatePath(fromBuild, thisBuild)++`]
+
+      [.contract-subindex-inherited] .ProtocolVersion
+
+      [.contract-subindex-inherited] .IProtocolVersion
+
+      [.contract-subindex-inherited] .IPluginSetup
+
+      [.contract-subindex-inherited] .ERC165
+
+      [.contract-subindex-inherited] .IERC165
+
+  --
+
+  [.contract-item] [[MultisigSetup-constructor--]] ==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
+
+  
+
+  [.contract-item] [[MultisigSetup-prepareInstallation-address-bytes-]] ==== `[.contract-item-name]#++prepareInstallation++#++(address _dao, bytes _data) → address plugin, struct IPluginSetup.PreparedSetupData preparedSetupData++` [.item-kind]#external#
+
+  
+
+  [.contract-item] [[MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-]] ==== `[.contract-item-name]#++prepareUpdate++#++(address _dao, uint16 _fromBuild, struct IPluginSetup.SetupPayload _payload) → bytes initData, struct IPluginSetup.PreparedSetupData preparedSetupData++` [.item-kind]#external#
+
+  Revoke the upgrade plugin permission to the DAO for all builds prior the current one (3).
+
+  [.contract-item] [[MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-]] ==== `[.contract-item-name]#++prepareUninstallation++#++(address _dao, struct IPluginSetup.SetupPayload _payload) → struct PermissionLib.MultiTargetPermission[] permissions++` [.item-kind]#external#
+
+  
+
+  :addAddresses: pass:normal[xref:#IMultisig-addAddresses-address---[`++addAddresses++`]]
+  :removeAddresses: pass:normal[xref:#IMultisig-removeAddresses-address---[`++removeAddresses++`]]
+  :approve: pass:normal[xref:#IMultisig-approve-uint256-bool-[`++approve++`]]
+  :canApprove: pass:normal[xref:#IMultisig-canApprove-uint256-address-[`++canApprove++`]]
+  :canExecute: pass:normal[xref:#IMultisig-canExecute-uint256-[`++canExecute++`]]
+  :hasApproved: pass:normal[xref:#IMultisig-hasApproved-uint256-address-[`++hasApproved++`]]
+  :execute: pass:normal[xref:#IMultisig-execute-uint256-[`++execute++`]]
+
+[.contract] [[IMultisig]] === `++IMultisig++`
+link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/IMultisig.sol[{github-icon},role=heading-link]
+[.hljs-theme-light.nopadding] ```solidity import "@openzeppelin/src/IMultisig.sol";
+```
+
+  [.contract-index] .Functions --
+      * {xref-IMultisig-addAddresses-address---}[`++addAddresses(_members)++`]
+      * {xref-IMultisig-removeAddresses-address---}[`++removeAddresses(_members)++`]
+      * {xref-IMultisig-approve-uint256-bool-}[`++approve(_proposalId, _tryExecution)++`]
+      * {xref-IMultisig-canApprove-uint256-address-}[`++canApprove(_proposalId, _account)++`]
+      * {xref-IMultisig-canExecute-uint256-}[`++canExecute(_proposalId)++`]
+      * {xref-IMultisig-hasApproved-uint256-address-}[`++hasApproved(_proposalId, _account)++`]
+      * {xref-IMultisig-execute-uint256-}[`++execute(_proposalId)++`]
+
+  --
+
+  [.contract-item] [[IMultisig-addAddresses-address---]] ==== `[.contract-item-name]#++addAddresses++#++(address[] _members)++` [.item-kind]#external#
+
+  
+
+  [.contract-item] [[IMultisig-removeAddresses-address---]] ==== `[.contract-item-name]#++removeAddresses++#++(address[] _members)++` [.item-kind]#external#
+
+  
+
+  [.contract-item] [[IMultisig-approve-uint256-bool-]] ==== `[.contract-item-name]#++approve++#++(uint256 _proposalId, bool _tryExecution)++` [.item-kind]#external#
+
+  
+
+  [.contract-item] [[IMultisig-canApprove-uint256-address-]] ==== `[.contract-item-name]#++canApprove++#++(uint256 _proposalId, address _account) → bool++` [.item-kind]#external#
+
+  
+
+  [.contract-item] [[IMultisig-canExecute-uint256-]] ==== `[.contract-item-name]#++canExecute++#++(uint256 _proposalId) → bool++` [.item-kind]#external#
+
+  
+
+  [.contract-item] [[IMultisig-hasApproved-uint256-address-]] ==== `[.contract-item-name]#++hasApproved++#++(uint256 _proposalId, address _account) → bool++` [.item-kind]#external#
+
+  
+
+  [.contract-item] [[IMultisig-execute-uint256-]] ==== `[.contract-item-name]#++execute++#++(uint256 _proposalId)++` [.item-kind]#external#
+
+  
+
+  :constructor: pass:normal[xref:#ListedCheckCondition-constructor-address-[`++constructor++`]]
+  :isGranted: pass:normal[xref:#ListedCheckCondition-isGranted-address-address-bytes32-bytes-[`++isGranted++`]]
+
+[.contract] [[ListedCheckCondition]] === `++ListedCheckCondition++`
+link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/ListedCheckCondition.sol[{github-icon},role=heading-link]
+[.hljs-theme-light.nopadding] ```solidity import "@openzeppelin/src/ListedCheckCondition.sol";
+```
+
+  [.contract-index] .Functions --
+      * {xref-ListedCheckCondition-constructor-address-}[`++constructor(_multisig)++`]
+      * {xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-}[`++isGranted(_where, _who, _permissionId, _data)++`]
+
+      [.contract-subindex-inherited] .PermissionCondition
+      * {xref-PermissionCondition-supportsInterface-bytes4-}[`++supportsInterface(_interfaceId)++`]
+
+      [.contract-subindex-inherited] .ProtocolVersion
+      * {xref-ProtocolVersion-protocolVersion--}[`++protocolVersion()++`]
+
+      [.contract-subindex-inherited] .IProtocolVersion
+
+      [.contract-subindex-inherited] .IPermissionCondition
+
+      [.contract-subindex-inherited] .ERC165
+
+      [.contract-subindex-inherited] .IERC165
+
+  --
+
+  [.contract-item] [[ListedCheckCondition-constructor-address-]] ==== `[.contract-item-name]#++constructor++#++(address _multisig)++` [.item-kind]#public#
+
+  
+
+  [.contract-item] [[ListedCheckCondition-isGranted-address-address-bytes32-bytes-]] ==== `[.contract-item-name]#++isGranted++#++(address _where, address _who, bytes32 _permissionId, bytes _data) → bool++` [.item-kind]#public#
+
+  
+
