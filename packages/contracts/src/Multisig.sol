@@ -487,7 +487,7 @@ contract Multisig is
     /// @return allowFailureMap A bitmap allowing the proposal to succeed, even if individual actions might revert.
     ///     If the bit at index `i` is 1, the proposal succeeds even if the `i`th action reverts.
     ///     A failure map value of 0 requires every action to not revert.
-    /// @return targetConfig Execution configuration that was applied to the proposal when it was created. Added in build 3.
+    /// @return targetConfig Execution configuration, applied to the proposal when it was created. Added in build 3.
     function getProposal(
         uint256 _proposalId
     )
