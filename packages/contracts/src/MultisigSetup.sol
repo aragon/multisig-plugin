@@ -26,24 +26,24 @@ contract MultisigSetup is PluginUpgradeableSetup {
     using ProxyLib for address;
 
     /// @notice The ID of the permission required to call the `execute` function on a DAO.
-    bytes32 internal constant EXECUTE_PERMISSION_ID = keccak256("EXECUTE_PERMISSION");
+    bytes32 private constant EXECUTE_PERMISSION_ID = keccak256("EXECUTE_PERMISSION");
 
     /// @notice The ID of the permission required to call the `upgradeToAndCall` function.
-    bytes32 internal constant UPGRADE_PLUGIN_PERMISSION_ID = keccak256("UPGRADE_PLUGIN_PERMISSION");
+    bytes32 private constant UPGRADE_PLUGIN_PERMISSION_ID = keccak256("UPGRADE_PLUGIN_PERMISSION");
 
     /// @notice The ID of the permission required to call the `setTargetConfig` function.
-    bytes32 public constant SET_TARGET_CONFIG_PERMISSION_ID =
+    bytes32 private constant SET_TARGET_CONFIG_PERMISSION_ID =
         keccak256("SET_TARGET_CONFIG_PERMISSION");
 
     /// @notice The ID of the permission required to call the `setMetadata` function on a DAO.
-    bytes32 public constant SET_METADATA_PERMISSION_ID = keccak256("SET_METADATA_PERMISSION");
+    bytes32 private constant SET_METADATA_PERMISSION_ID = keccak256("SET_METADATA_PERMISSION");
 
     /// @notice The ID of the permission required to call the `updateMultisigSettings` function.
-    bytes32 public constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
+    bytes32 private constant UPDATE_MULTISIG_SETTINGS_PERMISSION_ID =
         keccak256("UPDATE_MULTISIG_SETTINGS_PERMISSION");
 
     /// @notice A special address encoding permissions that are valid for any address `who` or `where`.
-    address internal constant ANY_ADDR = address(type(uint160).max);
+    address private constant ANY_ADDR = address(type(uint160).max);
 
     /// @notice The contract constructor, that deploys the `Multisig` plugin logic contract.
     constructor() PluginUpgradeableSetup(address(new Multisig())) {}
