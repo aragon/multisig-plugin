@@ -9,6 +9,22 @@
 
 {{{natspec.dev}}}
 
+{{!-- {{#if modifiers}}
+[.contract-index]
+.Modifiers
+--
+{{#if (isLocalContract contract.name)}}
+{{#each modifiers}}
+* {xref-{{anchor~}} }[`++{{name}}({{names params}})++`]
+{{/each}}
+{{else if (isAragonInherittedContract contract) }}
+{{#each modifiers}}
+* link:{{getExternalLink __item_context.file.absolutePath}}[{{name}}]
+{{/each}}
+{{/if}}
+--
+{{/if}} --}}
+
 {{#if has-functions}}
 [.contract-index]
 .Functions
@@ -22,8 +38,55 @@
 {{#each functions}}
 * {xref-{{anchor~}} }[`++{{name}}({{names params}})++`]
 {{/each}}
-{{else if (isAragonInherittedContract contract) }}
+{{else if (isAragonInherittedContract contract.__item_context.file.absolutePath) }}
 {{#each functions}}
+* link:{{getExternalLink __item_context.file.absolutePath}}[{{name}}]
+{{/each}}
+{{/if}}
+
+{{/each}}
+--
+{{/if}}
+
+
+{{#if has-events}}
+[.contract-index]
+.Events
+--
+{{#each inheritance}}
+{{#unless @first}}
+[.contract-subindex-inherited]
+.{{name}}
+{{/unless}}
+{{#if (isLocalContract name)}}
+{{#each events}}
+* {xref-{{anchor~}} }[`++{{name}}({{names params}})++`]
+{{/each}}
+{{else if (isAragonInherittedContract __item_context.file.absolutePath) }}
+{{#each events}}
+* link:{{getExternalLink __item_context.file.absolutePath}}[{{name}}]
+{{/each}}
+{{/if}}
+
+{{/each}}
+--
+{{/if}}
+
+{{#if has-errors}}
+[.contract-index]
+.Errors
+--
+{{#each inheritance}}
+{{#unless @first}}
+[.contract-subindex-inherited]
+.{{name}}
+{{/unless}}
+{{#if (isLocalContract contract.name)}}
+{{#each errors}}
+* {xref-{{anchor~}} }[`++{{name}}({{names params}})++`]
+{{/each}}
+{{else if (isAragonInherittedContract __item_context.file.absolutePath) }}
+{{#each errors}}
 * link:{{getExternalLink __item_context.file.absolutePath}}[{{name}}]
 {{/each}}
 {{/if}}

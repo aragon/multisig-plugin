@@ -26,6 +26,8 @@
 :xref-Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32: xref:Multisig.adoc#Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32
 :xref-Multisig-multisigSettings-struct-Multisig-MultisigSettings: xref:Multisig.adoc#Multisig-multisigSettings-struct-Multisig-MultisigSettings
 :xref-Multisig-lastMultisigSettingsChange-uint64: xref:Multisig.adoc#Multisig-lastMultisigSettingsChange-uint64
+:xref-Multisig-Approved-uint256-address-: xref:Multisig.adoc#Multisig-Approved-uint256-address-
+:xref-Multisig-MultisigSettingsUpdated-bool-uint16-: xref:Multisig.adoc#Multisig-MultisigSettingsUpdated-bool-uint16-
 :xref-MultisigSetup-constructor--: xref:Multisig.adoc#MultisigSetup-constructor--
 :xref-MultisigSetup-prepareInstallation-address-bytes-: xref:Multisig.adoc#MultisigSetup-prepareInstallation-address-bytes-
 :xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-
@@ -119,51 +121,191 @@ v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is req
 
 [.contract-subindex-inherited]
 .Addresslist
-* link:github.com[isListedAtBlock]
-* link:github.com[isListed]
-* link:github.com[addresslistLengthAtBlock]
-* link:github.com[addresslistLength]
-* link:github.com[_addAddresses]
-* link:github.com[_removeAddresses]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/governance/Addresslist.sol[isListedAtBlock]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/governance/Addresslist.sol[isListed]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/governance/Addresslist.sol[addresslistLengthAtBlock]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/governance/Addresslist.sol[addresslistLength]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/governance/Addresslist.sol[_addAddresses]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/governance/Addresslist.sol[_removeAddresses]
 
 [.contract-subindex-inherited]
 .ProposalUpgradeable
-* link:github.com[proposalCount]
-* link:github.com[_createProposalId]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/proposal/ProposalUpgradeable.sol[proposalCount]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/proposal/ProposalUpgradeable.sol[_createProposalId]
 
 [.contract-subindex-inherited]
 .PluginUUPSUpgradeable
-* link:github.com[pluginType]
-* link:github.com[getCurrentTargetConfig]
-* link:github.com[getTargetConfig]
-* link:github.com[__PluginUUPSUpgradeable_init]
-* link:github.com[setTargetConfig]
-* link:github.com[implementation]
-* link:github.com[_setTargetConfig]
-* link:github.com[_execute]
-* link:github.com[_execute]
-* link:github.com[_authorizeUpgrade]
-* link:github.com[SET_TARGET_CONFIG_PERMISSION_ID]
-* link:github.com[UPGRADE_PLUGIN_PERMISSION_ID]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[pluginType]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[getCurrentTargetConfig]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[getTargetConfig]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[__PluginUUPSUpgradeable_init]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[setTargetConfig]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[implementation]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[_setTargetConfig]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[_execute]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[_execute]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[_authorizeUpgrade]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[SET_TARGET_CONFIG_PERMISSION_ID]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[UPGRADE_PLUGIN_PERMISSION_ID]
 
 [.contract-subindex-inherited]
 .ProtocolVersion
-* link:github.com[protocolVersion]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/utils/versioning/ProtocolVersion.sol[protocolVersion]
 
 [.contract-subindex-inherited]
 .IProtocolVersion
 
 [.contract-subindex-inherited]
 .MetadataExtensionUpgradeable
-* link:github.com[setMetadata]
-* link:github.com[getMetadata]
-* link:github.com[_setMetadata]
-* link:github.com[SET_METADATA_PERMISSION_ID]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/utils/metadata/MetadataExtensionUpgradeable.sol[setMetadata]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/utils/metadata/MetadataExtensionUpgradeable.sol[getMetadata]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/utils/metadata/MetadataExtensionUpgradeable.sol[_setMetadata]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/utils/metadata/MetadataExtensionUpgradeable.sol[SET_METADATA_PERMISSION_ID]
 
 [.contract-subindex-inherited]
 .DaoAuthorizableUpgradeable
-* link:github.com[__DaoAuthorizableUpgradeable_init]
-* link:github.com[dao]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/permission/auth/DaoAuthorizableUpgradeable.sol[__DaoAuthorizableUpgradeable_init]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/permission/auth/DaoAuthorizableUpgradeable.sol[dao]
+
+[.contract-subindex-inherited]
+.ContextUpgradeable
+
+[.contract-subindex-inherited]
+.UUPSUpgradeable
+
+[.contract-subindex-inherited]
+.ERC1967UpgradeUpgradeable
+
+[.contract-subindex-inherited]
+.IERC1967Upgradeable
+
+[.contract-subindex-inherited]
+.IERC1822ProxiableUpgradeable
+
+[.contract-subindex-inherited]
+.ERC165Upgradeable
+
+[.contract-subindex-inherited]
+.IERC165Upgradeable
+
+[.contract-subindex-inherited]
+.Initializable
+
+[.contract-subindex-inherited]
+.IProposal
+
+[.contract-subindex-inherited]
+.IPlugin
+
+[.contract-subindex-inherited]
+.IMembership
+
+[.contract-subindex-inherited]
+.IMultisig
+
+--
+
+[.contract-index]
+.Events
+--
+* {xref-Multisig-Approved-uint256-address-}[`++Approved(proposalId, approver)++`]
+* {xref-Multisig-MultisigSettingsUpdated-bool-uint16-}[`++MultisigSettingsUpdated(onlyListed, minApprovals)++`]
+
+[.contract-subindex-inherited]
+.Addresslist
+
+[.contract-subindex-inherited]
+.ProposalUpgradeable
+
+[.contract-subindex-inherited]
+.PluginUUPSUpgradeable
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[TargetSet]
+
+[.contract-subindex-inherited]
+.ProtocolVersion
+
+[.contract-subindex-inherited]
+.IProtocolVersion
+
+[.contract-subindex-inherited]
+.MetadataExtensionUpgradeable
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/utils/metadata/MetadataExtensionUpgradeable.sol[MetadataSet]
+
+[.contract-subindex-inherited]
+.DaoAuthorizableUpgradeable
+
+[.contract-subindex-inherited]
+.ContextUpgradeable
+
+[.contract-subindex-inherited]
+.UUPSUpgradeable
+
+[.contract-subindex-inherited]
+.ERC1967UpgradeUpgradeable
+
+[.contract-subindex-inherited]
+.IERC1967Upgradeable
+
+[.contract-subindex-inherited]
+.IERC1822ProxiableUpgradeable
+
+[.contract-subindex-inherited]
+.ERC165Upgradeable
+
+[.contract-subindex-inherited]
+.IERC165Upgradeable
+
+[.contract-subindex-inherited]
+.Initializable
+
+[.contract-subindex-inherited]
+.IProposal
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/proposal/IProposal.sol[ProposalCreated]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/proposal/IProposal.sol[ProposalExecuted]
+
+[.contract-subindex-inherited]
+.IPlugin
+
+[.contract-subindex-inherited]
+.IMembership
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/membership/IMembership.sol[MembersAdded]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/membership/IMembership.sol[MembersRemoved]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/membership/IMembership.sol[MembershipContractAnnounced]
+
+[.contract-subindex-inherited]
+.IMultisig
+
+--
+
+[.contract-index]
+.Errors
+--
+
+[.contract-subindex-inherited]
+.Addresslist
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/governance/Addresslist.sol[InvalidAddresslistUpdate]
+
+[.contract-subindex-inherited]
+.ProposalUpgradeable
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/proposal/ProposalUpgradeable.sol[FunctionDeprecated]
+
+[.contract-subindex-inherited]
+.PluginUUPSUpgradeable
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[InvalidTargetConfig]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[DelegateCallFailed]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[AlreadyInitialized]
+
+[.contract-subindex-inherited]
+.ProtocolVersion
+
+[.contract-subindex-inherited]
+.IProtocolVersion
+
+[.contract-subindex-inherited]
+.MetadataExtensionUpgradeable
+
+[.contract-subindex-inherited]
+.DaoAuthorizableUpgradeable
 
 [.contract-subindex-inherited]
 .ContextUpgradeable
@@ -224,12 +366,37 @@ v1.3 (Release 1, Build 3)
 
 [.contract-subindex-inherited]
 .PluginUpgradeableSetup
-* link:github.com[supportsInterface]
-* link:github.com[implementation]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/setup/PluginUpgradeableSetup.sol[supportsInterface]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/setup/PluginUpgradeableSetup.sol[implementation]
 
 [.contract-subindex-inherited]
 .ProtocolVersion
-* link:github.com[protocolVersion]
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/utils/versioning/ProtocolVersion.sol[protocolVersion]
+
+[.contract-subindex-inherited]
+.IProtocolVersion
+
+[.contract-subindex-inherited]
+.IPluginSetup
+
+[.contract-subindex-inherited]
+.ERC165
+
+[.contract-subindex-inherited]
+.IERC165
+
+--
+
+[.contract-index]
+.Errors
+--
+
+[.contract-subindex-inherited]
+.PluginUpgradeableSetup
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/setup/PluginUpgradeableSetup.sol[InvalidUpdatePath]
+
+[.contract-subindex-inherited]
+.ProtocolVersion
 
 [.contract-subindex-inherited]
 .IProtocolVersion

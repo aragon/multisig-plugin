@@ -14,13 +14,28 @@ module.exports['isLocalContract'] = (name, options) => {
   return allContracts.includes(name);
 };
 
-module.exports['isAragonInherittedContract'] = (contract, options) => {
-  return contract.__item_context.file.absolutePath.startsWith('@aragon');
+module.exports['isAragonInherittedContract'] = (absolutePath, options) => {
+  return absolutePath.startsWith('@aragon');
 };
 
-module.exports['getExternalLink'] = path => {
+module.exports['getExternalLink'] = absolutePath => {
+  if (absolutePath.startsWith('@aragon/osx-commons-contracts')) {
+    return absolutePath.replace(
+      '@aragon/osx-commons-contracts',
+      'https://github.com/aragon/osx-commons/tree/main/contracts'
+    );
+  }
+
   return 'github.com';
 };
+
+// module.exports['isAragonInherittedContract1'] = contract => {
+//   console.log(contract, 'oe');
+// };
+
+// module.exports['getExternalLink1'] = item => {
+//   // console.log(item, 'oe');
+// };
 
 module.exports.names = params => params?.map(p => p.name).join(', ');
 
