@@ -74,10 +74,20 @@ module.exports['inherited-functions'] = function ({item}) {
     inheritance.flatMap(c => c.functions.flatMap(f => f.baseFunctions ?? []))
   );
 
-  return inheritance.map((contract, i) => ({
+  let d = inheritance.map((contract, i) => ({
     contract,
     functions: contract.functions.filter(
       f => !baseFunctions.has(f.id) && (f.name !== 'constructor' || i === 0)
     ),
   }));
+
+  // d.map(item => {
+  //   // console.log(item.contract.name);
+  //   // console.log('starts');
+  //   item.functions.map(item2 => {
+  //     console.log(item2);
+  //   });
+  //   console.log('ends');
+  // });
+  return d;
 };

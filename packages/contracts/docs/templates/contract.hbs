@@ -16,27 +16,18 @@
 {{#each inherited-functions}}
 {{#unless @first}}
 [.contract-subindex-inherited]
-{{contract.name}}
+.{{contract.name}}
 {{/unless}}
-
 {{#if (isLocalContract contract.name)}}
 {{#each functions}}
 * {xref-{{anchor~}} }[`++{{name}}({{names params}})++`]
 {{/each}}
-{{else}}
+{{else if (isAragonInherittedContract contract) }}
 {{#each functions}}
-* {{name}}
+* link:{{getExternalLink __item_context.file.absolutePath}}[{{name}}]
 {{/each}}
 {{/if}}
+
 {{/each}}
 --
 {{/if}}
-
-
-
-
-
-
-
-
-

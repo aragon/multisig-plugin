@@ -6,17 +6,20 @@ module.exports['readme-path'] = opts => {
   return 'README.adoc';
 };
 
-module.exports['giorga'] = (anchor, items, options) => {
-  // console.log(options, ' brax');
-  return 'fuck me' + anchor;
-};
-
 module.exports['isLocalContract'] = (name, options) => {
   const allContracts = options.data.site.items
     .filter(output => output.nodeType === 'ContractDefinition')
     .map(contract => contract.name);
 
   return allContracts.includes(name);
+};
+
+module.exports['isAragonInherittedContract'] = (contract, options) => {
+  return contract.__item_context.file.absolutePath.startsWith('@aragon');
+};
+
+module.exports['getExternalLink'] = path => {
+  return 'github.com';
 };
 
 module.exports.names = params => params?.map(p => p.name).join(', ');

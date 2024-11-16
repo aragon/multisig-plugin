@@ -26,6 +26,10 @@
 :xref-Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32: xref:Multisig.adoc#Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32
 :xref-Multisig-multisigSettings-struct-Multisig-MultisigSettings: xref:Multisig.adoc#Multisig-multisigSettings-struct-Multisig-MultisigSettings
 :xref-Multisig-lastMultisigSettingsChange-uint64: xref:Multisig.adoc#Multisig-lastMultisigSettingsChange-uint64
+:xref-MultisigSetup-constructor--: xref:Multisig.adoc#MultisigSetup-constructor--
+:xref-MultisigSetup-prepareInstallation-address-bytes-: xref:Multisig.adoc#MultisigSetup-prepareInstallation-address-bytes-
+:xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-
+:xref-MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-
 = The title here
 
 This is for testing purposes.
@@ -85,7 +89,6 @@ v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is req
 [.contract-index]
 .Functions
 --
-
 * {xref-Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-}[`++initialize(_dao, _members, _multisigSettings, _targetConfig, _pluginMetadata)++`]
 * {xref-Multisig-initializeFrom-uint16-bytes-}[`++initializeFrom(_fromBuild, _initData)++`]
 * {xref-Multisig-supportsInterface-bytes4-}[`++supportsInterface(_interfaceId)++`]
@@ -113,114 +116,132 @@ v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is req
 * {xref-Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32}[`++EXECUTE_PROPOSAL_PERMISSION_ID()++`]
 * {xref-Multisig-multisigSettings-struct-Multisig-MultisigSettings}[`++multisigSettings()++`]
 * {xref-Multisig-lastMultisigSettingsChange-uint64}[`++lastMultisigSettingsChange()++`]
-[.contract-subindex-inherited]
-Addresslist
-
-* isListedAtBlock
-* isListed
-* addresslistLengthAtBlock
-* addresslistLength
-* _addAddresses
-* _removeAddresses
-[.contract-subindex-inherited]
-ProposalUpgradeable
-
-* proposalCount
-* _createProposalId
-[.contract-subindex-inherited]
-PluginUUPSUpgradeable
-
-* pluginType
-* getCurrentTargetConfig
-* getTargetConfig
-* __PluginUUPSUpgradeable_init
-* setTargetConfig
-* implementation
-* _setTargetConfig
-* _execute
-* _execute
-* _authorizeUpgrade
-* SET_TARGET_CONFIG_PERMISSION_ID
-* UPGRADE_PLUGIN_PERMISSION_ID
-[.contract-subindex-inherited]
-ProtocolVersion
-
-* protocolVersion
-[.contract-subindex-inherited]
-IProtocolVersion
 
 [.contract-subindex-inherited]
-MetadataExtensionUpgradeable
-
-* setMetadata
-* getMetadata
-* _setMetadata
-* SET_METADATA_PERMISSION_ID
-[.contract-subindex-inherited]
-DaoAuthorizableUpgradeable
-
-* __DaoAuthorizableUpgradeable_init
-* dao
-[.contract-subindex-inherited]
-ContextUpgradeable
-
-* __Context_init
-* __Context_init_unchained
-* _msgSender
-* _msgData
-* _contextSuffixLength
-[.contract-subindex-inherited]
-UUPSUpgradeable
-
-* __UUPSUpgradeable_init
-* __UUPSUpgradeable_init_unchained
-* proxiableUUID
-* upgradeTo
-* upgradeToAndCall
-[.contract-subindex-inherited]
-ERC1967UpgradeUpgradeable
-
-* __ERC1967Upgrade_init
-* __ERC1967Upgrade_init_unchained
-* _getImplementation
-* _upgradeTo
-* _upgradeToAndCall
-* _upgradeToAndCallUUPS
-* _getAdmin
-* _changeAdmin
-* _getBeacon
-* _upgradeBeaconToAndCall
-[.contract-subindex-inherited]
-IERC1967Upgradeable
+.Addresslist
+* link:github.com[isListedAtBlock]
+* link:github.com[isListed]
+* link:github.com[addresslistLengthAtBlock]
+* link:github.com[addresslistLength]
+* link:github.com[_addAddresses]
+* link:github.com[_removeAddresses]
 
 [.contract-subindex-inherited]
-IERC1822ProxiableUpgradeable
+.ProposalUpgradeable
+* link:github.com[proposalCount]
+* link:github.com[_createProposalId]
 
 [.contract-subindex-inherited]
-ERC165Upgradeable
-
-* __ERC165_init
-* __ERC165_init_unchained
-[.contract-subindex-inherited]
-IERC165Upgradeable
-
-[.contract-subindex-inherited]
-Initializable
-
-* _disableInitializers
-* _getInitializedVersion
-* _isInitializing
-[.contract-subindex-inherited]
-IProposal
+.PluginUUPSUpgradeable
+* link:github.com[pluginType]
+* link:github.com[getCurrentTargetConfig]
+* link:github.com[getTargetConfig]
+* link:github.com[__PluginUUPSUpgradeable_init]
+* link:github.com[setTargetConfig]
+* link:github.com[implementation]
+* link:github.com[_setTargetConfig]
+* link:github.com[_execute]
+* link:github.com[_execute]
+* link:github.com[_authorizeUpgrade]
+* link:github.com[SET_TARGET_CONFIG_PERMISSION_ID]
+* link:github.com[UPGRADE_PLUGIN_PERMISSION_ID]
 
 [.contract-subindex-inherited]
-IPlugin
+.ProtocolVersion
+* link:github.com[protocolVersion]
 
 [.contract-subindex-inherited]
-IMembership
+.IProtocolVersion
 
 [.contract-subindex-inherited]
-IMultisig
+.MetadataExtensionUpgradeable
+* link:github.com[setMetadata]
+* link:github.com[getMetadata]
+* link:github.com[_setMetadata]
+* link:github.com[SET_METADATA_PERMISSION_ID]
+
+[.contract-subindex-inherited]
+.DaoAuthorizableUpgradeable
+* link:github.com[__DaoAuthorizableUpgradeable_init]
+* link:github.com[dao]
+
+[.contract-subindex-inherited]
+.ContextUpgradeable
+
+[.contract-subindex-inherited]
+.UUPSUpgradeable
+
+[.contract-subindex-inherited]
+.ERC1967UpgradeUpgradeable
+
+[.contract-subindex-inherited]
+.IERC1967Upgradeable
+
+[.contract-subindex-inherited]
+.IERC1822ProxiableUpgradeable
+
+[.contract-subindex-inherited]
+.ERC165Upgradeable
+
+[.contract-subindex-inherited]
+.IERC165Upgradeable
+
+[.contract-subindex-inherited]
+.Initializable
+
+[.contract-subindex-inherited]
+.IProposal
+
+[.contract-subindex-inherited]
+.IPlugin
+
+[.contract-subindex-inherited]
+.IMembership
+
+[.contract-subindex-inherited]
+.IMultisig
+
+--
+
+:constructor: pass:normal[xref:#MultisigSetup-constructor--[`++constructor++`]]
+:prepareInstallation: pass:normal[xref:#MultisigSetup-prepareInstallation-address-bytes-[`++prepareInstallation++`]]
+:prepareUpdate: pass:normal[xref:#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-[`++prepareUpdate++`]]
+:prepareUninstallation: pass:normal[xref:#MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-[`++prepareUninstallation++`]]
+
+[.contract]
+[[MultisigSetup]]
+=== `++MultisigSetup++` link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/MultisigSetup.sol[{github-icon},role=heading-link]
+
+v1.3 (Release 1, Build 3)
+
+[.contract-index]
+.Functions
+--
+* {xref-MultisigSetup-constructor--}[`++constructor()++`]
+* {xref-MultisigSetup-prepareInstallation-address-bytes-}[`++prepareInstallation(_dao, _data)++`]
+* {xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-}[`++prepareUpdate(_dao, _fromBuild, _payload)++`]
+* {xref-MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-}[`++prepareUninstallation(_dao, _payload)++`]
+
+[.contract-subindex-inherited]
+.PluginUpgradeableSetup
+* link:github.com[supportsInterface]
+* link:github.com[implementation]
+
+[.contract-subindex-inherited]
+.ProtocolVersion
+* link:github.com[protocolVersion]
+
+[.contract-subindex-inherited]
+.IProtocolVersion
+
+[.contract-subindex-inherited]
+.IPluginSetup
+
+[.contract-subindex-inherited]
+.ERC165
+
+[.contract-subindex-inherited]
+.IERC165
 
 --
 
