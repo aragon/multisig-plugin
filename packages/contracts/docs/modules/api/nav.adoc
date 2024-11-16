@@ -1,2 +1,2 @@
 .API
-* xref:Multisig.adoc[Multisig]
+* xref:multisig.adoc[Multisig]
