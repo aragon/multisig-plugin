@@ -417,11 +417,17 @@ v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is req
 [[Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-]]
 ==== `[.contract-item-name]#++initialize++#++(contract IDAO _dao, address[] _members, struct Multisig.MultisigSettings _multisigSettings, struct IPlugin.TargetConfig _targetConfig, bytes _pluginMetadata)++` [.item-kind]#external#
 
+Initializes Release 1, Build 3.
+
 This method is required to support [ERC-1822](https://eips.ethereum.org/EIPS/eip-1822).
 
 [.contract-item]
 [[Multisig-initializeFrom-uint16-bytes-]]
 ==== `[.contract-item-name]#++initializeFrom++#++(uint16 _fromBuild, bytes _initData)++` [.item-kind]#external#
+
+Reinitializes the Multisig after an upgrade from a previous build version. For each
+        reinitialization step, use the &#x60;_fromBuild&#x60; version to decide which internal functions to call
+        for reinitialization.
 
 WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
      incorrectly passed, and that the appropriate permissions for the upgrade are properly configured.
@@ -430,39 +436,56 @@ WARNING: The contract should only be upgradeable through PSP to ensure that _fro
 [[Multisig-supportsInterface-bytes4-]]
 ==== `[.contract-item-name]#++supportsInterface++#++(bytes4 _interfaceId) → bool++` [.item-kind]#public#
 
+Checks if this or the parent contract supports an interface by its ID.
+
 [.contract-item]
 [[Multisig-addAddresses-address---]]
 ==== `[.contract-item-name]#++addAddresses++#++(address[] _members)++` [.item-kind]#external#
 
-Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
+Adds new members to the address list. Previously, it checks if the new address
+        list length would be greater than &#x60;type(uint16).max&#x60;, the maximal number of approvals.
+
+Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
 
 [.contract-item]
 [[Multisig-removeAddresses-address---]]
 ==== `[.contract-item-name]#++removeAddresses++#++(address[] _members)++` [.item-kind]#external#
 
-Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
+Removes existing members from the address list. Previously, it checks if the
+        new address list length is at least as long as the minimum approvals parameter requires.
+        Note that &#x60;minApprovals&#x60; is must be at least 1 so the address list cannot become empty.
+
+Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
 
 [.contract-item]
 [[Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-]]
 ==== `[.contract-item-name]#++updateMultisigSettings++#++(struct Multisig.MultisigSettings _multisigSettings)++` [.item-kind]#external#
 
-Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
+Updates the plugin settings.
+
+Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
 
 [.contract-item]
 [[Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-]]
 ==== `[.contract-item-name]#++createProposal++#++(bytes _metadata, struct Action[] _actions, uint256 _allowFailureMap, bool _approveProposal, bool _tryExecution, uint64 _startDate, uint64 _endDate) → uint256 proposalId++` [.item-kind]#public#
 
-Requires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
+Creates a new multisig proposal.
+
+Requires the &#x60;CREATE_PROPOSAL_PERMISSION_ID&#x60; permission.
 
 [.contract-item]
 [[Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-]]
 ==== `[.contract-item-name]#++createProposal++#++(bytes _metadata, struct Action[] _actions, uint64 _startDate, uint64 _endDate, bytes _data) → uint256 proposalId++` [.item-kind]#external#
 
-Calls a public function that requires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
+Creates a new proposal.
+
+Calls a public function that requires the &#x60;CREATE_PROPOSAL_PERMISSION_ID&#x60; permission.
 
 [.contract-item]
 [[Multisig-customProposalParamsABI--]]
 ==== `[.contract-item-name]#++customProposalParamsABI++#++() → string++` [.item-kind]#external#
+
+The human-readable abi format for extra params included in &#x60;data&#x60; of &#x60;createProposal&#x60;.
 
 Used for UI to easily detect what extra params the contract expects.
 
@@ -470,7 +493,9 @@ Used for UI to easily detect what extra params the contract expects.
 [[Multisig-approve-uint256-bool-]]
 ==== `[.contract-item-name]#++approve++#++(uint256 _proposalId, bool _tryExecution)++` [.item-kind]#public#
 
-If `_tryExecution` is `true`, the function attempts execution after recording the approval.
+Records an approval for a proposal and, if specified, attempts execution if certain conditions are met.
+
+If &#x60;_tryExecution&#x60; is &#x60;true&#x60;, the function attempts execution after recording the approval.
      Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met,
      and the caller has been granted execution permission. If execution conditions are not met,
      the function does not revert.
@@ -479,17 +504,25 @@ If `_tryExecution` is `true`, the function attempts execution after recording th
 [[Multisig-canApprove-uint256-address-]]
 ==== `[.contract-item-name]#++canApprove++#++(uint256 _proposalId, address _account) → bool++` [.item-kind]#external#
 
-Reverts if the proposal with the given `_proposalId` does not exist.
+Checks if an account is eligible to participate in a proposal vote.
+        Confirms that the proposal is open, the account is listed as a member,
+        and the account has not previously voted or approved this proposal.
+
+Reverts if the proposal with the given &#x60;_proposalId&#x60; does not exist.
 
 [.contract-item]
 [[Multisig-canExecute-uint256-]]
 ==== `[.contract-item-name]#++canExecute++#++(uint256 _proposalId) → bool++` [.item-kind]#external#
 
-Reverts if the proposal with the given `_proposalId` does not exist.
+Checks if a proposal can be executed.
+
+Reverts if the proposal with the given &#x60;_proposalId&#x60; does not exist.
 
 [.contract-item]
 [[Multisig-hasSucceeded-uint256-]]
 ==== `[.contract-item-name]#++hasSucceeded++#++(uint256 _proposalId) → bool++` [.item-kind]#external#
+
+Whether proposal succeeded or not.
 
 Note that this must not include time window checks and only make a decision based on the thresholds.
 
@@ -497,23 +530,31 @@ Note that this must not include time window checks and only make a decision base
 [[Multisig-getProposal-uint256-]]
 ==== `[.contract-item-name]#++getProposal++#++(uint256 _proposalId) → bool executed, uint16 approvals, struct Multisig.ProposalParameters parameters, struct Action[] actions, uint256 allowFailureMap, struct IPlugin.TargetConfig targetConfig++` [.item-kind]#public#
 
+Returns all information for a proposal by its ID.
+
 [.contract-item]
 [[Multisig-hasApproved-uint256-address-]]
 ==== `[.contract-item-name]#++hasApproved++#++(uint256 _proposalId, address _account) → bool++` [.item-kind]#public#
 
-May return false if the `_proposalId` or `_account` do not exist,
+Returns whether the account has approved the proposal.
+
+May return false if the &#x60;_proposalId&#x60; or &#x60;_account&#x60; do not exist,
     as the function does not verify their existence.
 
 [.contract-item]
 [[Multisig-execute-uint256-]]
 ==== `[.contract-item-name]#++execute++#++(uint256 _proposalId)++` [.item-kind]#public#
 
-Requires the `EXECUTE_PROPOSAL_PERMISSION_ID` permission.
+Executes a proposal if all execution conditions are met.
+
+Requires the &#x60;EXECUTE_PROPOSAL_PERMISSION_ID&#x60; permission.
 Reverts if the proposal is still open or if the minimum approval threshold has not been met.
 
 [.contract-item]
 [[Multisig-isMember-address-]]
 ==== `[.contract-item-name]#++isMember++#++(address _account) → bool++` [.item-kind]#external#
+
+Checks if an account is a member of the DAO.
 
 This function must be implemented in the plugin contract that introduces the members to the DAO.
 
@@ -521,11 +562,15 @@ This function must be implemented in the plugin contract that introduces the mem
 [[Multisig-_execute-uint256-]]
 ==== `[.contract-item-name]#++_execute++#++(uint256 _proposalId)++` [.item-kind]#internal#
 
+Internal function to execute a proposal.
+
 It assumes the queried proposal exists.
 
 [.contract-item]
 [[Multisig-_canApprove-uint256-address-]]
 ==== `[.contract-item-name]#++_canApprove++#++(uint256 _proposalId, address _account) → bool++` [.item-kind]#internal#
+
+Internal function to check if an account can approve.
 
 It assumes the queried proposal exists.
 
@@ -533,35 +578,52 @@ It assumes the queried proposal exists.
 [[Multisig-_canExecute-uint256-]]
 ==== `[.contract-item-name]#++_canExecute++#++(uint256 _proposalId) → bool++` [.item-kind]#internal#
 
+Internal function to check if a proposal can be executed.
+
 It assumes the queried proposal exists.
 
 [.contract-item]
 [[Multisig-_isProposalOpen-struct-Multisig-Proposal-]]
 ==== `[.contract-item-name]#++_isProposalOpen++#++(struct Multisig.Proposal proposal_) → bool++` [.item-kind]#internal#
 
+Internal function to check if a proposal is still open.
+
 [.contract-item]
 [[Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-]]
 ==== `[.contract-item-name]#++_updateMultisigSettings++#++(struct Multisig.MultisigSettings _multisigSettings)++` [.item-kind]#internal#
+
+Internal function to update the plugin settings.
 
 [.contract-item]
 [[Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32]]
 ==== `[.contract-item-name]#++UPDATE_MULTISIG_SETTINGS_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
 
+The ID of the permission required to call the
+        &#x60;addAddresses&#x60;, &#x60;removeAddresses&#x60; and &#x60;updateMultisigSettings&#x60; functions.
+
 [.contract-item]
 [[Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32]]
 ==== `[.contract-item-name]#++CREATE_PROPOSAL_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
+
+The ID of the permission required to call the &#x60;createProposal&#x60; function.
 
 [.contract-item]
 [[Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32]]
 ==== `[.contract-item-name]#++EXECUTE_PROPOSAL_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
 
+The ID of the permission required to call the &#x60;execute&#x60; function.
+
 [.contract-item]
 [[Multisig-multisigSettings-struct-Multisig-MultisigSettings]]
 ==== `[.contract-item-name]#++multisigSettings++#++() → struct Multisig.MultisigSettings++` [.item-kind]#public#
 
+The current plugin settings.
+
 [.contract-item]
 [[Multisig-lastMultisigSettingsChange-uint64]]
 ==== `[.contract-item-name]#++lastMultisigSettingsChange++#++() → uint64++` [.item-kind]#public#
+
+Keeps track at which block number the multisig settings have been changed the last time.
 
 This variable prevents a proposal from being created in the same block in which the multisig
      settings change.
@@ -570,49 +632,77 @@ This variable prevents a proposal from being created in the same block in which 
 [[Multisig-Approved-uint256-address-]]
 ==== `[.contract-item-name]#++Approved++#++(uint256 indexed proposalId, address indexed approver)++` [.item-kind]#event#
 
+Emitted when a proposal is approve by an approver.
+
 [.contract-item]
 [[Multisig-MultisigSettingsUpdated-bool-uint16-]]
 ==== `[.contract-item-name]#++MultisigSettingsUpdated++#++(bool onlyListed, uint16 indexed minApprovals)++` [.item-kind]#event#
+
+Emitted when the plugin settings are set.
 
 [.contract-item]
 [[Multisig-ProposalCreationForbidden-address-]]
 ==== `[.contract-item-name]#++ProposalCreationForbidden++#++(address sender)++` [.item-kind]#error#
 
+Thrown when a sender is not allowed to create a proposal.
+
 [.contract-item]
 [[Multisig-NonexistentProposal-uint256-]]
 ==== `[.contract-item-name]#++NonexistentProposal++#++(uint256 proposalId)++` [.item-kind]#error#
+
+Thrown when a proposal doesn&#x27;t exist.
 
 [.contract-item]
 [[Multisig-ApprovalCastForbidden-uint256-address-]]
 ==== `[.contract-item-name]#++ApprovalCastForbidden++#++(uint256 proposalId, address sender)++` [.item-kind]#error#
 
+Thrown if an approver is not allowed to cast an approve. This can be because the proposal
+        - is not open,
+        - was executed, or
+        - the approver is not on the address list
+
 [.contract-item]
 [[Multisig-ProposalExecutionForbidden-uint256-]]
 ==== `[.contract-item-name]#++ProposalExecutionForbidden++#++(uint256 proposalId)++` [.item-kind]#error#
+
+Thrown if the proposal execution is forbidden.
 
 [.contract-item]
 [[Multisig-MinApprovalsOutOfBounds-uint16-uint16-]]
 ==== `[.contract-item-name]#++MinApprovalsOutOfBounds++#++(uint16 limit, uint16 actual)++` [.item-kind]#error#
 
+Thrown if the minimal approvals value is out of bounds (less than 1 or greater than the number of
+        members in the address list).
+
 [.contract-item]
 [[Multisig-AddresslistLengthOutOfBounds-uint16-uint256-]]
 ==== `[.contract-item-name]#++AddresslistLengthOutOfBounds++#++(uint16 limit, uint256 actual)++` [.item-kind]#error#
+
+Thrown if the address list length is out of bounds.
 
 [.contract-item]
 [[Multisig-ProposalAlreadyExists-uint256-]]
 ==== `[.contract-item-name]#++ProposalAlreadyExists++#++(uint256 proposalId)++` [.item-kind]#error#
 
+Thrown if the proposal with the same id already exists.
+
 [.contract-item]
 [[Multisig-DateOutOfBounds-uint64-uint64-]]
 ==== `[.contract-item-name]#++DateOutOfBounds++#++(uint64 limit, uint64 actual)++` [.item-kind]#error#
+
+Thrown if a date is out of bounds.
 
 [.contract-item]
 [[Multisig-MULTISIG_INTERFACE_ID-bytes4]]
 ==== `bytes4 [.contract-item-name]#++MULTISIG_INTERFACE_ID++#` [.item-kind]#internal constant#
 
+The [ERC-165](https://eips.ethereum.org/EIPS/eip-165) interface ID of the contract.
+
 [.contract-item]
 [[Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-]]
 ==== `mapping(uint256 &#x3D;&gt; struct Multisig.Proposal) [.contract-item-name]#++proposals++#` [.item-kind]#internal#
+
+A mapping between proposal IDs and proposal information.
 
 :constructor: pass:normal[xref:#MultisigSetup-constructor--[`++constructor++`]]
 :prepareInstallation: pass:normal[xref:#MultisigSetup-prepareInstallation-address-bytes-[`++prepareInstallation++`]]
@@ -685,17 +775,25 @@ v1.3 (Release 1, Build 3)
 [[MultisigSetup-constructor--]]
 ==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
 
+The contract constructor, that deploys the &#x60;Multisig&#x60; plugin logic contract.
+
 [.contract-item]
 [[MultisigSetup-prepareInstallation-address-bytes-]]
 ==== `[.contract-item-name]#++prepareInstallation++#++(address _dao, bytes _data) → address plugin, struct IPluginSetup.PreparedSetupData preparedSetupData++` [.item-kind]#external#
 
+Prepares the installation of a plugin.
+
 [.contract-item]
 [[MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-]]
 ==== `[.contract-item-name]#++prepareUpdate++#++(address _dao, uint16 _fromBuild, struct IPluginSetup.SetupPayload _payload) → bytes initData, struct IPluginSetup.PreparedSetupData preparedSetupData++` [.item-kind]#external#
+
+Prepares the update of a plugin.
 
 Revoke the upgrade plugin permission to the DAO for all builds prior the current one (3).
 
 [.contract-item]
 [[MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-]]
 ==== `[.contract-item-name]#++prepareUninstallation++#++(address _dao, struct IPluginSetup.SetupPayload _payload) → struct PermissionLib.MultiTargetPermission[] permissions++` [.item-kind]#external#
+
+Prepares the uninstallation of a plugin.
 
