@@ -1,4 +1,4 @@
-:github-icon: pass:[<svg class='icon'><use href='#github-icon' /></svg>]
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
 :xref-Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-: xref:Multisig.adoc#Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-
 :xref-Multisig-initializeFrom-uint16-bytes-: xref:Multisig.adoc#Multisig-initializeFrom-uint16-bytes-
 :xref-Multisig-supportsInterface-bytes4-: xref:Multisig.adoc#Multisig-supportsInterface-bytes4-
@@ -51,7 +51,7 @@
 :xref-IMultisig-execute-uint256-: xref:Multisig.adoc#IMultisig-execute-uint256-
 :xref-ListedCheckCondition-constructor-address-: xref:Multisig.adoc#ListedCheckCondition-constructor-address-
 :xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-: xref:Multisig.adoc#ListedCheckCondition-isGranted-address-address-bytes32-bytes-
-  = The title here
+= The title here
 
 This is for testing purposes.
 
