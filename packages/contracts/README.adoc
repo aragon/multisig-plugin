@@ -5,9 +5,3 @@ This is for testing purposes.
 == Core
 
 {{Multisig}}
-
-{{MultisigSetup}}
-
-{{IMultisig}}
-
-{{ListedCheckCondition}}

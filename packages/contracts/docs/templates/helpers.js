@@ -6,6 +6,19 @@ module.exports['readme-path'] = opts => {
   return 'README.adoc';
 };
 
+module.exports['giorga'] = (anchor, items, options) => {
+  // console.log(options, ' brax');
+  return 'fuck me' + anchor;
+};
+
+module.exports['isLocalContract'] = (name, options) => {
+  const allContracts = options.data.site.items
+    .filter(output => output.nodeType === 'ContractDefinition')
+    .map(contract => contract.name);
+
+  return allContracts.includes(name);
+};
+
 module.exports.names = params => params?.map(p => p.name).join(', ');
 
 module.exports['typed-params'] = params => {
@@ -32,6 +45,8 @@ function getAllLinks(items) {
   }
   const res = {};
   linksCache.set(items, res);
+
+  // items only contain what is inside `src`.
   for (const item of items) {
     res[
       `xref-${item.anchor}`

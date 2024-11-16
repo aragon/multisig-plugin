@@ -73,6 +73,7 @@ module.exports['inherited-functions'] = function ({item}) {
   const baseFunctions = new Set(
     inheritance.flatMap(c => c.functions.flatMap(f => f.baseFunctions ?? []))
   );
+
   return inheritance.map((contract, i) => ({
     contract,
     functions: contract.functions.filter(

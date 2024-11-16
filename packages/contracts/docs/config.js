@@ -12,12 +12,6 @@ module.exports = {
     const sourcesDir = path.resolve(config.root, config.sourcesDir);
     let dir = path.resolve(config.root, file.absolutePath);
 
-    while (dir.startsWith(sourcesDir)) {
-      dir = path.dirname(dir);
-      if (fs.existsSync(path.join(dir, 'README.adoc'))) {
-        console.log(file.absolutePath, ' kk');
-        return 'Multisig' + config.pageExtension;
-      }
-    }
+    return 'Multisig' + config.pageExtension;
   },
 };
