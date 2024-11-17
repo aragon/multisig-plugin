@@ -32,6 +32,8 @@
 :xref-MultisigSetup-prepareInstallation-address-bytes-: xref:Multisig.adoc#MultisigSetup-prepareInstallation-address-bytes-
 :xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-
 :xref-MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-
+:xref-ListedCheckCondition-constructor-address-: xref:Multisig.adoc#ListedCheckCondition-constructor-address-
+:xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-: xref:Multisig.adoc#ListedCheckCondition-isGranted-address-address-bytes32-bytes-
 = The title here
 
 This is for testing purposes.
@@ -796,4 +798,51 @@ Revoke the upgrade plugin permission to the DAO for all builds prior the current
 ==== `[.contract-item-name]#++prepareUninstallation++#++(address _dao, struct IPluginSetup.SetupPayload _payload) → struct PermissionLib.MultiTargetPermission[] permissions++` [.item-kind]#external#
 
 Prepares the uninstallation of a plugin.
+
+:constructor: pass:normal[xref:#ListedCheckCondition-constructor-address-[`++constructor++`]]
+:isGranted: pass:normal[xref:#ListedCheckCondition-isGranted-address-address-bytes32-bytes-[`++isGranted++`]]
+
+[.contract]
+[[ListedCheckCondition]]
+=== `++ListedCheckCondition++` link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/ListedCheckCondition.sol[{github-icon},role=heading-link]
+
+[.contract-index]
+.Functions
+--
+* {xref-ListedCheckCondition-constructor-address-}[`++constructor(_multisig)++`]
+* {xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-}[`++isGranted(_where, _who, _permissionId, _data)++`]
+
+[.contract-subindex-inherited]
+.PermissionCondition
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/permission/condition/PermissionCondition.sol[supportsInterface]
+
+[.contract-subindex-inherited]
+.ProtocolVersion
+* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/utils/versioning/ProtocolVersion.sol[protocolVersion]
+
+[.contract-subindex-inherited]
+.IProtocolVersion
+
+[.contract-subindex-inherited]
+.IPermissionCondition
+
+[.contract-subindex-inherited]
+.ERC165
+
+[.contract-subindex-inherited]
+.IERC165
+
+--
+
+[.contract-item]
+[[ListedCheckCondition-constructor-address-]]
+==== `[.contract-item-name]#++constructor++#++(address _multisig)++` [.item-kind]#public#
+
+Initializes the condition with the address of the Multisig plugin.
+
+[.contract-item]
+[[ListedCheckCondition-isGranted-address-address-bytes32-bytes-]]
+==== `[.contract-item-name]#++isGranted++#++(address _where, address _who, bytes32 _permissionId, bytes _data) → bool++` [.item-kind]#public#
+
+Checks if a call is permitted.
 
