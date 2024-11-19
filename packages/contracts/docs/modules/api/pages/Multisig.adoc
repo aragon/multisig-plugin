@@ -1,39 +1,39 @@
 :github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
-:xref-Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-: xref:Multisig.adoc#Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-
-:xref-Multisig-initializeFrom-uint16-bytes-: xref:Multisig.adoc#Multisig-initializeFrom-uint16-bytes-
-:xref-Multisig-supportsInterface-bytes4-: xref:Multisig.adoc#Multisig-supportsInterface-bytes4-
-:xref-Multisig-addAddresses-address---: xref:Multisig.adoc#Multisig-addAddresses-address---
-:xref-Multisig-removeAddresses-address---: xref:Multisig.adoc#Multisig-removeAddresses-address---
-:xref-Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-: xref:Multisig.adoc#Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-
-:xref-Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-: xref:Multisig.adoc#Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-
-:xref-Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-: xref:Multisig.adoc#Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-
-:xref-Multisig-customProposalParamsABI--: xref:Multisig.adoc#Multisig-customProposalParamsABI--
-:xref-Multisig-approve-uint256-bool-: xref:Multisig.adoc#Multisig-approve-uint256-bool-
-:xref-Multisig-canApprove-uint256-address-: xref:Multisig.adoc#Multisig-canApprove-uint256-address-
-:xref-Multisig-canExecute-uint256-: xref:Multisig.adoc#Multisig-canExecute-uint256-
-:xref-Multisig-hasSucceeded-uint256-: xref:Multisig.adoc#Multisig-hasSucceeded-uint256-
-:xref-Multisig-getProposal-uint256-: xref:Multisig.adoc#Multisig-getProposal-uint256-
-:xref-Multisig-hasApproved-uint256-address-: xref:Multisig.adoc#Multisig-hasApproved-uint256-address-
-:xref-Multisig-execute-uint256-: xref:Multisig.adoc#Multisig-execute-uint256-
-:xref-Multisig-isMember-address-: xref:Multisig.adoc#Multisig-isMember-address-
-:xref-Multisig-_execute-uint256-: xref:Multisig.adoc#Multisig-_execute-uint256-
-:xref-Multisig-_canApprove-uint256-address-: xref:Multisig.adoc#Multisig-_canApprove-uint256-address-
-:xref-Multisig-_canExecute-uint256-: xref:Multisig.adoc#Multisig-_canExecute-uint256-
-:xref-Multisig-_isProposalOpen-struct-Multisig-Proposal-: xref:Multisig.adoc#Multisig-_isProposalOpen-struct-Multisig-Proposal-
-:xref-Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-: xref:Multisig.adoc#Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-
-:xref-Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32: xref:Multisig.adoc#Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32
-:xref-Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32: xref:Multisig.adoc#Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32
-:xref-Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32: xref:Multisig.adoc#Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32
-:xref-Multisig-multisigSettings-struct-Multisig-MultisigSettings: xref:Multisig.adoc#Multisig-multisigSettings-struct-Multisig-MultisigSettings
-:xref-Multisig-lastMultisigSettingsChange-uint64: xref:Multisig.adoc#Multisig-lastMultisigSettingsChange-uint64
-:xref-Multisig-Approved-uint256-address-: xref:Multisig.adoc#Multisig-Approved-uint256-address-
-:xref-Multisig-MultisigSettingsUpdated-bool-uint16-: xref:Multisig.adoc#Multisig-MultisigSettingsUpdated-bool-uint16-
-:xref-MultisigSetup-constructor--: xref:Multisig.adoc#MultisigSetup-constructor--
-:xref-MultisigSetup-prepareInstallation-address-bytes-: xref:Multisig.adoc#MultisigSetup-prepareInstallation-address-bytes-
-:xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-
-:xref-MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-
-:xref-ListedCheckCondition-constructor-address-: xref:Multisig.adoc#ListedCheckCondition-constructor-address-
-:xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-: xref:Multisig.adoc#ListedCheckCondition-isGranted-address-address-bytes32-bytes-
+:xref-Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-: xref:multisig.adoc#Multisig-initialize-contract-IDAO-address---struct-Multisig-MultisigSettings-struct-IPlugin-TargetConfig-bytes-
+:xref-Multisig-initializeFrom-uint16-bytes-: xref:multisig.adoc#Multisig-initializeFrom-uint16-bytes-
+:xref-Multisig-supportsInterface-bytes4-: xref:multisig.adoc#Multisig-supportsInterface-bytes4-
+:xref-Multisig-addAddresses-address---: xref:multisig.adoc#Multisig-addAddresses-address---
+:xref-Multisig-removeAddresses-address---: xref:multisig.adoc#Multisig-removeAddresses-address---
+:xref-Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-: xref:multisig.adoc#Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-
+:xref-Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-: xref:multisig.adoc#Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-
+:xref-Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-: xref:multisig.adoc#Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-
+:xref-Multisig-customProposalParamsABI--: xref:multisig.adoc#Multisig-customProposalParamsABI--
+:xref-Multisig-approve-uint256-bool-: xref:multisig.adoc#Multisig-approve-uint256-bool-
+:xref-Multisig-canApprove-uint256-address-: xref:multisig.adoc#Multisig-canApprove-uint256-address-
+:xref-Multisig-canExecute-uint256-: xref:multisig.adoc#Multisig-canExecute-uint256-
+:xref-Multisig-hasSucceeded-uint256-: xref:multisig.adoc#Multisig-hasSucceeded-uint256-
+:xref-Multisig-getProposal-uint256-: xref:multisig.adoc#Multisig-getProposal-uint256-
+:xref-Multisig-hasApproved-uint256-address-: xref:multisig.adoc#Multisig-hasApproved-uint256-address-
+:xref-Multisig-execute-uint256-: xref:multisig.adoc#Multisig-execute-uint256-
+:xref-Multisig-isMember-address-: xref:multisig.adoc#Multisig-isMember-address-
+:xref-Multisig-_execute-uint256-: xref:multisig.adoc#Multisig-_execute-uint256-
+:xref-Multisig-_canApprove-uint256-address-: xref:multisig.adoc#Multisig-_canApprove-uint256-address-
+:xref-Multisig-_canExecute-uint256-: xref:multisig.adoc#Multisig-_canExecute-uint256-
+:xref-Multisig-_isProposalOpen-struct-Multisig-Proposal-: xref:multisig.adoc#Multisig-_isProposalOpen-struct-Multisig-Proposal-
+:xref-Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-: xref:multisig.adoc#Multisig-_updateMultisigSettings-struct-Multisig-MultisigSettings-
+:xref-Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32: xref:multisig.adoc#Multisig-UPDATE_MULTISIG_SETTINGS_PERMISSION_ID-bytes32
+:xref-Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32: xref:multisig.adoc#Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32
+:xref-Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32: xref:multisig.adoc#Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32
+:xref-Multisig-multisigSettings-struct-Multisig-MultisigSettings: xref:multisig.adoc#Multisig-multisigSettings-struct-Multisig-MultisigSettings
+:xref-Multisig-lastMultisigSettingsChange-uint64: xref:multisig.adoc#Multisig-lastMultisigSettingsChange-uint64
+:xref-Multisig-Approved-uint256-address-: xref:multisig.adoc#Multisig-Approved-uint256-address-
+:xref-Multisig-MultisigSettingsUpdated-bool-uint16-: xref:multisig.adoc#Multisig-MultisigSettingsUpdated-bool-uint16-
+:xref-MultisigSetup-constructor--: xref:multisig.adoc#MultisigSetup-constructor--
+:xref-MultisigSetup-prepareInstallation-address-bytes-: xref:multisig.adoc#MultisigSetup-prepareInstallation-address-bytes-
+:xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-: xref:multisig.adoc#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-
+:xref-MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-: xref:multisig.adoc#MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-
+:xref-ListedCheckCondition-constructor-address-: xref:multisig.adoc#ListedCheckCondition-constructor-address-
+:xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-: xref:multisig.adoc#ListedCheckCondition-isGranted-address-address-bytes32-bytes-
 = The title here
 
 This is for testing purposes.
@@ -85,7 +85,7 @@ This is for testing purposes.
 
 [.contract]
 [[Multisig]]
-=== `++Multisig++` link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/Multisig.sol[{github-icon},role=heading-link]
+=== `++Multisig++` link:git+https://github.com/aragon/multisig-plugin/blob/v1.4.0/src/Multisig.sol[{github-icon},role=heading-link]
 
 v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required,
      increment the version numbers in the modifier for both the initialize and initializeFrom functions.
@@ -713,7 +713,7 @@ A mapping between proposal IDs and proposal information.
 
 [.contract]
 [[MultisigSetup]]
-=== `++MultisigSetup++` link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/MultisigSetup.sol[{github-icon},role=heading-link]
+=== `++MultisigSetup++` link:git+https://github.com/aragon/multisig-plugin/blob/v1.4.0/src/MultisigSetup.sol[{github-icon},role=heading-link]
 
 v1.3 (Release 1, Build 3)
 
@@ -804,7 +804,7 @@ Prepares the uninstallation of a plugin.
 
 [.contract]
 [[ListedCheckCondition]]
-=== `++ListedCheckCondition++` link:https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v/src/ListedCheckCondition.sol[{github-icon},role=heading-link]
+=== `++ListedCheckCondition++` link:git+https://github.com/aragon/multisig-plugin/blob/v1.4.0/src/ListedCheckCondition.sol[{github-icon},role=heading-link]
 
 [.contract-index]
 .Functions
