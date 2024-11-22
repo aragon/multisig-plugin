@@ -31,7 +31,7 @@
     "@ethersproject/providers" "5.7.2"
     ipfs-http-client "^51.0.0"
 
-"@aragon/osx-ethers@1.4.0-alpha.0":
+"@aragon/osx-ethers@^1.4.0-alpha.0":
   version "1.4.0-alpha.0"
   resolved "https://registry.yarnpkg.com/@aragon/osx-ethers/-/osx-ethers-1.4.0-alpha.0.tgz#329f1ac27660b486fa0b296dddeb004ce352001c"
   integrity sha512-fFsrG/XMIjZe3MxVQdf87gqAC4q0Z/eBp72QUuzXJQ0gMSTSj/4TvveFn1N8toLN6KsJolMEkaTamyCGYR+5iA==
