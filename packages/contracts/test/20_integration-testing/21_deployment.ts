@@ -9,7 +9,7 @@ import {
   PERMISSION_MANAGER_FLAGS,
   PLUGIN_REPO_PERMISSIONS,
   UnsupportedNetworkError,
-  uploadToIPFS,
+  uploadToPinata,
 } from '@aragon/osx-commons-sdk';
 import {
   DAO,
@@ -72,9 +72,9 @@ describe(`Deployment on network '${productionNetworkName}'`, function () {
         build: VERSION.build,
       });
 
-      const buildMetadataURI = `ipfs://${await uploadToIPFS(
-        JSON.stringify(METADATA.build, null, 2)
-      )}`;
+      const buildMetadataURI = await uploadToPinata(
+        JSON.stringify(METADATA.build, null, 2),  "multisig-random"
+      );
 
       expect(results.buildMetadata).to.equal(
         ethers.utils.hexlify(ethers.utils.toUtf8Bytes(buildMetadataURI))
