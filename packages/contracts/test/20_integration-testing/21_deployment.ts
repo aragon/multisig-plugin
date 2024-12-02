@@ -74,7 +74,6 @@ describe(`Deployment on network '${productionNetworkName}'`, function () {
       expect(results.pluginSetup).to.equal(pluginSetupAddr);
       expect(results.tag.build).to.equal(VERSION.build);
       expect(results.tag.release).to.equal(VERSION.release);
-
     });
   });
 });
