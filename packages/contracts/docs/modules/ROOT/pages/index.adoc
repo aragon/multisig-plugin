@@ -109,51 +109,45 @@ This ensures that the operation is valid and does not violate the plugin’s con
 
 * **Permissions**: The **MultisigSetup** establishes the following default permissions to ensure smooth operation and integration with the associated DAO:
 
-[cols="2,2,2,2,2,3", options="header"]
+[cols="2,2,2,2,2", options="header"]
 |===
-| Permission ID | Where (Granted By) | Who (Granted To) | Condition | Functions | Purpose
+| Permission ID | Where (Granted By) | Who (Granted To) | Condition | Functions
 
 | EXECUTE_PERMISSION_ID
 | DAO
 | Plugin
 | None
 | execute
-| Authorizes the plugin to execute actions tied to proposals.
 
 | UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
 | Plugin
 | DAO
 | None
 | addAddresses, removeAddresses, updateMultisigSettings
-| Authorizes the DAO to update multisig settings.
 
 | CREATE_PROPOSAL_PERMISSION_ID
 | Plugin
 | Any Address
 | ListedCheckCondition
 | createProposal
-| Authorizes users to create proposals if they meet the conditions.
 
 | SET_TARGET_CONFIG_PERMISSION_ID
 | Plugin
 | DAO
 | None
 | setTargetConfig
-| Authorizes the DAO to modify the execution target configuration.
 
 | SET_METADATA_PERMISSION_ID
 | Plugin
 | DAO
 | None
 | setMetadata
-| Authorizes the DAO to update proposal metadata.
 
 | EXECUTE_PROPOSAL_PERMISSION_ID
 | Plugin
 | Any Address
 | None
 | execute
-| Authorizes users to execute proposals that have succeeded.
 |===
 
 This setup ensures that the **Multisig** plugin is ready for operation immediately after installation, with all required contracts deployed and permissions configured.
