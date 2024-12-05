@@ -13,7 +13,7 @@ Once a proposal meets the required threshold of approvals, the list of proposed 
 
 == Proposal Lifecycle
 
-* **Creation**:
+=== **Creation**:
 
 Proposals can be created by users who have the `CREATE_PROPOSAL_PERMISSION` or those verified through the `ListedCheckCondition`, depending on the plugin’s configuration and how the permission is granted. The creation process includes:
 
@@ -27,7 +27,7 @@ Proposals can be created by users who have the `CREATE_PROPOSAL_PERMISSION` or t
 - onlyListed: Whether only listed addresses can create a proposal or not.
 ====
 
-* **Approval**:
+=== **Approval**:
 
 Approvers listed in the address list can cast their approval individually. The process includes:
 
@@ -36,7 +36,7 @@ Approvers listed in the address list can cast their approval individually. The p
 ** Updating the count of approvals and marking the approver as having approved.
 ** Optionally, the approver can pass `true` for `tryExecution` along with their approval. This prompts the plugin to attempt execution if the proposal meets the necessary conditions.
 
-* **Execution**:
+=== **Execution**:
 
 Once the proposal meets the required number of approvals:
 
