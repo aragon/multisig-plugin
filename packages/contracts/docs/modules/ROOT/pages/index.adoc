@@ -5,9 +5,12 @@ IMPORTANT: The contracts are currently being audited, DO NOT USE IN PRODUCTION.
 
 == Description
 
-**Multisig** is a governance plugin developed and maintained by the Aragon core team. Unlike traditional multisig solutions that rely on off-chain aggregation of signatures, this plugin offers a fully on-chain approval mechanism. It allows users to create proposals that require a configurable subset of approvals (e.g., **x** out of **y**) from a list of approvers. Each approver can individually cast their approval directly on-chain.
+**Multisig** is a governance plugin developed and maintained by the Aragon core team. 
+It allows users to create proposals that require a configurable subset of approvals (e.g., *x out of y*) from a list of approvers to pass. 
+Once a proposal meets the required threshold of approvals, the list of proposed actions can be passed to the associated DAO or executor for execution. +
+Each approver can individually cast their approval directly on-chain, 
+unlike traditional multisig solutions that rely on off-chain aggregation of signatures.
 
-Once a proposal meets the required threshold of approvals, the list of proposed actions can be passed to the associated DAO or executor for execution.
 
 
 
@@ -29,7 +32,7 @@ Proposals can be created by users who have the `CREATE_PROPOSAL_PERMISSION` or t
 
 === **Approval**:
 
-Approvers listed in the address list can cast their approval individually. The process includes:
+Approvers listed in the address list can cast their approval. The process includes:
 
 ** Verifying that the proposal is open, the approver is eligible based on the snapshot taken at creation, and the approver hasn’t already approved.
 ** Ensuring the proposal has not expired; proposals are considered expired and ineligible for further approval once their end date has passed.
@@ -71,7 +74,7 @@ Modifies the plugin’s configuration, which includes: **`onlyListed` and `minAp
 
 === 2. Add Addresses
 
-Adds new addresses to the list of approvers, enabling them to participate in the proposal approval process.
+Adds new addresses to the list of approvers, allowing them to approve new proposal.
 
 * **Constraints**:
   - The total number of addresses cannot exceed `2^16 - 1` (to ensure compatibility with `uint16`, the maximal number of approvals).
@@ -82,7 +85,7 @@ Adds new addresses to the list of approvers, enabling them to participate in the
 
 === 3. Remove Addresses
 
-Removes existing addresses from the list of approvers, restricting their ability to approve proposals.
+Removes existing addresses from the list of approvers, preventing them from approving new proposals.
 
 * **Constraints**:
   - After removal, the number of remaining addresses must not be less than the current minimum approvals threshold (`minApprovals`).
