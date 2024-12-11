@@ -28,15 +28,23 @@
 :xref-Multisig-lastMultisigSettingsChange-uint64: xref:Multisig.adoc#Multisig-lastMultisigSettingsChange-uint64
 :xref-Multisig-Approved-uint256-address-: xref:Multisig.adoc#Multisig-Approved-uint256-address-
 :xref-Multisig-MultisigSettingsUpdated-bool-uint16-: xref:Multisig.adoc#Multisig-MultisigSettingsUpdated-bool-uint16-
+:xref-Multisig-ProposalCreationForbidden-address-: xref:Multisig.adoc#Multisig-ProposalCreationForbidden-address-
+:xref-Multisig-NonexistentProposal-uint256-: xref:Multisig.adoc#Multisig-NonexistentProposal-uint256-
+:xref-Multisig-ApprovalCastForbidden-uint256-address-: xref:Multisig.adoc#Multisig-ApprovalCastForbidden-uint256-address-
+:xref-Multisig-ProposalExecutionForbidden-uint256-: xref:Multisig.adoc#Multisig-ProposalExecutionForbidden-uint256-
+:xref-Multisig-MinApprovalsOutOfBounds-uint16-uint16-: xref:Multisig.adoc#Multisig-MinApprovalsOutOfBounds-uint16-uint16-
+:xref-Multisig-AddresslistLengthOutOfBounds-uint16-uint256-: xref:Multisig.adoc#Multisig-AddresslistLengthOutOfBounds-uint16-uint256-
+:xref-Multisig-ProposalAlreadyExists-uint256-: xref:Multisig.adoc#Multisig-ProposalAlreadyExists-uint256-
+:xref-Multisig-DateOutOfBounds-uint64-uint64-: xref:Multisig.adoc#Multisig-DateOutOfBounds-uint64-uint64-
+:xref-Multisig-MULTISIG_INTERFACE_ID-bytes4: xref:Multisig.adoc#Multisig-MULTISIG_INTERFACE_ID-bytes4
+:xref-Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-: xref:Multisig.adoc#Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-
 :xref-MultisigSetup-constructor--: xref:Multisig.adoc#MultisigSetup-constructor--
 :xref-MultisigSetup-prepareInstallation-address-bytes-: xref:Multisig.adoc#MultisigSetup-prepareInstallation-address-bytes-
 :xref-MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUpdate-address-uint16-struct-IPluginSetup-SetupPayload-
 :xref-MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-: xref:Multisig.adoc#MultisigSetup-prepareUninstallation-address-struct-IPluginSetup-SetupPayload-
 :xref-ListedCheckCondition-constructor-address-: xref:Multisig.adoc#ListedCheckCondition-constructor-address-
 :xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-: xref:Multisig.adoc#ListedCheckCondition-isGranted-address-address-bytes32-bytes-
-= The title here
-
-This is for testing purposes.
+= Multisig API
 
 IMPORTANT: The contracts are currently being audited, DO NOT USE IN PRODUCTION.
 
@@ -87,7 +95,7 @@ IMPORTANT: The contracts are currently being audited, DO NOT USE IN PRODUCTION.
 
 [.contract]
 [[Multisig]]
-=== `++Multisig++` link:https://github.com/aragon/multisig-plugin/blob/1.4.0-alpha.1/packages/contracts/src/Multisig.sol[{github-icon},role=heading-link]
+=== `++Multisig++` link:https://github.com/aragon/multisig-plugin/blob/v1.4.0-alpha.1/packages/contracts/src/Multisig.sol[{github-icon},role=heading-link]
 
 v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required,
      increment the version numbers in the modifier for both the initialize and initializeFrom functions.
@@ -284,6 +292,14 @@ v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is req
 [.contract-index]
 .Errors
 --
+* {xref-Multisig-ProposalCreationForbidden-address-}[`++ProposalCreationForbidden(sender)++`]
+* {xref-Multisig-NonexistentProposal-uint256-}[`++NonexistentProposal(proposalId)++`]
+* {xref-Multisig-ApprovalCastForbidden-uint256-address-}[`++ApprovalCastForbidden(proposalId, sender)++`]
+* {xref-Multisig-ProposalExecutionForbidden-uint256-}[`++ProposalExecutionForbidden(proposalId)++`]
+* {xref-Multisig-MinApprovalsOutOfBounds-uint16-uint16-}[`++MinApprovalsOutOfBounds(limit, actual)++`]
+* {xref-Multisig-AddresslistLengthOutOfBounds-uint16-uint256-}[`++AddresslistLengthOutOfBounds(limit, actual)++`]
+* {xref-Multisig-ProposalAlreadyExists-uint256-}[`++ProposalAlreadyExists(proposalId)++`]
+* {xref-Multisig-DateOutOfBounds-uint64-uint64-}[`++DateOutOfBounds(limit, actual)++`]
 
 [.contract-subindex-inherited]
 .Addresslist
@@ -352,20 +368,17 @@ v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is req
 [.contract-index]
 .Internal Variables
 --
+* {xref-Multisig-MULTISIG_INTERFACE_ID-bytes4}[`++bytes4 constant MULTISIG_INTERFACE_ID++`]
+* {xref-Multisig-proposals-mapping-uint256----struct-Multisig-Proposal-}[`++mapping(uint256 => struct Multisig.Proposal)  proposals++`]
 
 [.contract-subindex-inherited]
 .Addresslist
-* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/governance/Addresslist.sol[InvalidAddresslistUpdate]
 
 [.contract-subindex-inherited]
 .ProposalUpgradeable
-* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/extensions/proposal/ProposalUpgradeable.sol[FunctionDeprecated]
 
 [.contract-subindex-inherited]
 .PluginUUPSUpgradeable
-* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[InvalidTargetConfig]
-* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[DelegateCallFailed]
-* link:https://github.com/aragon/osx-commons/tree/main/contracts/src/plugin/PluginUUPSUpgradeable.sol[AlreadyInitialized]
 
 [.contract-subindex-inherited]
 .ProtocolVersion
@@ -430,7 +443,7 @@ This method is required to support [ERC-1822](https://eips.ethereum.org/EIPS/eip
 ==== `[.contract-item-name]#++initializeFrom++#++(uint16 _fromBuild, bytes _initData)++` [.item-kind]#external#
 
 Reinitializes the Multisig after an upgrade from a previous build version. For each
-        reinitialization step, use the &#x60;_fromBuild&#x60; version to decide which internal functions to call
+        reinitialization step, use the `_fromBuild` version to decide which internal functions to call
         for reinitialization.
 
 WARNING: The contract should only be upgradeable through PSP to ensure that _fromBuild is not
@@ -447,9 +460,9 @@ Checks if this or the parent contract supports an interface by its ID.
 ==== `[.contract-item-name]#++addAddresses++#++(address[] _members)++` [.item-kind]#external#
 
 Adds new members to the address list. Previously, it checks if the new address
-        list length would be greater than &#x60;type(uint16).max&#x60;, the maximal number of approvals.
+        list length would be greater than `type(uint16).max`, the maximal number of approvals.
 
-Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
+Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
 
 [.contract-item]
 [[Multisig-removeAddresses-address---]]
@@ -457,9 +470,9 @@ Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
 
 Removes existing members from the address list. Previously, it checks if the
         new address list length is at least as long as the minimum approvals parameter requires.
-        Note that &#x60;minApprovals&#x60; is must be at least 1 so the address list cannot become empty.
+        Note that `minApprovals` is must be at least 1 so the address list cannot become empty.
 
-Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
+Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
 
 [.contract-item]
 [[Multisig-updateMultisigSettings-struct-Multisig-MultisigSettings-]]
@@ -467,7 +480,7 @@ Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
 
 Updates the plugin settings.
 
-Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
+Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
 
 [.contract-item]
 [[Multisig-createProposal-bytes-struct-Action---uint256-bool-bool-uint64-uint64-]]
@@ -475,7 +488,7 @@ Requires the &#x60;UPDATE_MULTISIG_SETTINGS_PERMISSION_ID&#x60; permission.
 
 Creates a new multisig proposal.
 
-Requires the &#x60;CREATE_PROPOSAL_PERMISSION_ID&#x60; permission.
+Requires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
 
 [.contract-item]
 [[Multisig-createProposal-bytes-struct-Action---uint64-uint64-bytes-]]
@@ -483,13 +496,13 @@ Requires the &#x60;CREATE_PROPOSAL_PERMISSION_ID&#x60; permission.
 
 Creates a new proposal.
 
-Calls a public function that requires the &#x60;CREATE_PROPOSAL_PERMISSION_ID&#x60; permission.
+Calls a public function that requires the `CREATE_PROPOSAL_PERMISSION_ID` permission.
 
 [.contract-item]
 [[Multisig-customProposalParamsABI--]]
 ==== `[.contract-item-name]#++customProposalParamsABI++#++() → string++` [.item-kind]#external#
 
-The human-readable abi format for extra params included in &#x60;data&#x60; of &#x60;createProposal&#x60;.
+The human-readable abi format for extra params included in `data` of `createProposal`.
 
 Used for UI to easily detect what extra params the contract expects.
 
@@ -499,7 +512,7 @@ Used for UI to easily detect what extra params the contract expects.
 
 Records an approval for a proposal and, if specified, attempts execution if certain conditions are met.
 
-If &#x60;_tryExecution&#x60; is &#x60;true&#x60;, the function attempts execution after recording the approval.
+If `_tryExecution` is `true`, the function attempts execution after recording the approval.
      Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met,
      and the caller has been granted execution permission. If execution conditions are not met,
      the function does not revert.
@@ -512,7 +525,7 @@ Checks if an account is eligible to participate in a proposal vote.
         Confirms that the proposal is open, the account is listed as a member,
         and the account has not previously voted or approved this proposal.
 
-Reverts if the proposal with the given &#x60;_proposalId&#x60; does not exist.
+Reverts if the proposal with the given `_proposalId` does not exist.
 
 [.contract-item]
 [[Multisig-canExecute-uint256-]]
@@ -520,7 +533,7 @@ Reverts if the proposal with the given &#x60;_proposalId&#x60; does not exist.
 
 Checks if a proposal can be executed.
 
-Reverts if the proposal with the given &#x60;_proposalId&#x60; does not exist.
+Reverts if the proposal with the given `_proposalId` does not exist.
 
 [.contract-item]
 [[Multisig-hasSucceeded-uint256-]]
@@ -542,7 +555,7 @@ Returns all information for a proposal by its ID.
 
 Returns whether the account has approved the proposal.
 
-May return false if the &#x60;_proposalId&#x60; or &#x60;_account&#x60; do not exist,
+May return false if the `_proposalId` or `_account` do not exist,
     as the function does not verify their existence.
 
 [.contract-item]
@@ -551,7 +564,7 @@ May return false if the &#x60;_proposalId&#x60; or &#x60;_account&#x60; do not e
 
 Executes a proposal if all execution conditions are met.
 
-Requires the &#x60;EXECUTE_PROPOSAL_PERMISSION_ID&#x60; permission.
+Requires the `EXECUTE_PROPOSAL_PERMISSION_ID` permission.
 Reverts if the proposal is still open or if the minimum approval threshold has not been met.
 
 [.contract-item]
@@ -603,19 +616,19 @@ Internal function to update the plugin settings.
 ==== `[.contract-item-name]#++UPDATE_MULTISIG_SETTINGS_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
 
 The ID of the permission required to call the
-        &#x60;addAddresses&#x60;, &#x60;removeAddresses&#x60; and &#x60;updateMultisigSettings&#x60; functions.
+        `addAddresses`, `removeAddresses` and `updateMultisigSettings` functions.
 
 [.contract-item]
 [[Multisig-CREATE_PROPOSAL_PERMISSION_ID-bytes32]]
 ==== `[.contract-item-name]#++CREATE_PROPOSAL_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
 
-The ID of the permission required to call the &#x60;createProposal&#x60; function.
+The ID of the permission required to call the `createProposal` function.
 
 [.contract-item]
 [[Multisig-EXECUTE_PROPOSAL_PERMISSION_ID-bytes32]]
 ==== `[.contract-item-name]#++EXECUTE_PROPOSAL_PERMISSION_ID++#++() → bytes32++` [.item-kind]#public#
 
-The ID of the permission required to call the &#x60;execute&#x60; function.
+The ID of the permission required to call the `execute` function.
 
 [.contract-item]
 [[Multisig-multisigSettings-struct-Multisig-MultisigSettings]]
@@ -654,7 +667,7 @@ Thrown when a sender is not allowed to create a proposal.
 [[Multisig-NonexistentProposal-uint256-]]
 ==== `[.contract-item-name]#++NonexistentProposal++#++(uint256 proposalId)++` [.item-kind]#error#
 
-Thrown when a proposal doesn&#x27;t exist.
+Thrown when a proposal doesn't exist.
 
 [.contract-item]
 [[Multisig-ApprovalCastForbidden-uint256-address-]]
@@ -715,7 +728,7 @@ A mapping between proposal IDs and proposal information.
 
 [.contract]
 [[MultisigSetup]]
-=== `++MultisigSetup++` link:https://github.com/aragon/multisig-plugin/blob/1.4.0-alpha.1/packages/contracts/src/MultisigSetup.sol[{github-icon},role=heading-link]
+=== `++MultisigSetup++` link:https://github.com/aragon/multisig-plugin/blob/v1.4.0-alpha.1/packages/contracts/src/MultisigSetup.sol[{github-icon},role=heading-link]
 
 v1.3 (Release 1, Build 3)
 
@@ -779,7 +792,7 @@ v1.3 (Release 1, Build 3)
 [[MultisigSetup-constructor--]]
 ==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
 
-The contract constructor, that deploys the &#x60;Multisig&#x60; plugin logic contract.
+The contract constructor, that deploys the `Multisig` plugin logic contract.
 
 [.contract-item]
 [[MultisigSetup-prepareInstallation-address-bytes-]]
@@ -806,7 +819,7 @@ Prepares the uninstallation of a plugin.
 
 [.contract]
 [[ListedCheckCondition]]
-=== `++ListedCheckCondition++` link:https://github.com/aragon/multisig-plugin/blob/1.4.0-alpha.1/packages/contracts/src/ListedCheckCondition.sol[{github-icon},role=heading-link]
+=== `++ListedCheckCondition++` link:https://github.com/aragon/multisig-plugin/blob/v1.4.0-alpha.1/packages/contracts/src/ListedCheckCondition.sol[{github-icon},role=heading-link]
 
 [.contract-index]
 .Functions

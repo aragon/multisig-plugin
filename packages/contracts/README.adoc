@@ -1,6 +1,4 @@
-= The title here
-
-This is for testing purposes.
+= Multisig API
 
 IMPORTANT: The contracts are currently being audited, DO NOT USE IN PRODUCTION.
 
