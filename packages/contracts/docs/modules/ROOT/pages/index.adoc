@@ -1,7 +1,6 @@
 = Multisig
 
-IMPORTANT: The contracts are currently being audited, DO NOT USE IN PRODUCTION.
-
+WARNING: The contracts are currently being audited, *DO NOT USE IN PRODUCTION*.
 
 == Description
 
