@@ -2,18 +2,14 @@ import {createDaoProxy} from '../20_integration-testing/test-helpers';
 import {
   Addresslist__factory,
   CustomExecutorMock__factory,
-  ERC1967Proxy__factory,
   IERC165Upgradeable__factory,
   IMembership__factory,
   IMultisig__factory,
   IPlugin__factory,
   IProposal__factory,
   IProtocolVersion__factory,
-  ListedCheckCondition__factory,
-  ProxyFactory__factory,
 } from '../../typechain';
 import {ExecutedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/dao/IDAO';
-import {ProxyCreatedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/utils/deployment/ProxyFactory';
 import {
   ApprovedEvent,
   ProposalCreatedEvent,
@@ -43,12 +39,7 @@ import {
   TIME,
   DAO_PERMISSIONS,
 } from '@aragon/osx-commons-sdk';
-import {
-  DAO,
-  DAOStructs,
-  DAO__factory,
-  PluginUUPSUpgradeableV1Mock__factory,
-} from '@aragon/osx-ethers';
+import {DAO, DAOStructs, DAO__factory} from '@aragon/osx-ethers';
 import {defaultAbiCoder} from '@ethersproject/abi';
 import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
@@ -185,7 +176,7 @@ async function fixture(): Promise<FixtureResult> {
 
 async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
   const data = await loadFixture(fixture);
-  const {deployer, dao, initializedPlugin, uninitializedPlugin} = data;
+  const {dao, initializedPlugin, uninitializedPlugin} = data;
 
   const condition = await hre.wrapper.deploy('ListedCheckCondition', {
     args: [initializedPlugin.address],
@@ -208,7 +199,7 @@ async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
   return data;
 }
 
-describe('Multisig', function () {
+describe.only('Multisig', function () {
   before(async () => {
     chainId = (await ethers.provider.getNetwork()).chainId;
   });
