@@ -117,7 +117,7 @@ async function fixture(): Promise<FixtureResult> {
   };
 }
 
-describe.only('MultisigSetup', function () {
+describe('MultisigSetup', function () {
   it('does not support the empty interface', async () => {
     const {pluginSetup} = await loadFixture(fixture);
     expect(await pluginSetup.supportsInterface('0xffffffff')).to.be.false;

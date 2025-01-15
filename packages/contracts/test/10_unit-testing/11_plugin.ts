@@ -199,7 +199,7 @@ async function loadFixtureAndGrantCreatePermission(): Promise<FixtureResult> {
   return data;
 }
 
-describe.only('Multisig', function () {
+describe('Multisig', function () {
   before(async () => {
     chainId = (await ethers.provider.getNetwork()).chainId;
   });
