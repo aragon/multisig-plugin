@@ -1,4 +1,4 @@
-// import {ProxyCreatedEvent} from '../../../typechain/ProxyFactory';
+import {ProxyCreatedEvent} from '../../../typechain/@aragon/osx-commons-contracts/src/utils/deployment/ProxyFactory';
 import {HardhatClass} from './hardhat';
 import {ZkSync} from './zksync';
 import {findEvent} from '@aragon/osx-commons-sdk';
@@ -7,8 +7,8 @@ import {providers} from 'ethers';
 import hre, {ethers} from 'hardhat';
 
 export const ARTIFACT_SOURCES = {
-  Multisig: 'src/Multisig.sol:Multisig'
-  
+  MULTISIG: 'src/Multisig.sol:Multisig',
+  DAO: '@aragon/osx/packages/contracts/src/core/dao/DAO.sol:DAO',
 };
 
 export type DeployOptions = {
@@ -104,10 +104,10 @@ export class Wrapper {
 
       const tx = await proxyFactoryContract.deployUUPSProxy(data);
 
-      // const event = findEvent<ProxyCreatedEvent>(
-      //   await tx.wait(),
-      //   'ProxyCreated'
-      // );
+      const event = findEvent<ProxyCreatedEvent>(
+        await tx.wait(),
+        'ProxyCreated'
+      );
 
       contract = new hre.ethers.Contract(
         event.args.proxy,
