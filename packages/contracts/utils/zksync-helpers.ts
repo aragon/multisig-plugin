@@ -1,4 +1,12 @@
-export default [
+export function isZkSync(networkName: string): boolean {
+  return (
+    networkName === 'zkTestnet' ||
+    networkName === 'zkLocalTestnet' ||
+    networkName === 'zkMainnet'
+  );
+}
+
+export const RichAccounts = [
   // Rich accounts with pre-funded balances for the chain on port 8545.
   // These accounts are used for testing purposes and have sufficient funds.
   '0x3d3cbc973389cb26f657686445bcc75662b415b656078503592ac8c1abb8810e',

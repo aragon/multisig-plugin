@@ -1,5 +1,5 @@
 import {TestingFork} from './types/hardhat';
-import RichAccounts from './utils/zksync-rich-accounts';
+import {isZkSync, RichAccounts} from './utils/zksync-helpers';
 import {addRpcUrlToNetwork} from '@aragon/osx-commons-configs';
 import '@matterlabs/hardhat-zksync-deploy';
 import '@matterlabs/hardhat-zksync-ethers';
@@ -9,18 +9,15 @@ import '@matterlabs/hardhat-zksync-upgradable';
 import '@matterlabs/hardhat-zksync-verify';
 import '@nomicfoundation/hardhat-chai-matchers';
 import '@nomicfoundation/hardhat-network-helpers';
-import * as dotenv from 'dotenv';
 import {config as dotenvConfig} from 'dotenv';
-import {resolve} from 'path';
-
 import fs from 'fs';
 import 'hardhat-deploy';
 import {extendEnvironment, HardhatUserConfig, task} from 'hardhat/config';
+import {resolve} from 'path';
 import 'solidity-coverage';
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || '../../.env';
 dotenvConfig({path: resolve(__dirname, dotenvConfigPath), override: true});
-
 
 const ETH_KEY = process.env.ETH_KEY;
 const accounts = ETH_KEY ? ETH_KEY.split(',') : [];
@@ -40,21 +37,16 @@ extendEnvironment(hre => {
     osxVersion: '',
     activeContracts: {},
   };
-  hre.aragonToVerifyContracts = [];
-  hre.managementDAOMultisigPluginAddress = ''; // TODO This must be removed after the deploy script got refactored (see https://github.com/aragon/osx/pull/582)
-  hre.managementDAOActions = [];
-  hre.testingFork = testingFork;
 });
 
 task('build-contracts').setAction(async (args, hre) => {
   await hre.run('compile');
   // TODO:Claudia (Is there a way without copying/pasting manually ? `paths` object below in the config
+  // ! check if we want to only store on those folders or in both
+  // !(check compile task params if one of them is the output folder)
   // creates `build` folder correctly, but it always appends `zk` in the end.
-  if (
-    hre.network.name === 'zkTestnet' ||
-    hre.network.name === 'zkLocalTestnet' ||
-    hre.network.name === 'zkMainnet'
-  ) {
+  const network = hre.network.name;
+  if (isZkSync(network)) {
     // Copy zkSync specific build artifacts and cache to the default directories.
     // This ensures that we don't need to change import paths for artifacts in the project.
     fs.cpSync('./build/artifacts-zk', './artifacts', {
@@ -62,7 +54,6 @@ task('build-contracts').setAction(async (args, hre) => {
       force: true,
     });
     fs.cpSync('./build/cache-zk', './cache', {recursive: true, force: true});
-
     return;
   }
 
