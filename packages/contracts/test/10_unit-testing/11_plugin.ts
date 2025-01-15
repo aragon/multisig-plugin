@@ -19,6 +19,7 @@ import {
   ProposalCreatedEvent,
   ProposalExecutedEvent,
 } from '../../typechain/src/Multisig';
+import {isZkSync} from '../../utils/zksync-helpers';
 import {
   ANY_ADDR,
   CREATE_PROPOSAL_PERMISSION_ID,
@@ -301,7 +302,11 @@ describe.only('Multisig', function () {
         );
     });
 
-    it.skip('reverts if the member list is longer than uint16 max', async () => {
+    it('reverts if the member list is longer than uint16 max', async function () {
+      if (isZkSync(hre.network.name)) {
+        return this.skip();
+      }
+
       const {uninitializedPlugin, alice, defaultInitData, dao} =
         await loadFixture(fixture);
 
@@ -621,7 +626,11 @@ describe.only('Multisig', function () {
         );
     });
 
-    it.skip('reverts if the member list would become longer than uint16 max', async () => {
+    it('reverts if the member list would become longer than uint16 max', async function () {
+      if (isZkSync(hre.network.name)) {
+        return this.skip();
+      }
+
       const {
         initializedPlugin: plugin,
         alice,
@@ -1005,8 +1014,10 @@ describe.only('Multisig', function () {
         );
     });
 
-    // todo is locking the execution it could be due to using provider methods that are not defined
-    it.skip('reverts if the multisig settings have been changed in the same block', async () => {
+    it('reverts if the multisig settings have been changed in the same block', async function () {
+      if (isZkSync(hre.network.name)) {
+        return this.skip();
+      }
       const {alice, initializedPlugin: plugin, dao} = data;
 
       // Grant Alice the permission to update the settings.
@@ -1032,7 +1043,10 @@ describe.only('Multisig', function () {
       await ethers.provider.send('evm_setAutomine', [true]);
     });
 
-    it.skip('reverts if the multisig settings have been changed in the same block via the proposals process', async () => {
+    it('reverts if the multisig settings have been changed in the same block via the proposals process', async function () {
+      if (isZkSync(hre.network.name)) {
+        return this.skip();
+      }
       const {
         alice,
         uninitializedPlugin: plugin,
@@ -1204,7 +1218,11 @@ describe.only('Multisig', function () {
           );
       });
 
-      it.skip('reverts if caller is not listed in the current block although she was listed in the last block', async () => {
+      it('reverts if caller is not listed in the current block although she was listed in the last block', async function () {
+        if (isZkSync(hre.network.name)) {
+          return this.skip();
+        }
+
         const {
           alice,
           carol,

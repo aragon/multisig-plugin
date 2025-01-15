@@ -1,4 +1,5 @@
 import {ProxyCreatedEvent} from '../../../typechain/@aragon/osx-commons-contracts/src/utils/deployment/ProxyFactory';
+import {isZkSync} from '../../../utils/zksync-helpers';
 import {HardhatClass} from './hardhat';
 import {ZkSync} from './zksync';
 import {findEvent} from '@aragon/osx-commons-sdk';
@@ -59,7 +60,7 @@ export class Wrapper {
   // object from 10 to 20. So We make 10 custom addresses rich-funded to
   // allow tests use the same approach on zksync as on hardhat.
   static async create(networkName: string, provider: providers.BaseProvider) {
-    if (networkName == 'zkLocalTestnet' || networkName == 'zkSyncLocal') {
+    if (isZkSync(networkName)) {
       const signers = await ethers.getSigners();
       const allSigners = signers.map(signer => signer.address);
 
