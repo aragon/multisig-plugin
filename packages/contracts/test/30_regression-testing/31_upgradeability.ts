@@ -97,8 +97,6 @@ describe('Upgrades', () => {
     // @ts-expect-error types castings will work
     data[2].reinitArgs = [latestInitializerVersion, encodeDataForUpgrade];
 
-    console.log('data', data[2]);
-
     const {proxy, fromImplementation, toImplementation} =
       await deployAndUpgradeFromToCheck(
         // @ts-expect-error correct data type
