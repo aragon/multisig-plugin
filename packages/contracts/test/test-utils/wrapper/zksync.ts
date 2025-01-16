@@ -76,7 +76,7 @@ export class ZkSync implements NetworkDeployment {
       options.initArgs,
       {
         kind: options.proxySettings?.type,
-        unsafeAllow: ['constructor'],
+        unsafeAllow: ['constructor', 'delegatecall'],
         constructorArgs: options.args,
         initializer: options.proxySettings?.initializer,
       },
@@ -98,9 +98,9 @@ export class ZkSync implements NetworkDeployment {
       proxyAddress,
       newArtifact,
       {
-        unsafeAllow: ['constructor'],
+        unsafeAllow: ['constructor', 'delegatecall'],
         constructorArgs: options.args,
-        // TODO: pass initiailizer and initArgs
+        call: options.call,
       },
       true
     );
