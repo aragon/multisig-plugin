@@ -6,6 +6,8 @@ export function isZkSync(networkName: string): boolean {
   );
 }
 
+export const ZK_SYNC_NETWORKS = ['zkMainnet', 'zkLocalTestnet', 'zkTestnet'];
+
 export const RichAccounts = [
   // Rich accounts with pre-funded balances for the chain on port 8545.
   // These accounts are used for testing purposes and have sufficient funds.
