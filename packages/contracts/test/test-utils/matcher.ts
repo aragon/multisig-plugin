@@ -7,7 +7,7 @@ import chai from 'chai';
 /// encode and handle errors. The functions below are lifted from the `hardhat-chai-matchers` package and modified
 /// to check for deeper nesting of error.data in the error object.
 /// Unfortunately, the `hardhat-chai-matchers` package does not have a way to super the `revertedWith` matcher, so
-/// we have to copy the code here and modify i,t.
+/// we have to copy the code here and modify it.
 /// We also directly import the javascript files from the `hardhat-chai-matchers` package to avoid issues with import paths.
 /// See https://github.com/ethers-io/ethers.js/discussions/4715 for full details.
 
@@ -150,7 +150,6 @@ export function supportRevertedWithCustomError(
   Assertion: Chai.AssertionStatic,
   utils: Chai.ChaiUtils
 ) {
-  console.log('arvici hahahah');
   Assertion.addMethod(
     'revertedWithCustomError',
     function (this: any, contract: any, expectedCustomErrorName: string) {
@@ -177,8 +176,6 @@ export function supportRevertedWithCustomError(
         expectedCustomErrorName
       );
 
-      console.log(expectedCustomError, ' blax');
-
       // check that interface contains the given custom error
       if (expectedCustomError === undefined) {
         throw new Error(
@@ -201,7 +198,6 @@ export function supportRevertedWithCustomError(
         const returnData = getReturnDataFromError(error);
         const decodedReturnData = decodeReturnData(returnData);
 
-        console.log('gioo ', decodedReturnData);
         if (decodedReturnData.kind === 'Empty') {
           assert(
             false,

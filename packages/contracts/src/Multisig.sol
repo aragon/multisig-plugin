@@ -15,7 +15,6 @@ import {Action} from "@aragon/osx-commons-contracts/src/executors/IExecutor.sol"
 import {MetadataExtensionUpgradeable} from "@aragon/osx-commons-contracts/src/utils/metadata/MetadataExtensionUpgradeable.sol";
 
 import {IMultisig} from "./IMultisig.sol";
-import "hardhat/console.sol";
 
 /* solhint-enable max-line-length */
 
@@ -620,13 +619,9 @@ contract Multisig is
     /// @notice Internal function to update the plugin settings.
     /// @param _multisigSettings The new settings.
     function _updateMultisigSettings(MultisigSettings calldata _multisigSettings) internal {
-        console.log("nice222");
-        console.log(addresslistLength());
-        console.log(_multisigSettings.minApprovals);
         uint16 addresslistLength_ = uint16(addresslistLength());
 
         if (_multisigSettings.minApprovals > addresslistLength_) {
-            console.log("coming here hahahaha");
             revert MinApprovalsOutOfBounds({
                 limit: addresslistLength_,
                 actual: _multisigSettings.minApprovals

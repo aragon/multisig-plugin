@@ -10,6 +10,10 @@ import hre, {ethers} from 'hardhat';
 export const ARTIFACT_SOURCES = {
   MULTISIG: 'src/Multisig.sol:Multisig',
   DAO: '@aragon/osx/packages/contracts/src/core/dao/DAO.sol:DAO',
+  MULTISIG_V1_0_0:
+    '@aragon/osx-v1.0.0/plugins/governance/multisig/Multisig.sol:Multisig', //Multisig_v1_1
+  MULTISIG_V1_3_0:
+    '@aragon/osx-v1.3.0/plugins/governance/multisig/Multisig.sol:Multisig', //Multisig_v1_3
 };
 
 export type DeployOptions = {
@@ -20,6 +24,7 @@ export type DeployOptions = {
     type?: 'uups' | 'transparent' | 'beacon' | undefined;
     initializer?: string;
   };
+  call?: any; // call function arguments in case `withProxy` is set to true.
 };
 
 export interface NetworkDeployment {
@@ -160,6 +165,7 @@ export class Wrapper {
       proxySettings: {
         initializer: options?.proxySettings?.initializer ?? undefined,
       },
+      call: options?.call ?? undefined,
     };
     return this.network.upgradeProxy(
       upgrader,

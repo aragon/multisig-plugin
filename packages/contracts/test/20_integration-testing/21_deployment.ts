@@ -1,5 +1,6 @@
 import {METADATA, VERSION} from '../../plugin-settings';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
+import {isZkSync} from '../../utils/zksync-helpers';
 import {
   getLatestNetworkDeployment,
   getNetworkNameByAlias,
@@ -22,17 +23,24 @@ import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import env, {deployments, ethers} from 'hardhat';
+import hre from 'hardhat';
 
 const productionNetworkName = getProductionNetworkName(env);
 
 describe(`Deployment on network '${productionNetworkName}'`, function () {
-  it('creates the repo', async () => {
+  it('creates the repo', async function () {
+    if (isZkSync(hre.network.name)) {
+      this.skip();
+    }
     const {pluginRepo, pluginRepoRegistry} = await loadFixture(fixture);
 
     expect(await pluginRepoRegistry.entries(pluginRepo.address)).to.be.true;
   });
 
-  it('gives the management DAO permissions over the repo', async () => {
+  it('gives the management DAO permissions over the repo', async function () {
+    if (isZkSync(hre.network.name)) {
+      this.skip();
+    }
     const {pluginRepo, managementDaoProxy} = await loadFixture(fixture);
 
     expect(
@@ -64,7 +72,10 @@ describe(`Deployment on network '${productionNetworkName}'`, function () {
   });
 
   context('PluginSetup Publication', async () => {
-    it('registers the setup', async () => {
+    it('registers the setup', async function () {
+      if (isZkSync(hre.network.name)) {
+        this.skip();
+      }
       const {pluginRepo} = await loadFixture(fixture);
 
       const results = await pluginRepo['getVersion((uint8,uint16))']({

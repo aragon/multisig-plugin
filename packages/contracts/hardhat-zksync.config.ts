@@ -1,4 +1,3 @@
-import {TestingFork} from './types/hardhat';
 import {isZkSync, RichAccounts} from './utils/zksync-helpers';
 import {addRpcUrlToNetwork} from '@aragon/osx-commons-configs';
 import '@matterlabs/hardhat-zksync-deploy';
@@ -32,11 +31,7 @@ if (process.env.ALCHEMY_API_KEY) {
 
 // Extend HardhatRuntimeEnvironment
 extendEnvironment(hre => {
-  const testingFork: TestingFork = {
-    network: '',
-    osxVersion: '',
-    activeContracts: {},
-  };
+  hre.aragonToVerifyContracts = [];
 });
 
 task('build-contracts').setAction(async (args, hre) => {
@@ -61,10 +56,14 @@ task('build-contracts').setAction(async (args, hre) => {
   fs.cpSync('./build/cache', './cache', {recursive: true, force: true});
 });
 
-task('deploy-contracts').setAction(async (args, hre) => {
-  await hre.run('build-contracts');
-  await hre.run('deploy');
-});
+task('deploy-contracts')
+  .addOptionalParam('tags', 'Specify which tags to deploy')
+  .setAction(async (args, hre) => {
+    await hre.run('build-contracts');
+    await hre.run('deploy', {
+      tags: args.tags,
+    });
+  });
 
 task('test-contracts').setAction(async (args, hre) => {
   await hre.run('build-contracts');
@@ -111,23 +110,23 @@ const config: HardhatUserConfig = {
       blockGasLimit: 30000000,
       accounts: RichAccounts,
     },
-    zkTestnet: {
+    zksyncSepolia: {
       url: 'https://sepolia.era.zksync.dev',
       ethNetwork: 'sepolia',
       zksync: true,
       verifyURL:
         'https://explorer.sepolia.era.zksync.dev/contract_verification',
-      deploy: ['./deploy/new', './deploy/verification'],
+      deploy: ['./deploy'],
       accounts: accounts,
       forceDeploy: true,
     },
-    zkMainnet: {
+    zksyncMainnet: {
       url: 'https://mainnet.era.zksync.io',
       ethNetwork: 'mainnet',
       zksync: true,
       verifyURL:
         'https://zksync2-mainnet-explorer.zksync.io/contract_verification',
-      deploy: ['./deploy/new', './deploy/verification'],
+      deploy: ['./deploy'],
       accounts: accounts,
       forceDeploy: true,
     },

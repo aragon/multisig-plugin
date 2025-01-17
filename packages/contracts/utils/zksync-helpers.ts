@@ -1,8 +1,8 @@
 export function isZkSync(networkName: string): boolean {
   return (
-    networkName === 'zkTestnet' ||
+    networkName === 'zksyncSepolia' ||
     networkName === 'zkLocalTestnet' ||
-    networkName === 'zkMainnet'
+    networkName === 'zksyncMainnet'
   );
 }
 

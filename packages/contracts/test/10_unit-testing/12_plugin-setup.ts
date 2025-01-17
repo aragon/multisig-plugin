@@ -165,15 +165,14 @@ describe('MultisigSetup', function () {
       ).not.to.be.reverted;
     });
 
-    //  todo it doesnt revert on zksync
-    it.only('reverts if zero members are provided in the initialization data', async () => {
+    it('reverts if zero members are provided in the initialization data', async () => {
       const {
         pluginSetup,
         dao,
         alice,
         defaultMultisigSettings,
         defaultTargetConfig,
-      } = await fixture();
+      } = await loadFixture(fixture);
 
       console.log(defaultMultisigSettings, ' good');
       // Create input data containing an empty list of initial members.
@@ -211,7 +210,7 @@ describe('MultisigSetup', function () {
         .withArgs(0, 1);
     });
 
-    it.skip('reverts if the `minApprovals` value in `_data` is zero', async () => {
+    it('reverts if the `minApprovals` value in `_data` is zero', async () => {
       const {deployer, pluginSetup, dao, defaultTargetConfig} =
         await loadFixture(fixture);
 
@@ -248,15 +247,14 @@ describe('MultisigSetup', function () {
       await expect(
         pluginSetup.prepareInstallation(
           dao.address,
-          wrongPrepareInstallationData,
-          {gasLimit: 1000000}
+          wrongPrepareInstallationData
         )
       )
         .to.be.revertedWithCustomError(multisig, 'MinApprovalsOutOfBounds')
         .withArgs(1, 0);
     });
 
-    it.skip('reverts if the `minApprovals` value in `_data` is greater than the number of members', async () => {
+    it('reverts if the `minApprovals` value in `_data` is greater than the number of members', async () => {
       const {deployer, pluginSetup, dao, defaultTargetConfig} =
         await loadFixture(fixture);
 
@@ -291,8 +289,7 @@ describe('MultisigSetup', function () {
       await expect(
         pluginSetup.prepareInstallation(
           dao.address,
-          wrongPrepareInstallationData,
-          {gasLimit: 1000000}
+          wrongPrepareInstallationData
         )
       )
         .to.be.revertedWithCustomError(multisig, 'MinApprovalsOutOfBounds')
