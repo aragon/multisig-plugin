@@ -14,7 +14,6 @@ import {IDAO} from "@aragon/osx-commons-contracts/src/dao/IDAO.sol";
 import {ListedCheckCondition} from "./ListedCheckCondition.sol";
 
 import {Multisig} from "./Multisig.sol";
-import "hardhat/console.sol";
 
 /* solhint-enable max-line-length */
 
@@ -54,7 +53,6 @@ contract MultisigSetup is PluginUpgradeableSetup {
         address _dao,
         bytes calldata _data
     ) external returns (address plugin, PreparedSetupData memory preparedSetupData) {
-        console.log("ar vici222");
         // Decode `_data` to extract the params needed for deploying and initializing `Multisig` plugin.
         (
             address[] memory members,
@@ -70,9 +68,6 @@ contract MultisigSetup is PluginUpgradeableSetup {
                 (IDAO(_dao), members, multisigSettings, targetConfig, pluginMetadata)
             )
         );
-
-        console.log("arvici");
-        console.log(plugin);
 
         // Deploy a ListedCheckCondition contract.
         address listedCheckCondition = address(new ListedCheckCondition(plugin));
