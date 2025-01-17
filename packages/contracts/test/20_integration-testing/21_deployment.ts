@@ -1,6 +1,5 @@
 import {METADATA, VERSION} from '../../plugin-settings';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
-import {isZkSync} from '../../utils/zksync-helpers';
 import {skipTestSuiteIfNetworkIsZkSync} from '../test-utils/skip-functions';
 import {
   getLatestNetworkDeployment,

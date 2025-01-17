@@ -15,7 +15,6 @@ import {
   ProposalCreatedEvent,
   ProposalExecutedEvent,
 } from '../../typechain/src/Multisig';
-import {isZkSync} from '../../utils/zksync-helpers';
 import {
   ANY_ADDR,
   CREATE_PROPOSAL_PERMISSION_ID,

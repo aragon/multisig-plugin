@@ -2,7 +2,6 @@ import {METADATA, VERSION} from '../../plugin-settings';
 import {MultisigSetup, Multisig__factory} from '../../typechain';
 import {MultisigSetup__factory} from '../../typechain';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
-import {isZkSync} from '../../utils/zksync-helpers';
 import {
   Operation,
   TargetConfig,
