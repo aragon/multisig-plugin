@@ -61,10 +61,16 @@ task('build-contracts').setAction(async (args, hre) => {
   fs.cpSync('./build/cache', './cache', {recursive: true, force: true});
 });
 
-task('deploy-contracts').setAction(async (args, hre) => {
-  await hre.run('build-contracts');
-  await hre.run('deploy');
-});
+task('deploy-contracts')
+  .addOptionalParam('tags', 'Specify which tags to deploy')
+  .setAction(async (args, hre) => {
+    await hre.run('build-contracts');
+    console.log('deploying contracts', args.tags);
+    await hre.run('deploy', {
+      tags: args.tags,
+    });
+    console.log('deployed contracts');
+  });
 
 task('test-contracts').setAction(async (args, hre) => {
   await hre.run('build-contracts');
@@ -111,7 +117,7 @@ const config: HardhatUserConfig = {
       blockGasLimit: 30000000,
       accounts: RichAccounts,
     },
-    zkTestnet: {
+    zksyncSepolia: {
       url: 'https://sepolia.era.zksync.dev',
       ethNetwork: 'sepolia',
       zksync: true,
@@ -121,7 +127,7 @@ const config: HardhatUserConfig = {
       accounts: accounts,
       forceDeploy: true,
     },
-    zkMainnet: {
+    zksyncMainnet: {
       url: 'https://mainnet.era.zksync.io',
       ethNetwork: 'mainnet',
       zksync: true,
