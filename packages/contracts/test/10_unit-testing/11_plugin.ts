@@ -30,6 +30,7 @@ import {
   UPDATE_MULTISIG_SETTINGS_PERMISSION_ID,
   latestInitializerVersion,
 } from '../multisig-constants';
+import {skipTestIfNetworkIsZkSync} from '../test-utils/skip-functions';
 import {Multisig__factory, Multisig} from '../test-utils/typechain-versions';
 import {ARTIFACT_SOURCES} from '../test-utils/wrapper';
 import {
@@ -293,39 +294,38 @@ describe('Multisig', function () {
         );
     });
 
-    it('reverts if the member list is longer than uint16 max', async function () {
-      if (isZkSync(hre.network.name)) {
-        return this.skip();
+    skipTestIfNetworkIsZkSync(
+      'reverts if the member list is longer than uint16 max',
+      async function () {
+        const {uninitializedPlugin, alice, defaultInitData, dao} =
+          await loadFixture(fixture);
+
+        // Create a member list causing an overflow during initialization.
+        const uint16MaxValue = 2 ** 16 - 1; // = 65535
+        const overflowingMemberList = new Array(uint16MaxValue + 1).fill(
+          alice.address
+        );
+
+        // Try to initialize the plugin with a list of new members causing an overflow.
+        await expect(
+          uninitializedPlugin.initialize(
+            dao.address,
+            overflowingMemberList,
+            defaultInitData.settings,
+            defaultInitData.targetConfig,
+            defaultInitData.metadata,
+            {
+              gasLimit: BigNumber.from(10).pow(8).toNumber(),
+            }
+          )
+        )
+          .to.revertedWithCustomError(
+            uninitializedPlugin,
+            'AddresslistLengthOutOfBounds'
+          )
+          .withArgs(uint16MaxValue, overflowingMemberList.length);
       }
-
-      const {uninitializedPlugin, alice, defaultInitData, dao} =
-        await loadFixture(fixture);
-
-      // Create a member list causing an overflow during initialization.
-      const uint16MaxValue = 2 ** 16 - 1; // = 65535
-      const overflowingMemberList = new Array(uint16MaxValue + 1).fill(
-        alice.address
-      );
-
-      // Try to initialize the plugin with a list of new members causing an overflow.
-      await expect(
-        uninitializedPlugin.initialize(
-          dao.address,
-          overflowingMemberList,
-          defaultInitData.settings,
-          defaultInitData.targetConfig,
-          defaultInitData.metadata,
-          {
-            gasLimit: BigNumber.from(10).pow(8).toNumber(),
-          }
-        )
-      )
-        .to.revertedWithCustomError(
-          uninitializedPlugin,
-          'AddresslistLengthOutOfBounds'
-        )
-        .withArgs(uint16MaxValue, overflowingMemberList.length);
-    });
+    );
   });
 
   describe('reinitialize', async () => {
@@ -617,40 +617,41 @@ describe('Multisig', function () {
         );
     });
 
-    it('reverts if the member list would become longer than uint16 max', async function () {
-      if (isZkSync(hre.network.name)) {
-        return this.skip();
+    skipTestIfNetworkIsZkSync(
+      'reverts if the member list would become longer than uint16 max',
+      async function () {
+        const {
+          initializedPlugin: plugin,
+          alice,
+          dave,
+          dao,
+        } = await loadFixture(fixture);
+
+        // Grant Alice the permission to update settings.
+        await dao.grant(
+          plugin.address,
+          alice.address,
+          UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
+        );
+
+        const currentMemberCount = (
+          await plugin.callStatic.addresslistLength()
+        ).toNumber();
+
+        // Create list of new members causing an overflow.
+        const uint16MaxValue = 2 ** 16 - 1; // = 65535
+        const overflowingNewMemberList = new Array(
+          uint16MaxValue - currentMemberCount + 1
+        ).fill(dave.address);
+
+        // Try to add a list of new members causing an overflow as Alice.
+        await expect(
+          plugin.connect(alice).addAddresses(overflowingNewMemberList)
+        )
+          .to.revertedWithCustomError(plugin, 'AddresslistLengthOutOfBounds')
+          .withArgs(uint16MaxValue, uint16MaxValue + 1);
       }
-
-      const {
-        initializedPlugin: plugin,
-        alice,
-        dave,
-        dao,
-      } = await loadFixture(fixture);
-
-      // Grant Alice the permission to update settings.
-      await dao.grant(
-        plugin.address,
-        alice.address,
-        UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
-      );
-
-      const currentMemberCount = (
-        await plugin.callStatic.addresslistLength()
-      ).toNumber();
-
-      // Create list of new members causing an overflow.
-      const uint16MaxValue = 2 ** 16 - 1; // = 65535
-      const overflowingNewMemberList = new Array(
-        uint16MaxValue - currentMemberCount + 1
-      ).fill(dave.address);
-
-      // Try to add a list of new members causing an overflow as Alice.
-      await expect(plugin.connect(alice).addAddresses(overflowingNewMemberList))
-        .to.revertedWithCustomError(plugin, 'AddresslistLengthOutOfBounds')
-        .withArgs(uint16MaxValue, uint16MaxValue + 1);
-    });
+    );
 
     it('adds new members to the address list and emit the `MembersAdded` event', async () => {
       const {
@@ -1005,116 +1006,116 @@ describe('Multisig', function () {
         );
     });
 
-    it('reverts if the multisig settings have been changed in the same block', async function () {
-      if (isZkSync(hre.network.name)) {
-        return this.skip();
-      }
-      const {alice, initializedPlugin: plugin, dao} = data;
+    skipTestIfNetworkIsZkSync(
+      'reverts if the multisig settings have been changed in the same block',
+      async function () {
+        const {alice, initializedPlugin: plugin, dao} = data;
 
-      // Grant Alice the permission to update the settings.
-      await dao.grant(
-        plugin.address,
-        alice.address,
-        UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
-      );
+        // Grant Alice the permission to update the settings.
+        await dao.grant(
+          plugin.address,
+          alice.address,
+          UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
+        );
 
-      const newSettings = {
-        onlyListed: false,
-        minApprovals: 1,
-      };
-
-      /* Make two calls to update the settings in the same block. */
-      // Disable auto-mining so that both proposals end up in the same block.
-      await ethers.provider.send('evm_setAutomine', [false]);
-      // Update #1
-      await plugin.connect(alice).updateMultisigSettings(newSettings);
-      // Update #2
-      await plugin.connect(alice).updateMultisigSettings(newSettings);
-      // Re-enable auto-mining so that the remaining tests run normally.
-      await ethers.provider.send('evm_setAutomine', [true]);
-    });
-
-    it('reverts if the multisig settings have been changed in the same block via the proposals process', async function () {
-      if (isZkSync(hre.network.name)) {
-        return this.skip();
-      }
-      const {
-        alice,
-        uninitializedPlugin: plugin,
-        dummyMetadata,
-        dao,
-        defaultInitData,
-      } = data;
-      await plugin.initialize(
-        dao.address,
-        [alice.address],
-        {
-          onlyListed: true,
+        const newSettings = {
+          onlyListed: false,
           minApprovals: 1,
-        },
-        defaultInitData.targetConfig,
-        defaultInitData.metadata
-      );
+        };
 
-      // Grant permissions between the DAO and the plugin.
-      await dao.grant(
-        plugin.address,
-        dao.address,
-        UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
-      );
-      await dao.grant(
-        dao.address,
-        plugin.address,
-        DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
-      );
+        /* Make two calls to update the settings in the same block. */
+        // Disable auto-mining so that both proposals end up in the same block.
+        await ethers.provider.send('evm_setAutomine', [false]);
+        // Update #1
+        await plugin.connect(alice).updateMultisigSettings(newSettings);
+        // Update #2
+        await plugin.connect(alice).updateMultisigSettings(newSettings);
+        // Re-enable auto-mining so that the remaining tests run normally.
+        await ethers.provider.send('evm_setAutomine', [true]);
+      }
+    );
 
-      // Create an action calling `updateMultisigSettings`.
-      const updateMultisigSettingsAction = {
-        to: plugin.address,
-        value: 0,
-        data: plugin.interface.encodeFunctionData('updateMultisigSettings', [
+    skipTestIfNetworkIsZkSync(
+      'reverts if the multisig settings have been changed in the same block via the proposals process',
+      async function () {
+        const {
+          alice,
+          uninitializedPlugin: plugin,
+          dummyMetadata,
+          dao,
+          defaultInitData,
+        } = data;
+        await plugin.initialize(
+          dao.address,
+          [alice.address],
           {
-            onlyListed: false,
+            onlyListed: true,
             minApprovals: 1,
           },
-        ]),
-      };
+          defaultInitData.targetConfig,
+          defaultInitData.metadata
+        );
 
-      /* Create two proposals to update the settings in the same block. */
-      const endDate = (await time.latest()) + TIME.HOUR;
+        // Grant permissions between the DAO and the plugin.
+        await dao.grant(
+          plugin.address,
+          dao.address,
+          UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
+        );
+        await dao.grant(
+          dao.address,
+          plugin.address,
+          DAO_PERMISSIONS.EXECUTE_PERMISSION_ID
+        );
 
-      // Disable auto-mining so that both proposals end up in the same block.
-      await ethers.provider.send('evm_setAutomine', [false]);
+        // Create an action calling `updateMultisigSettings`.
+        const updateMultisigSettingsAction = {
+          to: plugin.address,
+          value: 0,
+          data: plugin.interface.encodeFunctionData('updateMultisigSettings', [
+            {
+              onlyListed: false,
+              minApprovals: 1,
+            },
+          ]),
+        };
 
-      // Create and execute proposal #1 calling `updateMultisigSettings`.
-      await plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
-        dummyMetadata,
-        [updateMultisigSettingsAction],
-        0,
-        true, // approve
-        true, // execute
-        0,
-        endDate
-      );
+        /* Create two proposals to update the settings in the same block. */
+        const endDate = (await time.latest()) + TIME.HOUR;
 
-      // Try to call update the settings a second time.
-      await expect(
-        plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
+        // Disable auto-mining so that both proposals end up in the same block.
+        await ethers.provider.send('evm_setAutomine', [false]);
+
+        // Create and execute proposal #1 calling `updateMultisigSettings`.
+        await plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
           dummyMetadata,
           [updateMultisigSettingsAction],
           0,
-          false, // approve
-          false, // execute
+          true, // approve
+          true, // execute
           0,
           endDate
-        )
-      )
-        .to.revertedWithCustomError(plugin, 'ProposalCreationForbidden')
-        .withArgs(alice.address);
+        );
 
-      // Re-enable auto-mining so that the remaining tests run normally.
-      await ethers.provider.send('evm_setAutomine', [true]);
-    });
+        // Try to call update the settings a second time.
+        await expect(
+          plugin.connect(alice)[CREATE_PROPOSAL_SIGNATURE](
+            dummyMetadata,
+            [updateMultisigSettingsAction],
+            0,
+            false, // approve
+            false, // execute
+            0,
+            endDate
+          )
+        )
+          .to.revertedWithCustomError(plugin, 'ProposalCreationForbidden')
+          .withArgs(alice.address);
+
+        // Re-enable auto-mining so that the remaining tests run normally.
+        await ethers.provider.send('evm_setAutomine', [true]);
+      }
+    );
 
     describe('`onlyListed` is set to `false`', async () => {
       it('creates a proposal when an unlisted accounts is calling', async () => {
@@ -1209,47 +1210,66 @@ describe('Multisig', function () {
           );
       });
 
-      it('reverts if caller is not listed in the current block although she was listed in the last block', async function () {
-        if (isZkSync(hre.network.name)) {
-          return this.skip();
-        }
+      skipTestIfNetworkIsZkSync(
+        'reverts if caller is not listed in the current block although she was listed in the last block',
+        async function () {
+          const {
+            alice,
+            carol,
+            dave,
+            initializedPlugin: plugin,
+            dao,
+            dummyMetadata,
+            dummyActions,
+          } = data;
 
-        const {
-          alice,
-          carol,
-          dave,
-          initializedPlugin: plugin,
-          dao,
-          dummyMetadata,
-          dummyActions,
-        } = data;
+          // Grant Alice the permission to update settings.
+          await dao.grant(
+            plugin.address,
+            alice.address,
+            UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
+          );
 
-        // Grant Alice the permission to update settings.
-        await dao.grant(
-          plugin.address,
-          alice.address,
-          UPDATE_MULTISIG_SETTINGS_PERMISSION_ID
-        );
+          const endDate = (await time.latest()) + TIME.HOUR;
 
-        const endDate = (await time.latest()) + TIME.HOUR;
+          // Disable auto-mining so that all subsequent transactions end up in the same block.
+          await ethers.provider.send('evm_setAutomine', [false]);
+          const expectedSnapshotBlockNumber = (
+            await ethers.provider.getBlock('latest')
+          ).number;
 
-        // Disable auto-mining so that all subsequent transactions end up in the same block.
-        await ethers.provider.send('evm_setAutomine', [false]);
-        const expectedSnapshotBlockNumber = (
-          await ethers.provider.getBlock('latest')
-        ).number;
+          // Transaction 1 & 2: Add Dave and remove Carol.
+          const tx1 = await plugin.connect(alice).addAddresses([dave.address]);
+          const tx2 = await plugin
+            .connect(alice)
+            .removeAddresses([carol.address]);
 
-        // Transaction 1 & 2: Add Dave and remove Carol.
-        const tx1 = await plugin.connect(alice).addAddresses([dave.address]);
-        const tx2 = await plugin
-          .connect(alice)
-          .removeAddresses([carol.address]);
+          // Transaction 3: Expect the proposal creation to fail for Carol because she was removed as a member in transaction 2.
 
-        // Transaction 3: Expect the proposal creation to fail for Carol because she was removed as a member in transaction 2.
+          await expect(
+            plugin
+              .connect(carol)
+              [CREATE_PROPOSAL_SIGNATURE](
+                dummyMetadata,
+                dummyActions,
+                0,
+                false,
+                false,
+                0,
+                endDate
+              )
+          )
+            .to.be.revertedWithCustomError(plugin, 'DaoUnauthorized')
+            .withArgs(
+              dao.address,
+              plugin.address,
+              carol.address,
+              CREATE_PROPOSAL_PERMISSION_ID
+            );
 
-        await expect(
-          plugin
-            .connect(carol)
+          // Transaction 4: Create the proposal as Dave
+          const tx4 = await plugin
+            .connect(dave)
             [CREATE_PROPOSAL_SIGNATURE](
               dummyMetadata,
               dummyActions,
@@ -1258,70 +1278,50 @@ describe('Multisig', function () {
               false,
               0,
               endDate
-            )
-        )
-          .to.be.revertedWithCustomError(plugin, 'DaoUnauthorized')
-          .withArgs(
-            dao.address,
+            );
+          const id = await createProposalId(
             plugin.address,
-            carol.address,
-            CREATE_PROPOSAL_PERMISSION_ID
-          );
-
-        // Transaction 4: Create the proposal as Dave
-        const tx4 = await plugin
-          .connect(dave)
-          [CREATE_PROPOSAL_SIGNATURE](
-            dummyMetadata,
             dummyActions,
-            0,
-            false,
-            false,
-            0,
-            endDate
+            dummyMetadata
           );
-        const id = await createProposalId(
-          plugin.address,
-          dummyActions,
-          dummyMetadata
-        );
 
-        // Check the listed members before the block is mined.
-        expect(await plugin.isListed(carol.address)).to.equal(true);
-        expect(await plugin.isListed(dave.address)).to.equal(false);
+          // Check the listed members before the block is mined.
+          expect(await plugin.isListed(carol.address)).to.equal(true);
+          expect(await plugin.isListed(dave.address)).to.equal(false);
 
-        // Mine the block
-        await ethers.provider.send('evm_mine', []);
-        const minedBlockNumber = (await ethers.provider.getBlock('latest'))
-          .number;
+          // Mine the block
+          await ethers.provider.send('evm_mine', []);
+          const minedBlockNumber = (await ethers.provider.getBlock('latest'))
+            .number;
 
-        // Expect all transaction receipts to be in the same block after the snapshot block.
-        expect((await tx1.wait()).blockNumber).to.equal(minedBlockNumber);
-        expect((await tx2.wait()).blockNumber).to.equal(minedBlockNumber);
-        expect((await tx4.wait()).blockNumber).to.equal(minedBlockNumber);
-        expect(minedBlockNumber).to.equal(expectedSnapshotBlockNumber + 1);
+          // Expect all transaction receipts to be in the same block after the snapshot block.
+          expect((await tx1.wait()).blockNumber).to.equal(minedBlockNumber);
+          expect((await tx2.wait()).blockNumber).to.equal(minedBlockNumber);
+          expect((await tx4.wait()).blockNumber).to.equal(minedBlockNumber);
+          expect(minedBlockNumber).to.equal(expectedSnapshotBlockNumber + 1);
 
-        // Expect the listed member to have changed.
-        expect(await plugin.isListed(carol.address)).to.equal(false);
-        expect(await plugin.isListed(dave.address)).to.equal(true);
+          // Expect the listed member to have changed.
+          expect(await plugin.isListed(carol.address)).to.equal(false);
+          expect(await plugin.isListed(dave.address)).to.equal(true);
 
-        // Check the `ProposalCreatedEvent` for the creator and proposalId.
-        const event = findEvent<ProposalCreatedEvent>(
-          await tx4.wait(),
-          'ProposalCreated'
-        );
-        expect(event.args.proposalId).to.equal(id);
-        expect(event.args.creator).to.equal(dave.address);
+          // Check the `ProposalCreatedEvent` for the creator and proposalId.
+          const event = findEvent<ProposalCreatedEvent>(
+            await tx4.wait(),
+            'ProposalCreated'
+          );
+          expect(event.args.proposalId).to.equal(id);
+          expect(event.args.creator).to.equal(dave.address);
 
-        // Check that the snapshot block stored in the proposal struct.
-        const proposal = await plugin.getProposal(id);
-        expect(proposal.parameters.snapshotBlock).to.equal(
-          expectedSnapshotBlockNumber
-        );
+          // Check that the snapshot block stored in the proposal struct.
+          const proposal = await plugin.getProposal(id);
+          expect(proposal.parameters.snapshotBlock).to.equal(
+            expectedSnapshotBlockNumber
+          );
 
-        // Re-enable auto-mining so that the remaining tests run normally.
-        await ethers.provider.send('evm_setAutomine', [true]);
-      });
+          // Re-enable auto-mining so that the remaining tests run normally.
+          await ethers.provider.send('evm_setAutomine', [true]);
+        }
+      );
     });
 
     it('creates a proposal successfully and does not approve if not specified', async () => {

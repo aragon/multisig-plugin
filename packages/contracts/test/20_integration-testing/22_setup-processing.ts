@@ -8,6 +8,7 @@ import {
   TargetConfig,
   latestInitializerVersion,
 } from '../multisig-constants';
+import {skipTestSuiteIfNetworkIsZkSync} from '../test-utils/skip-functions';
 import {Multisig} from '../test-utils/typechain-versions';
 import {
   createDaoProxy,
@@ -127,139 +128,133 @@ async function fixture(): Promise<FixtureResult> {
   };
 }
 
-describe(`PluginSetup processing on network '${productionNetworkName}'`, function () {
-  it('installs & uninstalls the current build', async function () {
-    if (isZkSync(hre.network.name)) {
-      this.skip();
-    }
-    const {
-      alice,
-      bob,
-      deployer,
-      psp,
-      dao,
-      pluginSetupRefLatestBuild,
-      defaultInitData,
-    } = await loadFixture(fixture);
+skipTestSuiteIfNetworkIsZkSync(
+  `PluginSetup processing on network '${productionNetworkName}'`,
+  function () {
+    it('installs & uninstalls the current build', async function () {
+      const {
+        alice,
+        bob,
+        deployer,
+        psp,
+        dao,
+        pluginSetupRefLatestBuild,
+        defaultInitData,
+      } = await loadFixture(fixture);
 
-    // Grant deployer all required permissions
-    await dao
-      .connect(deployer)
-      .grant(
-        psp.address,
-        deployer.address,
-        PLUGIN_SETUP_PROCESSOR_PERMISSIONS.APPLY_INSTALLATION_PERMISSION_ID
+      // Grant deployer all required permissions
+      await dao
+        .connect(deployer)
+        .grant(
+          psp.address,
+          deployer.address,
+          PLUGIN_SETUP_PROCESSOR_PERMISSIONS.APPLY_INSTALLATION_PERMISSION_ID
+        );
+      await dao
+        .connect(deployer)
+        .grant(
+          psp.address,
+          deployer.address,
+          PLUGIN_SETUP_PROCESSOR_PERMISSIONS.APPLY_UNINSTALLATION_PERMISSION_ID
+        );
+      await dao
+        .connect(deployer)
+        .grant(dao.address, psp.address, DAO_PERMISSIONS.ROOT_PERMISSION_ID);
+
+      // Install the current build.
+      const initialMembers = [alice.address, bob.address];
+      const multisigSettings: Multisig.MultisigSettingsStruct = {
+        onlyListed: true,
+        minApprovals: 2,
+      };
+
+      const results = await installPLugin(
+        deployer,
+        psp,
+        dao,
+        pluginSetupRefLatestBuild,
+        ethers.utils.defaultAbiCoder.encode(
+          getNamedTypesFromMetadata(
+            METADATA.build.pluginSetup.prepareInstallation.inputs
+          ),
+          [
+            initialMembers,
+            multisigSettings,
+            defaultInitData.targetConfig,
+            defaultInitData.metadata,
+          ]
+        )
       );
-    await dao
-      .connect(deployer)
-      .grant(
-        psp.address,
-        deployer.address,
-        PLUGIN_SETUP_PROCESSOR_PERMISSIONS.APPLY_UNINSTALLATION_PERMISSION_ID
+
+      const plugin = Multisig__factory.connect(
+        results.preparedEvent.args.plugin,
+        deployer
       );
-    await dao
-      .connect(deployer)
-      .grant(dao.address, psp.address, DAO_PERMISSIONS.ROOT_PERMISSION_ID);
 
-    // Install the current build.
-    const initialMembers = [alice.address, bob.address];
-    const multisigSettings: Multisig.MultisigSettingsStruct = {
-      onlyListed: true,
-      minApprovals: 2,
-    };
+      // // Check that the setup worked
+      expect(await plugin.isMember(alice.address)).to.be.true;
 
-    const results = await installPLugin(
-      deployer,
-      psp,
-      dao,
-      pluginSetupRefLatestBuild,
-      ethers.utils.defaultAbiCoder.encode(
-        getNamedTypesFromMetadata(
-          METADATA.build.pluginSetup.prepareInstallation.inputs
+      // Uninstall the current build.
+      await uninstallPLugin(
+        deployer,
+        psp,
+        dao,
+        plugin,
+        pluginSetupRefLatestBuild,
+        ethers.utils.defaultAbiCoder.encode(
+          getNamedTypesFromMetadata(
+            METADATA.build.pluginSetup.prepareUninstallation.inputs
+          ),
+          []
         ),
-        [
-          initialMembers,
-          multisigSettings,
-          defaultInitData.targetConfig,
-          defaultInitData.metadata,
-        ]
-      )
-    );
+        results.preparedEvent.args.preparedSetupData.helpers
+      );
+    });
 
-    const plugin = Multisig__factory.connect(
-      results.preparedEvent.args.plugin,
-      deployer
-    );
+    it('updates from build 1 to the current build', async function () {
+      const {
+        deployer,
+        psp,
+        dao,
+        defaultInitData,
+        pluginRepo,
+        pluginSetupRefLatestBuild,
+      } = await loadFixture(fixture);
 
-    // // Check that the setup worked
-    expect(await plugin.isMember(alice.address)).to.be.true;
+      await updateFromBuildTest(
+        dao,
+        deployer,
+        psp,
+        pluginRepo,
+        pluginSetupRefLatestBuild,
+        1,
+        [defaultInitData.members, Object.values(defaultInitData.settings)],
+        [defaultInitData.targetConfig, defaultInitData.metadata],
+        latestInitializerVersion
+      );
+    });
 
-    // Uninstall the current build.
-    await uninstallPLugin(
-      deployer,
-      psp,
-      dao,
-      plugin,
-      pluginSetupRefLatestBuild,
-      ethers.utils.defaultAbiCoder.encode(
-        getNamedTypesFromMetadata(
-          METADATA.build.pluginSetup.prepareUninstallation.inputs
-        ),
-        []
-      ),
-      results.preparedEvent.args.preparedSetupData.helpers
-    );
-  });
+    it('updates from build 2 to the current build', async function () {
+      const {
+        deployer,
+        psp,
+        dao,
+        defaultInitData,
+        pluginRepo,
+        pluginSetupRefLatestBuild,
+      } = await loadFixture(fixture);
 
-  it('updates from build 1 to the current build', async function () {
-    if (isZkSync(hre.network.name)) {
-      this.skip();
-    }
-    const {
-      deployer,
-      psp,
-      dao,
-      defaultInitData,
-      pluginRepo,
-      pluginSetupRefLatestBuild,
-    } = await loadFixture(fixture);
-
-    await updateFromBuildTest(
-      dao,
-      deployer,
-      psp,
-      pluginRepo,
-      pluginSetupRefLatestBuild,
-      1,
-      [defaultInitData.members, Object.values(defaultInitData.settings)],
-      [defaultInitData.targetConfig, defaultInitData.metadata],
-      latestInitializerVersion
-    );
-  });
-
-  it('updates from build 2 to the current build', async function () {
-    if (isZkSync(hre.network.name)) {
-      this.skip();
-    }
-    const {
-      deployer,
-      psp,
-      dao,
-      defaultInitData,
-      pluginRepo,
-      pluginSetupRefLatestBuild,
-    } = await loadFixture(fixture);
-
-    await updateFromBuildTest(
-      dao,
-      deployer,
-      psp,
-      pluginRepo,
-      pluginSetupRefLatestBuild,
-      2,
-      [defaultInitData.members, Object.values(defaultInitData.settings)],
-      [defaultInitData.targetConfig, defaultInitData.metadata],
-      latestInitializerVersion
-    );
-  });
-});
+      await updateFromBuildTest(
+        dao,
+        deployer,
+        psp,
+        pluginRepo,
+        pluginSetupRefLatestBuild,
+        2,
+        [defaultInitData.members, Object.values(defaultInitData.settings)],
+        [defaultInitData.targetConfig, defaultInitData.metadata],
+        latestInitializerVersion
+      );
+    });
+  }
+);

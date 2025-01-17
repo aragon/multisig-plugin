@@ -1,6 +1,7 @@
 import {METADATA, VERSION} from '../../plugin-settings';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
 import {isZkSync} from '../../utils/zksync-helpers';
+import {skipTestSuiteIfNetworkIsZkSync} from '../test-utils/skip-functions';
 import {
   getLatestNetworkDeployment,
   getNetworkNameByAlias,
@@ -27,74 +28,68 @@ import hre from 'hardhat';
 
 const productionNetworkName = getProductionNetworkName(env);
 
-describe(`Deployment on network '${productionNetworkName}'`, function () {
-  it('creates the repo', async function () {
-    if (isZkSync(hre.network.name)) {
-      this.skip();
-    }
-    const {pluginRepo, pluginRepoRegistry} = await loadFixture(fixture);
+skipTestSuiteIfNetworkIsZkSync(
+  `Deployment on network '${productionNetworkName}'`,
+  function () {
+    it('creates the repo', async function () {
+      const {pluginRepo, pluginRepoRegistry} = await loadFixture(fixture);
 
-    expect(await pluginRepoRegistry.entries(pluginRepo.address)).to.be.true;
-  });
-
-  it('gives the management DAO permissions over the repo', async function () {
-    if (isZkSync(hre.network.name)) {
-      this.skip();
-    }
-    const {pluginRepo, managementDaoProxy} = await loadFixture(fixture);
-
-    expect(
-      await pluginRepo.isGranted(
-        pluginRepo.address,
-        managementDaoProxy.address,
-        DAO_PERMISSIONS.ROOT_PERMISSION_ID,
-        PERMISSION_MANAGER_FLAGS.NO_CONDITION
-      )
-    ).to.be.true;
-
-    expect(
-      await pluginRepo.isGranted(
-        pluginRepo.address,
-        managementDaoProxy.address,
-        PLUGIN_REPO_PERMISSIONS.UPGRADE_REPO_PERMISSION_ID,
-        PERMISSION_MANAGER_FLAGS.NO_CONDITION
-      )
-    ).to.be.true;
-
-    expect(
-      await pluginRepo.isGranted(
-        pluginRepo.address,
-        managementDaoProxy.address,
-        PLUGIN_REPO_PERMISSIONS.MAINTAINER_PERMISSION_ID,
-        PERMISSION_MANAGER_FLAGS.NO_CONDITION
-      )
-    ).to.be.true;
-  });
-
-  context('PluginSetup Publication', async () => {
-    it('registers the setup', async function () {
-      if (isZkSync(hre.network.name)) {
-        this.skip();
-      }
-      const {pluginRepo} = await loadFixture(fixture);
-
-      const results = await pluginRepo['getVersion((uint8,uint16))']({
-        release: VERSION.release,
-        build: VERSION.build,
-      });
-
-      const buildMetadataURI = `ipfs://${await uploadToIPFS(
-        JSON.stringify(METADATA.build, null, 2)
-      )}`;
-
-      expect(results.buildMetadata).to.equal(
-        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(buildMetadataURI))
-      );
-
-      expect(results.tag.build).to.equal(VERSION.build);
+      expect(await pluginRepoRegistry.entries(pluginRepo.address)).to.be.true;
     });
-  });
-});
+
+    it('gives the management DAO permissions over the repo', async function () {
+      const {pluginRepo, managementDaoProxy} = await loadFixture(fixture);
+
+      expect(
+        await pluginRepo.isGranted(
+          pluginRepo.address,
+          managementDaoProxy.address,
+          DAO_PERMISSIONS.ROOT_PERMISSION_ID,
+          PERMISSION_MANAGER_FLAGS.NO_CONDITION
+        )
+      ).to.be.true;
+
+      expect(
+        await pluginRepo.isGranted(
+          pluginRepo.address,
+          managementDaoProxy.address,
+          PLUGIN_REPO_PERMISSIONS.UPGRADE_REPO_PERMISSION_ID,
+          PERMISSION_MANAGER_FLAGS.NO_CONDITION
+        )
+      ).to.be.true;
+
+      expect(
+        await pluginRepo.isGranted(
+          pluginRepo.address,
+          managementDaoProxy.address,
+          PLUGIN_REPO_PERMISSIONS.MAINTAINER_PERMISSION_ID,
+          PERMISSION_MANAGER_FLAGS.NO_CONDITION
+        )
+      ).to.be.true;
+    });
+
+    context('PluginSetup Publication', async () => {
+      it('registers the setup', async function () {
+        const {pluginRepo} = await loadFixture(fixture);
+
+        const results = await pluginRepo['getVersion((uint8,uint16))']({
+          release: VERSION.release,
+          build: VERSION.build,
+        });
+
+        const buildMetadataURI = `ipfs://${await uploadToIPFS(
+          JSON.stringify(METADATA.build, null, 2)
+        )}`;
+
+        expect(results.buildMetadata).to.equal(
+          ethers.utils.hexlify(ethers.utils.toUtf8Bytes(buildMetadataURI))
+        );
+
+        expect(results.tag.build).to.equal(VERSION.build);
+      });
+    });
+  }
+);
 
 type FixtureResult = {
   deployer: SignerWithAddress;
