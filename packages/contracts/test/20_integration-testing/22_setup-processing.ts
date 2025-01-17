@@ -2,6 +2,7 @@ import {METADATA, VERSION} from '../../plugin-settings';
 import {MultisigSetup, Multisig__factory} from '../../typechain';
 import {MultisigSetup__factory} from '../../typechain';
 import {getProductionNetworkName, findPluginRepo} from '../../utils/helpers';
+import {isZkSync} from '../../utils/zksync-helpers';
 import {
   Operation,
   TargetConfig,
@@ -35,6 +36,7 @@ import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import env, {deployments, ethers} from 'hardhat';
+import hre from 'hardhat';
 
 const productionNetworkName = getProductionNetworkName(env);
 
@@ -126,7 +128,10 @@ async function fixture(): Promise<FixtureResult> {
 }
 
 describe(`PluginSetup processing on network '${productionNetworkName}'`, function () {
-  it('installs & uninstalls the current build', async () => {
+  it('installs & uninstalls the current build', async function () {
+    if (isZkSync(hre.network.name)) {
+      this.skip();
+    }
     const {
       alice,
       bob,
@@ -206,7 +211,10 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
     );
   });
 
-  it('updates from build 1 to the current build', async () => {
+  it('updates from build 1 to the current build', async function () {
+    if (isZkSync(hre.network.name)) {
+      this.skip();
+    }
     const {
       deployer,
       psp,
@@ -229,7 +237,10 @@ describe(`PluginSetup processing on network '${productionNetworkName}'`, functio
     );
   });
 
-  it('updates from build 2 to the current build', async () => {
+  it('updates from build 2 to the current build', async function () {
+    if (isZkSync(hre.network.name)) {
+      this.skip();
+    }
     const {
       deployer,
       psp,
