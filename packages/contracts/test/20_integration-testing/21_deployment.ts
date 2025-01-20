@@ -23,7 +23,6 @@ import {loadFixture} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import env, {deployments, ethers} from 'hardhat';
-import hre from 'hardhat';
 
 const productionNetworkName = getProductionNetworkName(env);
 

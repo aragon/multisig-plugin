@@ -50,8 +50,12 @@ export class ZkSync implements NetworkDeployment {
       const abi = [
         'function getDeploymentNonce(address) public view returns(uint256)',
       ];
-      let signers = await ethers.getSigners();
-      let contract = new ethers.Contract(NONCE_HOLDER_ADDRESS, abi, signers[0]);
+      const signers = await ethers.getSigners();
+      const contract = new ethers.Contract(
+        NONCE_HOLDER_ADDRESS,
+        abi,
+        signers[0]
+      );
       const nonce = await contract.getDeploymentNonce(sender);
       return BigNumber.from(nonce).toNumber();
     }

@@ -1,3 +1,4 @@
+import './types/hardhat';
 import {isZkSync, RichAccounts} from './utils/zksync-helpers';
 import {addRpcUrlToNetwork} from '@aragon/osx-commons-configs';
 import '@matterlabs/hardhat-zksync-deploy';

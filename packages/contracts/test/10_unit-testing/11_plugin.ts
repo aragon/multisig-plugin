@@ -46,7 +46,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {expect} from 'chai';
 import {BigNumber} from 'ethers';
 import {keccak256} from 'ethers/lib/utils';
-import {ethers} from 'hardhat';
+import hre, {ethers} from 'hardhat';
 
 type FixtureResult = {
   deployer: SignerWithAddress;

@@ -166,15 +166,9 @@ describe('MultisigSetup', function () {
     });
 
     it('reverts if zero members are provided in the initialization data', async () => {
-      const {
-        pluginSetup,
-        dao,
-        alice,
-        defaultMultisigSettings,
-        defaultTargetConfig,
-      } = await loadFixture(fixture);
+      const {pluginSetup, dao, defaultMultisigSettings, defaultTargetConfig} =
+        await loadFixture(fixture);
 
-      console.log(defaultMultisigSettings, ' good');
       // Create input data containing an empty list of initial members.
       const noMembers: string[] = [];
       const wrongPrepareInstallationData = abiCoder.encode(
@@ -193,10 +187,8 @@ describe('MultisigSetup', function () {
 
       const multisig = await ethers.getContractAt(
         ARTIFACT_SOURCES.MULTISIG,
-        alice.address
+        anticipatedPluginAddress
       );
-
-      console.log(multisig.address, ' fuckmeee123');
 
       // Try calling `prepareInstallation`, which will fail during plugin initialization because of the empty initial
       // member list.
@@ -239,8 +231,6 @@ describe('MultisigSetup', function () {
         ARTIFACT_SOURCES.MULTISIG,
         anticipatedPluginAddress
       );
-
-      console.log('multisig addrrrrr', multisig.address);
 
       // Try calling `prepareInstallation`, which will fail during plugin initialization because of the invalid
       // `minApprovals` value.
@@ -372,7 +362,6 @@ describe('MultisigSetup', function () {
 
     it('sets up the plugin', async () => {
       const {
-        deployer,
         pluginSetup,
         dao,
         prepareInstallationInputs,
