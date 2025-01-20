@@ -37,10 +37,7 @@ extendEnvironment(hre => {
 
 task('build-contracts').setAction(async (args, hre) => {
   await hre.run('compile');
-  // TODO:Claudia (Is there a way without copying/pasting manually ? `paths` object below in the config
-  // ! check if we want to only store on those folders or in both
-  // !(check compile task params if one of them is the output folder)
-  // creates `build` folder correctly, but it always appends `zk` in the end.
+
   const network = hre.network.name;
   if (isZkSync(network)) {
     // Copy zkSync specific build artifacts and cache to the default directories.
