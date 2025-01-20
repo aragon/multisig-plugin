@@ -32,8 +32,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const [deployer] = await hre.ethers.getSigners();
 
   // metadata will be empty if running locally
-  let releaseMetadataURI = '';
-  let buildMetadataURI = '';
+  let releaseMetadataURI = '0x';
+  let buildMetadataURI = '0x';
 
   if (!isLocal(hre)) {
     // Upload the metadata to IPFS
