@@ -29,3 +29,22 @@ export function getLatestContractAddress(
   }
   return '';
 }
+
+export async function forkNetwork(
+  hre: HardhatRuntimeEnvironment,
+  fork_url: string
+) {
+  await hre.network.provider.request({
+    method: 'hardhat_reset',
+    params: [
+      {
+        forking: {
+          jsonRpcUrl: fork_url,
+        },
+      },
+    ],
+  });
+}
+
+// hh-deploy cannot process files without default exports
+export default async () => {};
