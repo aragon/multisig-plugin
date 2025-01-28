@@ -3,7 +3,6 @@ import {
   getLatestNetworkDeployment,
   getNetworkByNameOrAlias,
 } from '@aragon/osx-commons-configs';
-import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
 export function getLatestContractAddress(
