@@ -23,7 +23,7 @@ import {Multisig as Multisig_v1_2} from "@aragon/osx-v1.3.0/plugins/governance/m
 
 import {ProxyFactory} from "@aragon/osx-commons-contracts/src/utils/deployment/ProxyFactory.sol";
 
-import {DAO} from "@aragon/osx/packages/contracts/src/core/dao/DAO.sol";
+import {DAO} from "@aragon/osx/core/dao/DAO.sol";
 
 /* solhint-enable  max-line-length */
 /* solhint-enable no-unused-import */

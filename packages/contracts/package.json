@@ -24,7 +24,7 @@
     "@aragon/osx-commons-configs": "0.4.0",
     "@aragon/osx-ethers": "1.4.0-alpha.0",
     "@aragon/osx-commons-sdk": "0.0.1-alpha.11",
-    "@aragon/osx": "github:aragon/osx#develop",
+    "@aragon/osx": "1.3.0",
     "@aragon/osx-v1.0.0": "npm:@aragon/osx@1.0.1",
     "@aragon/osx-v1.3.0": "npm:@aragon/osx@1.3.0",
     "@matterlabs/hardhat-zksync-deploy": "0.8",
