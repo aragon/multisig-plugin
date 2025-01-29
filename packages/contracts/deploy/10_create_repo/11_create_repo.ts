@@ -1,11 +1,14 @@
-import {PLUGIN_REPO_ENS_SUBDOMAIN_NAME} from '../../plugin-settings';
+import {
+  PLUGIN_REPO_ENS_SUBDOMAIN_NAME,
+  PLUGIN_CONTRACT_NAME,
+} from '../../plugin-settings';
 import {
   findPluginRepo,
   getProductionNetworkName,
   pluginEnsDomain,
   isValidAddress,
 } from '../../utils/helpers';
-import {savePluginRepoAddress} from '../helpers';
+import {saveToDeployedJson} from '../helpers';
 import {
   getLatestNetworkDeployment,
   getNetworkNameByAlias,
@@ -119,11 +122,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [],
   });
 
-  savePluginRepoAddress(
-    pluginRepo.address,
-    await pluginRepoFactory.pluginRepoBase(),
-    tx.hash,
-    tx.blockNumber
+  saveToDeployedJson(
+    [
+      {
+        name: PLUGIN_CONTRACT_NAME + 'PluginRepo',
+        address: pluginRepo.address,
+        blockNumber: tx.blockNumber,
+        txHash: tx.hash,
+      },
+      {
+        name: PLUGIN_CONTRACT_NAME + 'PluginRepoImplementation',
+        address: await pluginRepoFactory.pluginRepoBase(),
+        blockNumber: null,
+        txHash: null,
+      },
+    ],
+    true
   );
 };
 

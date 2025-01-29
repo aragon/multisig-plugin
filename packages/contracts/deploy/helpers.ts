@@ -1,4 +1,4 @@
-import {DEPLOYMENT_JSON_PATH, PLUGIN_CONTRACT_NAME} from '../plugin-settings';
+import {DEPLOYMENT_JSON_PATH} from '../plugin-settings';
 import {isLocal} from '../utils/helpers';
 import {
   getLatestNetworkDeployment,
@@ -47,30 +47,38 @@ export async function forkNetwork(
   });
 }
 
-export function savePluginRepoAddress(
-  pluginRepoAddress: string,
-  pluginRepoImplementationAddress: string,
-  txHash: string,
-  blockNumber: number | undefined
+export type AddressInfo = {
+  name: string;
+  address: string;
+  blockNumber: number | undefined | null;
+  txHash: string | undefined | null;
+};
+
+export function saveToDeployedJson(
+  addressesInfo: AddressInfo[],
+  newDeployment: boolean = false
 ) {
   // Write plugin repo address to file
   const fs = require('fs');
   const outputPath = DEPLOYMENT_JSON_PATH;
 
-  const addressInformation = {
-    [PLUGIN_CONTRACT_NAME + 'RepoProxy']: {
-      address: pluginRepoAddress,
-      blockNumber: blockNumber,
-      deploymentTx: txHash,
-    },
-    [PLUGIN_CONTRACT_NAME + 'RepoImplementation']: {
-      address: pluginRepoImplementationAddress,
-      blockNumber: null,
-      deploymentTx: null,
-    },
-  };
+  // Read existing JSON file
+  let existingData: {[key: string]: AddressInfo} = {};
 
-  fs.writeFileSync(outputPath, JSON.stringify(addressInformation, null, 2));
+  if (fs.existsSync(outputPath) && !newDeployment) {
+    const fileContent = fs.readFileSync(outputPath, 'utf8');
+    existingData = JSON.parse(fileContent);
+  }
+
+  for (const addressInfo of addressesInfo) {
+    existingData[addressInfo.name] = {
+      address: addressInfo.address,
+      blockNumber: addressInfo.blockNumber,
+      txHash: addressInfo.txHash,
+    };
+  }
+
+  fs.writeFileSync(outputPath, JSON.stringify(existingData, null, 2));
   console.log(`Plugin repo addresses saved to ${outputPath}`);
 }
 
