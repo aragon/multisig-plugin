@@ -120,7 +120,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   savePluginRepoAddress(
-    hre,
     pluginRepo.address,
     await pluginRepoFactory.pluginRepoBase(),
     tx.hash,

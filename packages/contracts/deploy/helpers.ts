@@ -48,7 +48,6 @@ export async function forkNetwork(
 }
 
 export function savePluginRepoAddress(
-  hre: HardhatRuntimeEnvironment,
   pluginRepoAddress: string,
   pluginRepoImplementationAddress: string,
   txHash: string,
