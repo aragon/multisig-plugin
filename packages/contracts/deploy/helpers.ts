@@ -58,7 +58,6 @@ export function saveToDeployedJson(
   addressesInfo: AddressInfo[],
   newDeployment: boolean = false
 ) {
-  // Write plugin repo address to file
   const fs = require('fs');
   const outputPath = DEPLOYMENT_JSON_PATH;
 
