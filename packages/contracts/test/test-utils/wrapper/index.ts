@@ -9,7 +9,7 @@ import hre, {ethers} from 'hardhat';
 
 export const ARTIFACT_SOURCES = {
   MULTISIG: 'src/Multisig.sol:Multisig',
-  DAO: '@aragon/osx/packages/contracts/src/core/dao/DAO.sol:DAO',
+  DAO: '@aragon/osx/core/dao/DAO.sol:DAO',
   MULTISIG_V1_0_0:
     '@aragon/osx-v1.0.0/plugins/governance/multisig/Multisig.sol:Multisig', //Multisig_v1_1
   MULTISIG_V1_3_0:
