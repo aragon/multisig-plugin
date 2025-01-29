@@ -5,6 +5,7 @@ import {
   pluginEnsDomain,
   isValidAddress,
 } from '../../utils/helpers';
+import {savePluginRepoAddress} from '../helpers';
 import {
   getLatestNetworkDeployment,
   getNetworkNameByAlias,
@@ -117,6 +118,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     address: pluginRepo.address,
     args: [],
   });
+
+  savePluginRepoAddress(
+    hre,
+    pluginRepo.address,
+    await pluginRepoFactory.pluginRepoBase(),
+    tx.hash,
+    tx.blockNumber
+  );
 };
 
 export default func;
