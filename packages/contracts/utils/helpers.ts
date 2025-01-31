@@ -170,7 +170,6 @@ export async function getManagementDao(
   const managementDaoAddress = process.env.MANAGEMENT_DAO_ADDRESS;
 
   if (managementDaoAddress) {
-    console.log('Getting management DAO from env var', managementDaoAddress);
     // getting the management DAO from the env var
     if (!isValidAddress(managementDaoAddress)) {
       throw new Error(
@@ -190,11 +189,6 @@ export async function getManagementDao(
   if (networkDeployments === null) {
     throw `Deployments are not available on network ${network}.`;
   }
-
-  console.log(
-    'Getting management DAO from network deployments',
-    networkDeployments.ManagementDAOProxy.address
-  );
 
   return DAO__factory.connect(
     networkDeployments.ManagementDAOProxy.address,
