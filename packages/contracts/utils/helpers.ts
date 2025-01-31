@@ -166,6 +166,21 @@ export async function getManagementDao(
   hre: HardhatRuntimeEnvironment
 ): Promise<DAO> {
   const [deployer] = await hre.ethers.getSigners();
+
+  const managementDaoAddress = process.env.MANAGEMENT_DAO_ADDRESS;
+
+  if (managementDaoAddress) {
+    console.log('Getting management DAO from env var', managementDaoAddress);
+    // getting the management DAO from the env var
+    if (!isValidAddress(managementDaoAddress)) {
+      throw new Error(
+        'Management DAO address in .env is not valid address (is not an address or is address zero)'
+      );
+    }
+
+    return DAO__factory.connect(managementDaoAddress, deployer);
+  }
+
   const productionNetworkName = getProductionNetworkName(hre);
   const network = getNetworkNameByAlias(productionNetworkName);
   if (network === null) {
@@ -175,6 +190,11 @@ export async function getManagementDao(
   if (networkDeployments === null) {
     throw `Deployments are not available on network ${network}.`;
   }
+
+  console.log(
+    'Getting management DAO from network deployments',
+    networkDeployments.ManagementDAOProxy.address
+  );
 
   return DAO__factory.connect(
     networkDeployments.ManagementDAOProxy.address,
