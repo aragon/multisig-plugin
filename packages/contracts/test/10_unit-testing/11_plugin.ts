@@ -9,7 +9,6 @@ import {
   IProposal__factory,
   IProtocolVersion__factory,
 } from '../../typechain';
-import {ExecutedEvent} from '../../typechain/@aragon/osx-commons-contracts/src/dao/IDAO';
 import {
   ApprovedEvent,
   ProposalCreatedEvent,
@@ -39,7 +38,7 @@ import {
   TIME,
   DAO_PERMISSIONS,
 } from '@aragon/osx-commons-sdk';
-import {DAO, DAOStructs, DAO__factory} from '@aragon/osx-ethers';
+import {DAO, DAOStructs, DAO__factory, DAOEvents} from '@aragon/osx-ethers';
 import {defaultAbiCoder} from '@ethersproject/abi';
 import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
@@ -2555,7 +2554,7 @@ describe('Multisig', function () {
         let tx = await plugin.connect(alice).approve(id, true);
         let rc = await tx.wait();
         expect(() =>
-          findEventTopicLog<ExecutedEvent>(
+          findEventTopicLog<DAOEvents.ExecutedEvent>(
             rc,
             DAO__factory.createInterface(),
             'Executed'
@@ -2570,7 +2569,7 @@ describe('Multisig', function () {
         tx = await plugin.connect(bob).approve(id, false);
         rc = await tx.wait();
         expect(() =>
-          findEventTopicLog<ExecutedEvent>(
+          findEventTopicLog<DAOEvents.ExecutedEvent>(
             rc,
             DAO__factory.createInterface(),
             'Executed'
@@ -2584,7 +2583,7 @@ describe('Multisig', function () {
 
         // Check that the proposal got executed by checking the `Executed` event emitted by the DAO.
         {
-          const event = findEventTopicLog<ExecutedEvent>(
+          const event = findEventTopicLog<DAOEvents.ExecutedEvent>(
             await tx.wait(),
             DAO__factory.createInterface(),
             'Executed'
