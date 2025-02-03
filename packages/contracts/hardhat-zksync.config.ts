@@ -62,18 +62,18 @@ task('deploy-contracts')
     });
   });
 
-  task('test').setAction(async (args, hre, runSuper) => {
-    await hre.run('compile');
-    const imp = await import('./test/test-utils/wrapper');
-  
-    const wrapper = await imp.Wrapper.create(
-      hre.network.name,
-      hre.ethers.provider
-    );
-    hre.wrapper = wrapper;
-  
-    await runSuper(args);
-  });
+task('test').setAction(async (args, hre, runSuper) => {
+  await hre.run('compile');
+  const imp = await import('./test/test-utils/wrapper');
+
+  const wrapper = await imp.Wrapper.create(
+    hre.network.name,
+    hre.ethers.provider
+  );
+  hre.wrapper = wrapper;
+
+  await runSuper(args);
+});
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
