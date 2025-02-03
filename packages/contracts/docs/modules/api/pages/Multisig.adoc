@@ -46,8 +46,6 @@
 :xref-ListedCheckCondition-isGranted-address-address-bytes32-bytes-: xref:Multisig.adoc#ListedCheckCondition-isGranted-address-address-bytes32-bytes-
 = Multisig API
 
-IMPORTANT: The contracts of build 3(use build 2) are currently being audited, DO NOT USE IN PRODUCTION.
-
 == Core
 
 :Proposal: pass:normal[xref:#Multisig-Proposal[`++Proposal++`]]
