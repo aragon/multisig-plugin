@@ -1,0 +1,153 @@
+= Multisig
+
+WARNING: This documentation shows the *build 3* which uses *1.4 protocol version*. Currently, these are being audited. Even though, contracts are backwards compatible, we do *NOT* recommend using these latest versions in production until audit is finished.
+
+== Description
+
+**Multisig** is a governance plugin developed and maintained by the Aragon core team. 
+It allows users to create proposals that require a configurable subset of approvals (e.g., *x out of y*) from a list of approvers to pass. 
+Once a proposal meets the required threshold of approvals, the list of proposed actions can be passed to the associated DAO or executor for execution. +
+Each approver can individually cast their approval directly on-chain, 
+unlike traditional multisig solutions that rely on off-chain aggregation of signatures.
+
+
+== Proposal Lifecycle
+
+=== **Creation**:
+
+Proposals can be created by users who have the `CREATE_PROPOSAL_PERMISSION` or those verified through the `ListedCheckCondition`, depending on the plugin’s configuration and how the permission is granted. The creation process includes:
+
+** Taking a snapshot block (`block.number - 1`) at the time of creation to ensure consistent eligibility for approvers.
+** Instantiating a proposal and recording proposal metadata, a list of actions, start and end dates, and approval thresholds based on the snapshot block.
+** Optionally, the proposal creator can immediately cast their approval during the creation process.
+
+[NOTE]
+====
+**Proposal creation settings**:
+- onlyListed: Whether only listed addresses can create a proposal or not.
+====
+
+=== **Approval**:
+
+Approvers listed in the address list can cast their approval. The process includes:
+
+** Verifying that the proposal is open, the approver is eligible based on the snapshot taken at creation, and the approver hasn’t already approved.
+** Ensuring the proposal has not expired; proposals are considered expired and ineligible for further approval once their end date has passed.
+** Updating the count of approvals and marking the approver as having approved.
+** Optionally, the approver can pass `true` for `tryExecution` along with their approval. This prompts the plugin to attempt execution if the proposal meets the necessary conditions.
+
+=== **Execution**:
+
+Once the proposal meets the required number of approvals:
+
+** The `execute` function can be called by users with the `EXECUTE_PROPOSAL_PERMISSION`.
+[NOTE]
+====
+Typically, this permission is set to any address, allowing anyone to execute, but it can also be restricted to specific users or conditions if needed.
+====
+
+** The plugin verifies that the proposal is open, the approval threshold has been met, and then executes the listed actions by passing them to the associated DAO or executor.
+** After execution, the proposal is marked as executed, preventing further approvals or execution attempts.
+
+[NOTE]
+====
+**Proposal execution settings**:
+- minApprovals: The minimal number of approvals required for a proposal to pass.
+====
+
+== Plugin Settings
+
+The **Multisig** plugin provides three key configuration functions to manage governance settings and approvers. All three functions require the `UPDATE_MULTISIG_SETTINGS_PERMISSION`, which is typically granted to the associated DAO.
+
+=== 1. Update Multisig Settings
+
+Modifies the plugin’s configuration, which includes: **`onlyListed` and `minApprovals`**.
+
+* **Constraints**:
+  - `minApprovals` must be at least 1 and no greater than the current number of approvers.
+
+* **Impact**:
+  - Changes apply to all proposals created after the settings are updated.
+
+=== 2. Add Addresses
+
+Adds new addresses to the list of approvers, allowing them to approve new proposal.
+
+* **Constraints**:
+  - The total number of addresses cannot exceed `2^16 - 1` (to ensure compatibility with `uint16`, the maximal number of approvals).
+
+* **Impact**:
+  - Newly added addresses can approve proposals created after their addition.
+  - Reduces the relative weight of approvals required, as the minimum approval threshold remains the same while the total number of approvers increases.
+
+=== 3. Remove Addresses
+
+Removes existing addresses from the list of approvers, preventing them from approving new proposals.
+
+* **Constraints**:
+  - After removal, the number of remaining addresses must not be less than the current minimum approvals threshold (`minApprovals`).
+
+* **Impact**:
+  - Removed addresses lose their approval rights for all proposals created after their removal.
+  - Increases the relative weight of approvals required, as the minimum approval threshold remains the same while the total number of approvers decreases.
+
+[IMPORTANT]
+====
+Since each function contains its own independent logic checks, if it is necessary to reduce the number of approvers to below the current `minApproval` threshold, the proposal for making this change should include at least two actions in the following exact order:
+
+1. Update the multisig settings to lower the `minApproval` value.
+2. Remove the addresses from the approvers list.
+
+This ensures that the operation is valid and does not violate the plugin’s constraints.
+====
+
+== Plugin Setup
+
+* **Contracts**: The **MultisigSetup** contains the **Multisig** plugin’s implementation and automatically deploys and prepares the following contracts:
+** **Multisig Proxy**: The ERC1967Proxy contract pointing to the Multisig plugin’s implementation.
+** **ListedCheckCondition**: A condition contract used to determine whether a user meets the eligibility criteria for creating proposals. It enforces the `onlyListed` setting from the Multisig plugin, ensuring that only listed members can propose actions if the setting is enabled.
+
+* **Permissions**: The **MultisigSetup** establishes the following default permissions to ensure smooth operation and integration with the associated DAO:
+
+[cols="2,2,2,2,2", options="header"]
+|===
+| Permission ID | Where (Granted By) | Who (Granted To) | Condition | Functions
+
+| `EXECUTE_PERMISSION_ID`
+| DAO
+| Plugin
+| None
+| `execute`
+
+| `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID`
+| Plugin
+| DAO
+| None
+| `addAddresses`, `removeAddresses`, `updateMultisigSettings`
+
+| `CREATE_PROPOSAL_PERMISSION_ID`
+| Plugin
+| Any Address
+| `ListedCheckCondition`
+| `createProposal`
+
+| `SET_TARGET_CONFIG_PERMISSION_ID`
+| Plugin
+| DAO
+| None
+| `setTargetConfig`
+
+| `SET_METADATA_PERMISSION_ID`
+| Plugin
+| DAO
+| None
+| `setMetadata`
+
+| `EXECUTE_PROPOSAL_PERMISSION_ID`
+| Plugin
+| Any Address
+| None
+| `execute`
+|===
+
+This setup ensures that the **Multisig** plugin is ready for operation immediately after installation, with all required contracts deployed and permissions configured.

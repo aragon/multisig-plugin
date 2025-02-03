@@ -17,8 +17,6 @@ packages/subgraph/tests/.bin
 packages/contracts/.upgradable
 packages/contracts/deployments
 
-docs
-
 # files
 *.env
 *.log
