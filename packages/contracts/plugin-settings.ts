@@ -1,6 +1,12 @@
 import buildMetadata from './src/build-metadata.json';
 import releaseMetadata from './src/release-metadata.json';
 import {VersionTag} from '@aragon/osx-commons-sdk';
+import path from 'path';
+
+export const DEPLOYMENT_JSON_PATH = path.join(
+  __dirname,
+  './deployed-contracts.json'
+);
 
 export const PLUGIN_CONTRACT_NAME = 'Multisig';
 export const PLUGIN_SETUP_CONTRACT_NAME = 'MultisigSetup';
