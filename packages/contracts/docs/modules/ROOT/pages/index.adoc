@@ -1,7 +1,5 @@
 = Multisig
 
-WARNING: This documentation shows the *build 3* which uses *1.4 protocol version*.
-
 == Description
 
 **Multisig** is a governance plugin developed and maintained by the Aragon core team. 

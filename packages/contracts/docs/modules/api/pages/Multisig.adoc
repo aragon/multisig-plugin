@@ -93,7 +93,7 @@
 
 [.contract]
 [[Multisig]]
-=== `++Multisig++` link:https://github.com/aragon/multisig-plugin/blob/v1.4.0-alpha.1/packages/contracts/src/Multisig.sol[{github-icon},role=heading-link]
+=== `++Multisig++` link:https://github.com/aragon/multisig-plugin/blob/v1.3/packages/contracts/src/Multisig.sol[{github-icon},role=heading-link]
 
 v1.3 (Release 1, Build 3). For each upgrade, if the reinitialization step is required,
      increment the version numbers in the modifier for both the initialize and initializeFrom functions.
@@ -726,7 +726,7 @@ A mapping between proposal IDs and proposal information.
 
 [.contract]
 [[MultisigSetup]]
-=== `++MultisigSetup++` link:https://github.com/aragon/multisig-plugin/blob/v1.4.0-alpha.1/packages/contracts/src/MultisigSetup.sol[{github-icon},role=heading-link]
+=== `++MultisigSetup++` link:https://github.com/aragon/multisig-plugin/blob/v1.3/packages/contracts/src/MultisigSetup.sol[{github-icon},role=heading-link]
 
 v1.3 (Release 1, Build 3)
 
@@ -817,7 +817,7 @@ Prepares the uninstallation of a plugin.
 
 [.contract]
 [[ListedCheckCondition]]
-=== `++ListedCheckCondition++` link:https://github.com/aragon/multisig-plugin/blob/v1.4.0-alpha.1/packages/contracts/src/ListedCheckCondition.sol[{github-icon},role=heading-link]
+=== `++ListedCheckCondition++` link:https://github.com/aragon/multisig-plugin/blob/v1.3/packages/contracts/src/ListedCheckCondition.sol[{github-icon},role=heading-link]
 
 [.contract-index]
 .Functions
