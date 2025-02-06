@@ -9,6 +9,7 @@ yarn add @aragon/multisig-plugin-artifacts
 ## Usage
 
 ```typescript
+// ABI definitions
 import {
     MultisigABI,
     IMultisigABI,
@@ -16,8 +17,11 @@ import {
     MultisigSetupABI
 } from "@aragon/multisig-plugin-artifacts";
 
+// Plugin Repository addresses per-network
 import { addresses } from "@aragon/multisig-plugin-artifacts";
 ```
+
+You can also open [addresses.json](./src/addresses.json) directly.
 
 ## Development
 
