@@ -23,7 +23,8 @@ import { addresses } from "@aragon/multisig-plugin-artifacts";
 
 ### Building the package
 
-Install the dependencies:
+Install the dependencies and generate the local ABI definitions.
+
 ```sh
 yarn install
 yarn build
@@ -39,7 +40,7 @@ The `build` script will:
 
 ### Publish to NPM
 
-Ensure the package `version` is updated in `package.json` before publishing.
+Ensure the package `version` is up to date within `package.json` before publishing.
 
 Check that only the intended files will be published:
 ```sh

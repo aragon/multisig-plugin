@@ -19,6 +19,7 @@ packages/contracts/createVersionProposalData*.json
 packages/contracts/artifacts
 
 packages/artifacts/src/abi
+packages/artifacts/src/abi.ts
 
 # files
 *.env
