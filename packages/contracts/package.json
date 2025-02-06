@@ -20,7 +20,6 @@
     "lint:sol": "cd ../../ && yarn run lint:contracts:sol",
     "lint:ts": "cd ../../ && yarn run lint:contracts:ts",
     "docs": "DOCS=true scripts/prepare-docs.sh",
-    "prepare-abi": "wagmi generate",
     "test": "hardhat test",
     "test:zksync": "hardhat test --config hardhat-zksync.config.ts",
     "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain",
@@ -78,8 +77,6 @@
     "ts-node": "^10.9.1",
     "typechain": "^8.3.2",
     "typescript": "^5.2.2",
-    "@wagmi/cli": "^2.2.0",
-    "@wagmi/core": "^2.16.3",
     "undici": "^6.11.1"
   }
 }
