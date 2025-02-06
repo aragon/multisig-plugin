@@ -6,6 +6,19 @@ This package contains the ABI of the Multisig Plugin for OSx, as well as the add
 yarn add @aragon/multisig-plugin-artifacts
 ```
 
+## Usage
+
+```typescript
+import {
+    MultisigABI,
+    IMultisigABI,
+    ListedCheckConditionABI,
+    MultisigSetupABI
+} from "@aragon/multisig-plugin-artifacts";
+
+import { addresses } from "@aragon/multisig-plugin-artifacts";
+```
+
 ## Package generation
 
 Install the dependencies:

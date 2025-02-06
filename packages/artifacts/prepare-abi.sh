@@ -33,8 +33,8 @@ do
     CONTRACT_NAME=${ABI_FILE%".json"}
     echo "Importing $CONTRACT_NAME from $TARGET_ABI_FILE"
 
-    echo "import * as $CONTRACT_NAME from \"./abi/$ABI_FILE\";" >> $TARGET_ABI_FILE
-    echo "export {$CONTRACT_NAME}" >> $TARGET_ABI_FILE
+    echo "import * as ${CONTRACT_NAME}ABI from \"./abi/$ABI_FILE\";" >> $TARGET_ABI_FILE
+    echo "export {${CONTRACT_NAME}ABI}" >> $TARGET_ABI_FILE
     echo "" >> $TARGET_ABI_FILE
 done
 

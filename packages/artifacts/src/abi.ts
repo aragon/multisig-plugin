@@ -1,12 +1,12 @@
-import * as IMultisig from "./abi/IMultisig.json";
-export {IMultisig}
+import * as IMultisigABI from "./abi/IMultisig.json";
+export {IMultisigABI}
 
-import * as ListedCheckCondition from "./abi/ListedCheckCondition.json";
-export {ListedCheckCondition}
+import * as ListedCheckConditionABI from "./abi/ListedCheckCondition.json";
+export {ListedCheckConditionABI}
 
-import * as Multisig from "./abi/Multisig.json";
-export {Multisig}
+import * as MultisigABI from "./abi/Multisig.json";
+export {MultisigABI}
 
-import * as MultisigSetup from "./abi/MultisigSetup.json";
-export {MultisigSetup}
+import * as MultisigSetupABI from "./abi/MultisigSetup.json";
+export {MultisigSetupABI}
 
