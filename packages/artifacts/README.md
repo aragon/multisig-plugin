@@ -35,8 +35,7 @@ The `build` script will:
 2. Install its dependencies.
 3. Compile the contracts using Hardhat.
 4. Generate their ABI.
-5. Extract their ABI into on `src/abi/*.json`.
-6. Generate a TypeScript file exporting each contract's ABI: `src/abi.ts`
+5. Extract their ABI and embed it into on `src/abi.ts`.
 
 ### Publish to NPM
 
