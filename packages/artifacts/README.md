@@ -19,25 +19,23 @@ import {
 import { addresses } from "@aragon/multisig-plugin-artifacts";
 ```
 
-## Package generation
+## Development
+
+### Building the package
 
 Install the dependencies:
 ```sh
 yarn install
+yarn build
 ```
 
-###  Prepare the ABI definition
-
-```sh
-yarn prepare-abi
-```
-
-The script will:
+The `build` script will:
 1. Move to `packages/contracts`.
 2. Install its dependencies.
 3. Compile the contracts using Hardhat.
-4. Generate their ABI using Wagmi.
-5. Save them on `src/abi.ts`.
+4. Generate their ABI.
+5. Extract their ABI into on `src/abi/*.json`.
+6. Generate a TypeScript file exporting each contract's ABI: `src/abi.ts`
 
 ### Publish to NPM
 
