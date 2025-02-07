@@ -1,44 +1,18 @@
 {
-    "mainnet": {
-        "repoAddress":"0x8c278e37D0817210E18A7958524b7D0a1fAA6F7b"
-    },
-    "sepolia": {
-        "repoAddress":"0x9e7956C8758470dE159481e5DD0d08F8B59217A2"
-    },
-    "holesky": {
-        "repoAddress":"0xde1414F52A885cb9b899870f85bDCdb2Dec7C5dd"
-    },
-    "devSepolia": {
-        "repoAddress":"0xA0901B5BC6e04F14a9D0d094653E047644586DdE"
-    },
-    "polygon": {
-        "repoAddress":"0x5A5035E7E8aeff220540F383a9cf8c35929bcF31"
-    },
-    "mumbai": {
-        "repoAddress":"0x2c4690b8be39adAd4F15A69340d5035aC6E53eEF"
-    },
-    "base": {
-        "repoAddress":"0xcDC4b0BC63AEfFf3a7826A19D101406C6322A585"
-    },
-    "baseSepolia": {
-        "repoAddress":"0x9e7956C8758470dE159481e5DD0d08F8B59217A2"
-    },
-    "arbitrum": {
-        "repoAddress":"0x7553E6Fb020c5740768cF289e603770AA09b7aE2"
-    },
-    "arbitrumSepolia": {
-        "repoAddress":"0x9e7956C8758470dE159481e5DD0d08F8B59217A2"
-    },
-    "linea": {
-        "repoAddress":"0x2667636E0f5eA63c771509e1d3377177E9Da056D"
-    },
-    "lineaSepolia": {
-        "repoAddress":"0x86B433017Ce556ED93e6D34d6Ba0e3a9EB19015C"
-    },
-    "zksync": {
-        "repoAddress":"0x83f88d380073c8F929fAB649F3d016649c101D3A"
-    },
-    "zksyncSepolia": {
-        "repoAddress":"0x2cae809b6ca149b49cBcA8B887Da2805174052F3"
+    "pluginRepo": {    
+        "mainnet": "0x8c278e37D0817210E18A7958524b7D0a1fAA6F7b",
+        "sepolia": "0x9e7956C8758470dE159481e5DD0d08F8B59217A2",
+        "holesky": "0xde1414F52A885cb9b899870f85bDCdb2Dec7C5dd",
+        "devSepolia": "0xA0901B5BC6e04F14a9D0d094653E047644586DdE",
+        "polygon": "0x5A5035E7E8aeff220540F383a9cf8c35929bcF31",
+        "mumbai": "0x2c4690b8be39adAd4F15A69340d5035aC6E53eEF",
+        "base": "0xcDC4b0BC63AEfFf3a7826A19D101406C6322A585",
+        "baseSepolia": "0x9e7956C8758470dE159481e5DD0d08F8B59217A2",
+        "arbitrum": "0x7553E6Fb020c5740768cF289e603770AA09b7aE2",
+        "arbitrumSepolia": "0x9e7956C8758470dE159481e5DD0d08F8B59217A2",
+        "linea": "0x2667636E0f5eA63c771509e1d3377177E9Da056D",
+        "lineaSepolia": "0x86B433017Ce556ED93e6D34d6Ba0e3a9EB19015C",
+        "zksync": "0x83f88d380073c8F929fAB649F3d016649c101D3A",
+        "zksyncSepolia": "0x2cae809b6ca149b49cBcA8B887Da2805174052F3"
     }
 }
