@@ -1,8 +1,6 @@
 {
-    "mainnet": {
-        "pluginRepo": ""
-    },
-    "polygon": {
-        "pluginRepo": ""
+    "pluginRepo": {
+        "mainnet": "",
+        "polygon": ""
     }
 }
