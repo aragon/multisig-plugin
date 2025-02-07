@@ -1,6 +1,18 @@
 {
-    "pluginRepo": {
-        "mainnet": "",
-        "polygon": ""
-    }
+    "pluginRepo": {    
+        "mainnet":"",
+        "sepolia":"",
+        "holesky":"",
+        "devSepolia":"",
+        "polygon":"",
+        "mumbai":"",
+        "base":"",
+        "baseSepolia":"",
+        "arbitrum":"",
+        "arbitrumSepolia":"",
+        "linea":"",
+        "lineaSepolia":"",
+        "zksync":"",
+        "zksyncSepolia":""
+    }    
 }
