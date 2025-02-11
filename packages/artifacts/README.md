@@ -1,6 +1,6 @@
 # Multisig Plugin artifacts
 
-This package contains the ABI of the Multisig Plugin for OSx, as well as the address of its plugin repository on each network. Install it with:
+This package contains the ABI of the Multisig Plugin for OSx, as well as the address of its plugin repository on each supported network. Install it with:
 
 ```sh
 yarn add @aragon/multisig-plugin-artifacts
