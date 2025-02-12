@@ -35,7 +35,7 @@ The root folder of the repo includes two subfolders:
 The root-level `package.json` file contains global `dev-dependencies` for formatting and linting. After installing the dependencies with
 
 ```sh
-yarn install
+yarn --ignore-scripts
 ```
 
 you can run the associated [formatting](#formatting) and [linting](#linting) commands.
@@ -79,7 +79,7 @@ Before deploying, you MUST also change the default hardhat private key (`PRIVATE
 This package is located in `packages/contracts`, first run
 
 ```sh
-yarn install
+yarn --ignore-scripts
 ```
 
 ### Building
@@ -235,7 +235,7 @@ yarn deploy:zksync --network zksyncMainnet --tags ...
 In `packages/subgraph`, first run
 
 ```sh
-yarn install
+yarn --ignore-scripts
 ```
 
 which will also run
