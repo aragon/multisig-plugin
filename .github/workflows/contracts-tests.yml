@@ -38,3 +38,4 @@ jobs:
         env:
           NETWORK_NAME: ${{ vars.NETWORK_NAME }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+          PUB_PINATA_JWT: ${{ secrets.PUB_PINATA_JWT }}
