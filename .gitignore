@@ -16,6 +16,7 @@ packages/subgraph/tests/.bin
 
 packages/contracts/.upgradable
 packages/contracts/deployments
+packages/contracts/createVersionProposalData*.json
 
 # files
 *.env
