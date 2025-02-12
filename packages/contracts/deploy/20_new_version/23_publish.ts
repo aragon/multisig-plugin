@@ -35,6 +35,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let releaseMetadataURI = '0x';
   let buildMetadataURI = '0x';
 
+  console.log('isLocal ------- >', isLocal(hre));
+
   if (!isLocal(hre)) {
     if (!process.env.PUB_PINATA_JWT) {
       throw Error('PUB_PINATA_JWT is not set');
