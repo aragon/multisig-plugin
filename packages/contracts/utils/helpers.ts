@@ -24,14 +24,6 @@ import {ethers} from 'hardhat';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
 export function isLocal(hre: HardhatRuntimeEnvironment): boolean {
-  console.log(
-    'hre.network.name ------- >',
-    hre.network.name,
-    hre.network.name === 'localhost' ||
-      hre.network.name === 'hardhat' ||
-      hre.network.name === 'coverage' ||
-      hre.network.name === 'zkLocalTestnet'
-  );
   return (
     hre.network.name === 'localhost' ||
     hre.network.name === 'hardhat' ||
