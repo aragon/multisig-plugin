@@ -17,6 +17,7 @@ import {
   IAddrResolver__factory,
   PluginRepo,
   PluginRepoEvents,
+  PluginRepoFactory,
   PluginRepo__factory,
   PluginRepoFactory__factory,
   PluginRepoRegistry__factory,
@@ -155,8 +156,7 @@ export async function findPluginRepo(
 
   if (subdomainRegistrarAddress === ethers.constants.AddressZero) {
     // the network does not support ENS and the plugin repo could not be found by env var or deployments
-
-    return {pluginRepo: null, ensDomain};
+    return {pluginRepo: null, ensDomain: ''};
   }
 
   const registrar = ENSSubdomainRegistrar__factory.connect(
@@ -224,6 +224,46 @@ export async function getManagementDao(
 
   return DAO__factory.connect(
     networkDeployments.ManagementDAOProxy.address,
+    deployer
+  );
+}
+
+/**
+ * try to get the plugin repo factory first
+ * 1- env var PLUGIN_REPO_FACTORY_ADDRESS
+ * 2- commons configs deployments
+ */
+export async function getPluginRepoFactory(
+  hre: HardhatRuntimeEnvironment
+): Promise<PluginRepoFactory> {
+  const [deployer] = await hre.ethers.getSigners();
+
+  // from env var
+  if (process.env.PLUGIN_REPO_FACTORY_ADDRESS) {
+    if (!isValidAddress(process.env.PLUGIN_REPO_FACTORY_ADDRESS)) {
+      throw new Error(
+        'Plugin Repo Factory address in .env is not valid address (is not an address or is address zero)'
+      );
+    }
+    return PluginRepoFactory__factory.connect(
+      process.env.PLUGIN_REPO_FACTORY_ADDRESS,
+      deployer
+    );
+  }
+
+  // from commons configs deployments
+  const productionNetworkName = getProductionNetworkName(hre);
+  const network = getNetworkNameByAlias(productionNetworkName);
+  if (network === null) {
+    throw new UnsupportedNetworkError(productionNetworkName);
+  }
+  const networkDeployments = getLatestNetworkDeployment(network);
+  if (networkDeployments === null) {
+    throw `Deployments are not available on network ${network}.`;
+  }
+
+  return PluginRepoFactory__factory.connect(
+    networkDeployments.PluginRepoFactory.address,
     deployer
   );
 }
@@ -336,6 +376,19 @@ export function isValidAddress(address: string): boolean {
   return (
     ethers.utils.isAddress(address) && address !== ethers.constants.AddressZero
   );
+}
+
+export async function frameworkSupportsENS(
+  pluginRepoFactory: PluginRepoFactory
+): Promise<boolean> {
+  const [deployer] = await ethers.getSigners();
+  const pluginRepoRegistry = PluginRepoRegistry__factory.connect(
+    await pluginRepoFactory.pluginRepoRegistry(),
+    deployer
+  );
+  const subdomainRegistrar = await pluginRepoRegistry.subdomainRegistrar();
+
+  return subdomainRegistrar !== ethers.constants.AddressZero;
 }
 
 export const AragonOSxAsciiArt =
