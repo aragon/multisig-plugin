@@ -1,4 +1,7 @@
-import {PLUGIN_REPO_ENS_SUBDOMAIN_NAME} from '../plugin-settings';
+import {
+  PLUGIN_REPO_ENS_SUBDOMAIN_NAME,
+  PLUGIN_REPO_PROXY_NAME,
+} from '../plugin-settings';
 import {
   SupportedNetworks,
   getLatestNetworkDeployment,
@@ -15,6 +18,8 @@ import {
   PluginRepo,
   PluginRepoEvents,
   PluginRepo__factory,
+  PluginRepoFactory__factory,
+  PluginRepoRegistry__factory,
 } from '@aragon/osx-ethers';
 import {setBalance} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
@@ -66,28 +71,101 @@ export function pluginEnsDomain(hre: HardhatRuntimeEnvironment): string {
   return `${PLUGIN_REPO_ENS_SUBDOMAIN_NAME}.${pluginEnsDomain}`;
 }
 
+/**
+ * try to get the plugin repo first
+ * 1- env var PLUGIN_REPO_ADDRESS
+ * 2- try to get the latest network deployment
+ * 3- from the commons configs
+ *    3.1- plugin repo factory address from env var
+ *    3.2- plugin repo factory address from commons configs
+ */
 export async function findPluginRepo(
   hre: HardhatRuntimeEnvironment
 ): Promise<{pluginRepo: PluginRepo | null; ensDomain: string}> {
   const [deployer] = await hre.ethers.getSigners();
-  const productionNetworkName: string = getProductionNetworkName(hre);
-  const network = getNetworkNameByAlias(productionNetworkName);
-  if (network === null) {
-    throw new UnsupportedNetworkError(productionNetworkName);
+  const ensDomain = pluginEnsDomain(hre);
+
+  // from env var
+  if (process.env.PLUGIN_REPO_ADDRESS) {
+    if (!isValidAddress(process.env.PLUGIN_REPO_ADDRESS)) {
+      throw new Error(
+        'Plugin Repo in .env is not a valid address (is not an address or is address zero)'
+      );
+    }
+
+    return {
+      pluginRepo: PluginRepo__factory.connect(
+        process.env.PLUGIN_REPO_ADDRESS,
+        deployer
+      ),
+      ensDomain,
+    };
   }
-  const networkDeployments = getLatestNetworkDeployment(network);
-  if (networkDeployments === null) {
-    throw `Deployments are not available on network ${network}.`;
+
+  // from deployments
+  const pluginRepo = await hre.deployments.getOrNull(PLUGIN_REPO_PROXY_NAME);
+  if (pluginRepo) {
+    console.log(
+      'using the plugin repo from the deployments',
+      pluginRepo.address
+    );
+    return {
+      pluginRepo: PluginRepo__factory.connect(pluginRepo.address, deployer),
+      ensDomain,
+    };
+  }
+
+  // from commons configs
+  let subdomainRegistrarAddress;
+  const pluginRepoFactoryAddress = process.env.PLUGIN_REPO_FACTORY_ADDRESS;
+  if (pluginRepoFactoryAddress) {
+    if (!isValidAddress(pluginRepoFactoryAddress)) {
+      throw new Error(
+        'Plugin Repo Factory in .env is not valid address (is not an address or is address zero)'
+      );
+    }
+
+    // get ENS registrar from the plugin factory provided
+    const pluginRepoFactory = PluginRepoFactory__factory.connect(
+      pluginRepoFactoryAddress,
+      deployer
+    );
+
+    const pluginRepoRegistry = PluginRepoRegistry__factory.connect(
+      await pluginRepoFactory.pluginRepoRegistry(),
+      deployer
+    );
+
+    subdomainRegistrarAddress = await pluginRepoRegistry.subdomainRegistrar();
+  } else {
+    // get ENS registrar from the commons configs deployments
+    const productionNetworkName: string = getProductionNetworkName(hre);
+    const network = getNetworkNameByAlias(productionNetworkName);
+    if (network === null) {
+      throw new UnsupportedNetworkError(productionNetworkName);
+    }
+    const networkDeployments = getLatestNetworkDeployment(network);
+    if (networkDeployments === null) {
+      throw `Deployments are not available on network ${network}.`;
+    }
+
+    subdomainRegistrarAddress =
+      networkDeployments.PluginENSSubdomainRegistrarProxy.address;
+  }
+
+  if (subdomainRegistrarAddress === ethers.constants.AddressZero) {
+    // the network does not support ENS and the plugin repo could not be found by env var or deployments
+
+    return {pluginRepo: null, ensDomain};
   }
 
   const registrar = ENSSubdomainRegistrar__factory.connect(
-    networkDeployments.PluginENSSubdomainRegistrarProxy.address,
+    subdomainRegistrarAddress,
     deployer
   );
 
   // Check if the ens record exists already
   const ens = ENS__factory.connect(await registrar.ens(), deployer);
-  const ensDomain = pluginEnsDomain(hre);
   const node = ethers.utils.namehash(ensDomain);
   const recordExists = await ens.recordExists(node);
 
@@ -110,30 +188,30 @@ export async function findPluginRepo(
   }
 }
 
+/**
+ * try to get the management dao first
+ * 1- env var MANAGEMENT_DAO_ADDRESS
+ * 2- commons configs deployments
+ */
 export async function getManagementDao(
   hre: HardhatRuntimeEnvironment
 ): Promise<DAO> {
   const [deployer] = await hre.ethers.getSigners();
-  const productionNetworkName = getProductionNetworkName(hre);
-  const network = getNetworkNameByAlias(productionNetworkName);
-  if (network === null) {
-    throw new UnsupportedNetworkError(productionNetworkName);
-  }
-  const networkDeployments = getLatestNetworkDeployment(network);
-  if (networkDeployments === null) {
-    throw `Deployments are not available on network ${network}.`;
+
+  const managementDaoAddress = process.env.MANAGEMENT_DAO_ADDRESS;
+
+  if (managementDaoAddress) {
+    // getting the management DAO from the env var
+    if (!isValidAddress(managementDaoAddress)) {
+      throw new Error(
+        'Management DAO address in .env is not valid address (is not an address or is address zero)'
+      );
+    }
+
+    return DAO__factory.connect(managementDaoAddress, deployer);
   }
 
-  return DAO__factory.connect(
-    networkDeployments.ManagementDAOProxy.address,
-    deployer
-  );
-}
-
-export async function getManagementDaoMultisig(
-  hre: HardhatRuntimeEnvironment
-): Promise<DAO> {
-  const [deployer] = await hre.ethers.getSigners();
+  // getting the management DAO from the commons configs deployments
   const productionNetworkName = getProductionNetworkName(hre);
   const network = getNetworkNameByAlias(productionNetworkName);
   if (network === null) {
@@ -251,6 +329,13 @@ export function generateRandomName(length: number): string {
     );
   }
   return result;
+}
+
+export function isValidAddress(address: string): boolean {
+  // check if the address is valid and not zero address
+  return (
+    ethers.utils.isAddress(address) && address !== ethers.constants.AddressZero
+  );
 }
 
 export const AragonOSxAsciiArt =

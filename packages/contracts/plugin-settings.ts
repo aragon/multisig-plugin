@@ -2,6 +2,7 @@ import buildMetadata from './src/build-metadata.json';
 import releaseMetadata from './src/release-metadata.json';
 import {VersionTag} from '@aragon/osx-commons-sdk';
 
+export const PLUGIN_REPO_PROXY_NAME = 'MultisigProxy';
 export const PLUGIN_CONTRACT_NAME = 'Multisig';
 export const PLUGIN_SETUP_CONTRACT_NAME = 'MultisigSetup';
 export const PLUGIN_REPO_ENS_SUBDOMAIN_NAME = 'multisig'; // 'multisig.plugin.dao.eth'
