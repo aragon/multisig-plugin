@@ -7,6 +7,7 @@ import {
   getLatestNetworkDeployment,
   getNetworkNameByAlias,
   getPluginEnsDomain,
+  getNetworkByNameOrAlias,
 } from '@aragon/osx-commons-configs';
 import {UnsupportedNetworkError, findEvent} from '@aragon/osx-commons-sdk';
 import {
@@ -315,49 +316,69 @@ export type LatestVersion = {
   buildMetadata: string;
 };
 
-export async function createVersion(
-  pluginRepoContract: string,
-  pluginSetupContract: string,
-  releaseNumber: number,
-  releaseMetadata: string,
-  buildMetadata: string
-): Promise<ContractTransaction> {
-  const signers = await ethers.getSigners();
-
-  const PluginRepo = new PluginRepo__factory(signers[0]);
-  const pluginRepo = PluginRepo.attach(pluginRepoContract);
-
-  const tx = await pluginRepo.createVersion(
-    releaseNumber,
-    pluginSetupContract,
-    buildMetadata,
-    releaseMetadata
-  );
-
-  console.log(`Creating build for release ${releaseNumber} with tx ${tx.hash}`);
-
-  const versionCreatedEvent = findEvent<PluginRepoEvents.VersionCreatedEvent>(
-    await tx.wait(),
-    pluginRepo.interface.events['VersionCreated(uint8,uint16,address,bytes)']
-      .name
-  );
-
-  // Check if versionCreatedEvent is not undefined
-  if (versionCreatedEvent) {
-    console.log(
-      `Created build ${versionCreatedEvent.args.build} for release ${
-        versionCreatedEvent.args.release
-      } with setup address: ${
-        versionCreatedEvent.args.pluginSetup
-      }, with build metadata ${ethers.utils.toUtf8String(
-        buildMetadata
-      )} and release metadata ${ethers.utils.toUtf8String(releaseMetadata)}`
+async function createVersion(
+  pluginRepo: PluginRepo,
+  release: number,
+  setup: string,
+  releaseMetadataURI: string,
+  buildMetadataURI: string,
+  signer: SignerWithAddress
+) {
+  const tx = await pluginRepo
+    .connect(signer)
+    .createVersion(
+      release,
+      setup,
+      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(buildMetadataURI)),
+      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(releaseMetadataURI))
     );
-  } else {
-    // Handle the case where the event is not found
-    throw new Error('Failed to get VersionCreatedEvent event log');
+
+  await tx.wait();
+}
+
+export async function publishPlaceholderVersion(
+  placeholderSetup: string,
+  versionBuild: number,
+  versionRelease: number,
+  pluginRepo: PluginRepo,
+  signer: any
+) {
+  for (let i = 0; i < versionBuild - 1; i++) {
+    console.log('Publishing placeholder', i + 1);
+    await createVersion(
+      pluginRepo,
+      versionRelease,
+      placeholderSetup,
+      `{}`,
+      'placeholder-setup-build',
+      signer
+    );
   }
-  return tx;
+}
+
+export function getLatestContractAddress(
+  contractName: string,
+  hre: HardhatRuntimeEnvironment
+): string {
+  const networkName = hre.network.name;
+
+  const osxNetworkName = getNetworkByNameOrAlias(networkName);
+  if (!osxNetworkName) {
+    if (isLocal(hre)) {
+      return '';
+    }
+    throw new Error(`Failed to find network ${networkName}`);
+  }
+
+  const latestNetworkDeployment = getLatestNetworkDeployment(
+    osxNetworkName.name
+  );
+  if (latestNetworkDeployment && contractName in latestNetworkDeployment) {
+    // safe cast due to conditional above, but we return the fallback string anyhow
+    const key = contractName as keyof typeof latestNetworkDeployment;
+    return latestNetworkDeployment[key]?.address ?? '';
+  }
+  return '';
 }
 
 export function generateRandomName(length: number): string {
