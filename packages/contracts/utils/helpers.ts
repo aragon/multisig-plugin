@@ -9,7 +9,8 @@ import {
   getPluginEnsDomain,
   getNetworkByNameOrAlias,
 } from '@aragon/osx-commons-configs';
-import {UnsupportedNetworkError, findEvent} from '@aragon/osx-commons-sdk';
+import {UnsupportedNetworkError} from '@aragon/osx-commons-sdk';
+import {Operation} from '@aragon/osx-commons-sdk';
 import {
   DAO,
   DAO__factory,
@@ -17,7 +18,6 @@ import {
   ENS__factory,
   IAddrResolver__factory,
   PluginRepo,
-  PluginRepoEvents,
   PluginRepoFactory,
   PluginRepo__factory,
   PluginRepoFactory__factory,
@@ -25,7 +25,8 @@ import {
 } from '@aragon/osx-ethers';
 import {setBalance} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {BigNumber, ContractTransaction} from 'ethers';
+import {BigNumber} from 'ethers';
+import {Contract} from 'ethers';
 import {LogDescription} from 'ethers/lib/utils';
 import {ethers} from 'hardhat';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
@@ -410,6 +411,36 @@ export async function frameworkSupportsENS(
   const subdomainRegistrar = await pluginRepoRegistry.subdomainRegistrar();
 
   return subdomainRegistrar !== ethers.constants.AddressZero;
+}
+
+export type Permission = {
+  operation: Operation;
+  where: {name: string; address: string};
+  who: {name: string; address: string};
+  permission: string;
+  condition?: string;
+  data?: string;
+};
+
+export async function isPermissionSetCorrectly(
+  permissionManagerContract: Contract,
+  {operation, where, who, permission, data = '0x'}: Permission
+): Promise<boolean> {
+  const permissionId = ethers.utils.id(permission);
+  const isGranted = await permissionManagerContract.isGranted(
+    where.address,
+    who.address,
+    permissionId,
+    data
+  );
+  if (!isGranted && operation === Operation.Grant) {
+    return false;
+  }
+
+  if (isGranted && operation === Operation.Revoke) {
+    return false;
+  }
+  return true;
 }
 
 export const AragonOSxAsciiArt =
