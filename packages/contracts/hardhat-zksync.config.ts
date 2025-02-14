@@ -35,11 +35,9 @@ extendEnvironment(hre => {
   hre.aragonToVerifyContracts = [];
 });
 
-task('build-contracts').setAction(async (args, hre) => {
-  await hre.run('compile');
-
-  const network = hre.network.name;
-  if (isZkSync(network)) {
+task('compile').setAction(async (args, hre, runSuper) => {
+  await runSuper(args);
+  if (isZkSync(hre.network.name)) {
     // Copy zkSync specific build artifacts and cache to the default directories.
     // This ensures that we don't need to change import paths for artifacts in the project.
     fs.cpSync('./build/artifacts-zk', './artifacts', {
@@ -47,6 +45,7 @@ task('build-contracts').setAction(async (args, hre) => {
       force: true,
     });
     fs.cpSync('./build/cache-zk', './cache', {recursive: true, force: true});
+
     return;
   }
 
@@ -63,8 +62,8 @@ task('deploy-contracts')
     });
   });
 
-task('test-contracts').setAction(async (args, hre) => {
-  await hre.run('build-contracts');
+task('test').setAction(async (args, hre, runSuper) => {
+  await hre.run('compile');
   const imp = await import('./test/test-utils/wrapper');
 
   const wrapper = await imp.Wrapper.create(
@@ -73,7 +72,7 @@ task('test-contracts').setAction(async (args, hre) => {
   );
   hre.wrapper = wrapper;
 
-  await hre.run('test');
+  await runSuper(args);
 });
 
 // You need to export an object to set up your config
