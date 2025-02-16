@@ -1,4 +1,7 @@
-import {PLUGIN_REPO_ENS_SUBDOMAIN_NAME} from '../../plugin-settings';
+import {
+  PLUGIN_REPO_ENS_SUBDOMAIN_NAME,
+  PLUGIN_REPO_PROXY_NAME,
+} from '../../plugin-settings';
 import {
   findPluginRepo,
   getProductionNetworkName,
@@ -52,6 +55,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     deployer
   );
 
+  // Save the plugin repo deployment
+  await hre.deployments.save(PLUGIN_REPO_PROXY_NAME, {
+    abi: PluginRepo__factory.abi,
+    address: pluginRepo.address,
+    receipt: await tx.wait(),
+    transactionHash: tx.hash,
+  });
+
   console.log(
     `PluginRepo ${
       supportsENS ? 'with ens:' + pluginEnsDomain(hre) : 'without ens'
@@ -75,7 +86,7 @@ func.skip = async (hre: HardhatRuntimeEnvironment) => {
   console.log(`\n🏗️  ${path.basename(__filename)}:`);
 
   // Check if the ens record exists already
-  const {pluginRepo, ensDomain} = await findPluginRepo(hre);
+  const {pluginRepo} = await findPluginRepo(hre);
 
   if (pluginRepo !== null) {
     console.log(
