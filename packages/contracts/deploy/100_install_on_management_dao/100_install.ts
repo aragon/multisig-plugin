@@ -29,7 +29,7 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
  * @param {HardhatRuntimeEnvironment} hre
  */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const {ethers, network} = hre;
+  const {ethers} = hre;
 
   const [deployer] = await hre.ethers.getSigners();
 
@@ -129,7 +129,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // grant
   // ROOT_PERMISSION on the management dao to the PSP
   // APPLY_INSTALLATION_PERMISSION on the PSP to the deployer
-  let permissionsToGrant: DAOStructs.MultiTargetPermissionStruct[] = [
+  const permissionsToGrant: DAOStructs.MultiTargetPermissionStruct[] = [
     {
       operation: Operation.Grant,
       where: managementDAO.address,
@@ -200,7 +200,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // APPLY_INSTALLATION_PERMISSION permission on the PSP from deployer
   // EXECUTE_PERMISSION permission on the management dao from deployer
 
-  let permissionsToRevoke: DAOStructs.MultiTargetPermissionStruct[] = [
+  const permissionsToRevoke: DAOStructs.MultiTargetPermissionStruct[] = [
     {
       operation: Operation.Revoke,
       where: managementDAO.address,
