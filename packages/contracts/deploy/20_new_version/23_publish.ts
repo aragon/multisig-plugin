@@ -200,7 +200,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       const path = `./createVersionProposalData-${hre.network.name}.json`;
       await writeFile(path, JSON.stringify(data, null, 2));
       console.log(
-        `Saved data to '${path}'. Use this to create a proposal on the managing DAO calling the 'createVersion' function on the ${ensDomain} plugin repo deployed at ${pluginRepo.address}.`
+        `Saved data to '${path}'. Use this to create a proposal on the management DAO calling the 'createVersion' function on the ${ensDomain} plugin repo deployed at ${pluginRepo.address}.`
       );
     }
   }

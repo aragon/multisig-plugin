@@ -1,6 +1,5 @@
 import {VERSION, METADATA} from '../../plugin-settings';
 import {
-  isLocal,
   getManagementDao,
   isValidAddress,
   getLatestContractAddress,
@@ -34,17 +33,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const [deployer] = await hre.ethers.getSigners();
 
-  const approvers = process.env.MANAGINGDAO_MULTISIG_APPROVERS?.split(',') || [
-    deployer.address,
-  ];
+  const approvers = process.env.MANAGEMENT_DAO_MULTISIG_APPROVERS?.split(
+    ','
+  ) || [deployer.address];
   const minApprovals = parseInt(
-    process.env.MANAGINGDAO_MULTISIG_MINAPPROVALS || '1'
+    process.env.MANAGEMENT_DAO_MULTISIG_MIN_APPROVALS || '1'
   );
 
-  const listedOnly = process.env.MANAGINGDAO_MULTISIG_LISTEDONLY;
+  const listedOnly = process.env.MANAGEMENT_DAO_MULTISIG_LISTED_ONLY;
 
-  // Get `managingDAO` address.
-  const managingDAO = await getManagementDao(hre);
+  // Get `managementDAO` address.
+  const managementDAO = await getManagementDao(hre);
 
   // Get `PluginSetupProcessor` from env vars or commons config deployment
   let pspAddress;
@@ -86,7 +85,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     versionTag: VERSION,
   };
 
-  // Prepare multisig plugin for managingDAO
+  // Prepare multisig plugin for managementDAO
   const params = getNamedTypesFromMetadata(
     METADATA.build.pluginSetup.prepareInstallation.inputs
   );
@@ -103,7 +102,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log('prepare Installation');
   const prepareTx = await pspContract.prepareInstallation(
-    managingDAO.address,
+    managementDAO.address,
     {
       pluginSetupRef,
       data,
@@ -124,16 +123,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const installationPreparedEvent = event.args;
 
   console.log(
-    `Prepared (Multisig: ${installationPreparedEvent.plugin} version (release: ${VERSION.release} / build: ${VERSION.build}) to be applied on (ManagingDAO: ${managingDAO.address}), see (tx: ${prepareTx.hash})`
+    `Prepared (Multisig: ${installationPreparedEvent.plugin} version (release: ${VERSION.release} / build: ${VERSION.build}) to be applied on (ManagementDAO: ${managementDAO.address}), see (tx: ${prepareTx.hash})`
   );
 
   // grant
-  // ROOT_PERMISSION on the managing dao to the PSP
+  // ROOT_PERMISSION on the management dao to the PSP
   // APPLY_INSTALLATION_PERMISSION on the PSP to the deployer
   let permissionsToGrant: DAOStructs.MultiTargetPermissionStruct[] = [
     {
       operation: Operation.Grant,
-      where: managingDAO.address,
+      where: managementDAO.address,
       who: pspAddress,
       condition: ethers.constants.AddressZero,
       permissionId: DAO_PERMISSIONS.ROOT_PERMISSION_ID,
@@ -148,11 +147,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     },
   ];
 
-  await managingDAO.applyMultiTargetPermissions(permissionsToGrant);
+  await managementDAO.applyMultiTargetPermissions(permissionsToGrant);
 
-  // Apply multisig plugin to the managingDAO
+  // Apply multisig plugin to the managementDAO
   const applyTx = await pspContract.applyInstallation(
-    managingDAO.address,
+    managementDAO.address,
     {
       helpersHash: hashHelpers(
         installationPreparedEvent.preparedSetupData.helpers
@@ -169,13 +168,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const multisigPluginPermission = {
     operation: Operation.Grant,
-    where: {name: 'ManagingDAO', address: managingDAO.address},
+    where: {name: 'ManagementDAO', address: managementDAO.address},
     who: {name: 'Multisig plugin', address: installationPreparedEvent.plugin},
     permission: 'EXECUTE_PERMISSION',
   };
 
   const isPermissionCorrect = await isPermissionSetCorrectly(
-    managingDAO,
+    managementDAO,
     multisigPluginPermission
   );
 
@@ -183,35 +182,35 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {who, where, operation} = multisigPluginPermission;
     if (operation === Operation.Grant) {
       throw new Error(
-        `(${who.name}: ${who.address}) doesn't have ${multisigPluginPermission.permission} on (${where.name}: ${where.address}) in ${managingDAO.address}`
+        `(${who.name}: ${who.address}) doesn't have ${multisigPluginPermission.permission} on (${where.name}: ${where.address}) in ${managementDAO.address}`
       );
     }
     throw new Error(
-      `(${who.name}: ${who.address}) has ${multisigPluginPermission.permission} on (${where.name}: ${where.address}) in ${managingDAO.address}`
+      `(${who.name}: ${who.address}) has ${multisigPluginPermission.permission} on (${where.name}: ${where.address}) in ${managementDAO.address}`
     );
   }
 
   console.log(
-    `Applied (Multisig: ${installationPreparedEvent.plugin}) on (ManagingDAO: ${managingDAO.address}), see (tx: ${applyTx.hash})`
+    `Applied (Multisig: ${installationPreparedEvent.plugin}) on (ManagementDAO: ${managementDAO.address}), see (tx: ${applyTx.hash})`
   );
 
   // revoke
-  // ROOT_PERMISSION permission on the managing dao from deployer
-  // ROOT_PERMISSION permission on the managing dao from psp
+  // ROOT_PERMISSION permission on the management dao from deployer
+  // ROOT_PERMISSION permission on the management dao from psp
   // APPLY_INSTALLATION_PERMISSION permission on the PSP from deployer
-  // EXECUTE_PERMISSION permission on the managing dao from deployer
+  // EXECUTE_PERMISSION permission on the management dao from deployer
 
   let permissionsToRevoke: DAOStructs.MultiTargetPermissionStruct[] = [
     {
       operation: Operation.Revoke,
-      where: managingDAO.address,
+      where: managementDAO.address,
       who: deployer.address,
       condition: ethers.constants.AddressZero,
       permissionId: DAO_PERMISSIONS.ROOT_PERMISSION_ID,
     },
     {
       operation: Operation.Revoke,
-      where: managingDAO.address,
+      where: managementDAO.address,
       who: pspAddress,
       condition: ethers.constants.AddressZero,
       permissionId: DAO_PERMISSIONS.ROOT_PERMISSION_ID,
@@ -226,14 +225,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     },
     {
       operation: Operation.Revoke,
-      where: managingDAO.address,
+      where: managementDAO.address,
       who: deployer.address,
       condition: ethers.constants.AddressZero,
       permissionId: DAO_PERMISSIONS.EXECUTE_PERMISSION_ID,
     },
   ];
 
-  await managingDAO.applyMultiTargetPermissions(permissionsToRevoke);
+  await managementDAO.applyMultiTargetPermissions(permissionsToRevoke);
 
   console.log('Permissions revoked....');
 
@@ -261,9 +260,9 @@ func.skip = async (hre: HardhatRuntimeEnvironment) => {
   //   return true;
   // } else {
   if (
-    !('MANAGINGDAO_MULTISIG_LISTEDONLY' in process.env) ||
-    !('MANAGINGDAO_MULTISIG_MINAPPROVALS' in process.env) ||
-    !('MANAGINGDAO_MULTISIG_APPROVERS' in process.env)
+    !('MANAGEMENT_DAO_MULTISIG_LISTED_ONLY' in process.env) ||
+    !('MANAGEMENT_DAO_MULTISIG_MIN_APPROVALS' in process.env) ||
+    !('MANAGEMENT_DAO_MULTISIG_APPROVERS' in process.env)
   ) {
     console.log(`Needed env vars not set, skipping installation...`);
     return true;
