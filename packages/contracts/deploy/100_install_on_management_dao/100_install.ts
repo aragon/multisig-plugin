@@ -46,9 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const managementDAO = await getManagementDao(hre);
 
   // Get `PluginSetupProcessor` from env vars or commons config deployment
-  let pspAddress;
-
-  pspAddress = process.env.PLUGIN_SETUP_PROCESSOR_ADDRESS;
+  const pspAddress = process.env.PLUGIN_SETUP_PROCESSOR_ADDRESS;
 
   if (!pspAddress || !isValidAddress(pspAddress)) {
     throw new Error(
@@ -254,7 +252,7 @@ export function hashHelpers(helpers: string[]) {
  * Skips installation if is local network or env vars needed are not defined
  * @param {HardhatRuntimeEnvironment} hre
  */
-func.skip = async (hre: HardhatRuntimeEnvironment) => {
+func.skip = async () => {
   console.log(`\n✨ Install on Management DAO:`);
 
   if (
