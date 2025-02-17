@@ -39,7 +39,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     process.env.MANAGEMENT_DAO_MULTISIG_MIN_APPROVALS || '1'
   );
 
-  const listedOnly = process.env.MANAGEMENT_DAO_MULTISIG_LISTED_ONLY;
+  const listedOnly =
+    process.env.MANAGEMENT_DAO_MULTISIG_LISTED_ONLY === 'false' ? false : true;
 
   // Get `managementDAO` address.
   const managementDAO = await getManagementDao(hre);
@@ -226,8 +227,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log('Permissions revoked....');
 
-  // todo check if the permissions are revoked correctly
-
+  // check if the permissions are revoked correctly
   for (const permission of permissionsToRevoke) {
     const hasPermission = await managementDAO.hasPermission(
       permission.where,
@@ -257,12 +257,6 @@ export function hashHelpers(helpers: string[]) {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   console.log(`\n✨ Install on Management DAO:`);
 
-  // if (isLocal(hre)) {
-  //   console.log(
-  //     `Skipping installation for local network ${hre.network.name}...`
-  //   );
-  //   return true;
-  // } else {
   if (
     !('MANAGEMENT_DAO_MULTISIG_LISTED_ONLY' in process.env) ||
     !('MANAGEMENT_DAO_MULTISIG_MIN_APPROVALS' in process.env) ||
@@ -270,11 +264,54 @@ func.skip = async (hre: HardhatRuntimeEnvironment) => {
   ) {
     console.log(`Needed env vars not set, skipping installation...`);
     return true;
+  } else {
+    return !areEnvVarsValid(
+      process.env.MANAGEMENT_DAO_MULTISIG_LISTED_ONLY!,
+      process.env.MANAGEMENT_DAO_MULTISIG_MIN_APPROVALS!,
+      process.env.MANAGEMENT_DAO_MULTISIG_APPROVERS!.split(',')
+    );
+  }
+};
+
+function areEnvVarsValid(
+  listedOnly: string,
+  minApprovals: string,
+  approvers: string[]
+) {
+  // Validate LISTED_ONLY is boolean
+  if (listedOnly !== 'true' && listedOnly !== 'false') {
+    console.log(
+      `MANAGEMENT_DAO_MULTISIG_LISTED_ONLY must be 'true' or 'false'`
+    );
+    return false;
   }
 
-  console.log(
-    `All env vars set, starting installation on network ${hre.network.name}...`
-  );
-  return false;
-  // }
-};
+  // Validate MIN_APPROVALS is a valid number
+
+  if (isNaN(parseInt(minApprovals)) || parseInt(minApprovals) < 1) {
+    console.log(
+      `MANAGEMENT_DAO_MULTISIG_MIN_APPROVALS must be a positive number`
+    );
+    return false;
+  }
+
+  // Validate APPROVERS is a non-empty list
+  if (!approvers || approvers.length === 0) {
+    console.log(
+      `MANAGEMENT_DAO_MULTISIG_APPROVERS must contain at least one valid address`
+    );
+    return false;
+  } else {
+    for (const approver of approvers) {
+      if (!isValidAddress(approver)) {
+        console.log(
+          `${approver} in MANAGEMENT_DAO_MULTISIG_APPROVERS is not a valid address`
+        );
+        return false;
+      }
+    }
+  }
+
+  console.log('All env vars set properly');
+  return true;
+}
