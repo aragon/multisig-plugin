@@ -148,61 +148,61 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         pluginRepo,
         signer
       );
+    }
 
-      // Create the new version
-      const tx = await pluginRepo
-        .connect(signer)
-        .createVersion(
-          VERSION.release,
-          setup.address,
-          ethers.utils.hexlify(ethers.utils.toUtf8Bytes(buildMetadataURI)),
-          ethers.utils.hexlify(ethers.utils.toUtf8Bytes(releaseMetadataURI))
-        );
-
-      await tx.wait();
-
-      const version = await pluginRepo['getLatestVersion(uint8)'](
-        VERSION.release
+    // Create the new version
+    const tx = await pluginRepo
+      .connect(signer)
+      .createVersion(
+        VERSION.release,
+        setup.address,
+        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(buildMetadataURI)),
+        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(releaseMetadataURI))
       );
-      if (VERSION.release !== version.tag.release) {
-        throw Error('something went wrong');
-      }
 
-      console.log(
-        `Published ${PLUGIN_SETUP_CONTRACT_NAME} at ${setup.address} in PluginRepo ${PLUGIN_REPO_ENS_SUBDOMAIN_NAME} at ${pluginRepo.address}.`
-      );
-    } else {
-      // The deployer does not have `MAINTAINER_PERMISSION_ID` permission and we are not deploying to a production network,
-      // so we write the data into a file for a management DAO member to create a proposal from it.
-      const data = {
-        proposalTitle: `Publish '${PLUGIN_CONTRACT_NAME}' plugin v${VERSION.release}.${VERSION.build}`,
-        proposalSummary: `Publishes v${VERSION.release}.${VERSION.build} of the '${PLUGIN_CONTRACT_NAME}' plugin in the '${ensDomain}' plugin repo.`,
-        proposalDescription: `Publishes the '${PLUGIN_SETUP_CONTRACT_NAME}' deployed at '${setup.address}' 
+    await tx.wait();
+
+    const version = await pluginRepo['getLatestVersion(uint8)'](
+      VERSION.release
+    );
+    if (VERSION.release !== version.tag.release) {
+      throw Error('something went wrong');
+    }
+
+    console.log(
+      `Published ${PLUGIN_SETUP_CONTRACT_NAME} at ${setup.address} in PluginRepo ${PLUGIN_REPO_ENS_SUBDOMAIN_NAME} at ${pluginRepo.address}.`
+    );
+  } else {
+    // The deployer does not have `MAINTAINER_PERMISSION_ID` permission and we are not deploying to a production network,
+    // so we write the data into a file for a management DAO member to create a proposal from it.
+    const data = {
+      proposalTitle: `Publish '${PLUGIN_CONTRACT_NAME}' plugin v${VERSION.release}.${VERSION.build}`,
+      proposalSummary: `Publishes v${VERSION.release}.${VERSION.build} of the '${PLUGIN_CONTRACT_NAME}' plugin in the '${ensDomain}' plugin repo.`,
+      proposalDescription: `Publishes the '${PLUGIN_SETUP_CONTRACT_NAME}' deployed at '${setup.address}' 
       as v${VERSION.release}.${VERSION.build} in the '${ensDomain}' plugin repo at '${pluginRepo.address}', 
       with release metadata '${releaseMetadataURI}' and (immutable) build metadata '${buildMetadataURI}'.`,
-        actions: [
-          {
-            to: pluginRepo.address,
-            createVersion: {
-              _release: VERSION.release,
-              _pluginSetup: setup.address,
-              _buildMetadata: ethers.utils.hexlify(
-                ethers.utils.toUtf8Bytes(buildMetadataURI)
-              ),
-              _releaseMetadata: ethers.utils.hexlify(
-                ethers.utils.toUtf8Bytes(releaseMetadataURI)
-              ),
-            },
+      actions: [
+        {
+          to: pluginRepo.address,
+          createVersion: {
+            _release: VERSION.release,
+            _pluginSetup: setup.address,
+            _buildMetadata: ethers.utils.hexlify(
+              ethers.utils.toUtf8Bytes(buildMetadataURI)
+            ),
+            _releaseMetadata: ethers.utils.hexlify(
+              ethers.utils.toUtf8Bytes(releaseMetadataURI)
+            ),
           },
-        ],
-      };
+        },
+      ],
+    };
 
-      const path = `./createVersionProposalData-${hre.network.name}.json`;
-      await writeFile(path, JSON.stringify(data, null, 2));
-      console.log(
-        `Saved data to '${path}'. Use this to create a proposal on the management DAO calling the 'createVersion' function on the ${ensDomain} plugin repo deployed at ${pluginRepo.address}.`
-      );
-    }
+    const path = `./createVersionProposalData-${hre.network.name}.json`;
+    await writeFile(path, JSON.stringify(data, null, 2));
+    console.log(
+      `Saved data to '${path}'. Use this to create a proposal on the management DAO calling the 'createVersion' function on the ${ensDomain} plugin repo deployed at ${pluginRepo.address}.`
+    );
   }
 };
 
