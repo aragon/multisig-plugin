@@ -190,11 +190,6 @@ export async function findPluginRepo(
   }
 }
 
-/**
- * try to get the management dao first
- * 1- env var MANAGEMENT_DAO_ADDRESS
- * 2- commons configs deployments
- */
 export async function getManagementDao(
   hre: HardhatRuntimeEnvironment
 ): Promise<DAO> {
@@ -202,72 +197,31 @@ export async function getManagementDao(
 
   const managementDaoAddress = process.env.MANAGEMENT_DAO_ADDRESS;
 
-  if (managementDaoAddress) {
-    // getting the management DAO from the env var
-    if (!isValidAddress(managementDaoAddress)) {
-      throw new Error(
-        'Management DAO address in .env is not valid address (is not an address or is address zero)'
-      );
-    }
-
-    return DAO__factory.connect(managementDaoAddress, deployer);
+  // getting the management DAO from the env var
+  if (!managementDaoAddress || !isValidAddress(managementDaoAddress)) {
+    throw new Error(
+      'Management DAO address in .env is not defined or is not a valid address (is not an address or is address zero)'
+    );
   }
 
-  // getting the management DAO from the commons configs deployments
-  const productionNetworkName = getProductionNetworkName(hre);
-  const network = getNetworkNameByAlias(productionNetworkName);
-  if (network === null) {
-    throw new UnsupportedNetworkError(productionNetworkName);
-  }
-  const networkDeployments = getLatestNetworkDeployment(network);
-  if (networkDeployments === null) {
-    throw `Deployments are not available on network ${network}.`;
-  }
-
-  return DAO__factory.connect(
-    networkDeployments.ManagementDAOProxy.address,
-    deployer
-  );
+  return DAO__factory.connect(managementDaoAddress, deployer);
 }
 
-/**
- * try to get the plugin repo factory first
- * 1- env var PLUGIN_REPO_FACTORY_ADDRESS
- * 2- commons configs deployments
- */
 export async function getPluginRepoFactory(
   hre: HardhatRuntimeEnvironment
 ): Promise<PluginRepoFactory> {
   const [deployer] = await hre.ethers.getSigners();
 
+  const pluginRepoFactoryAddress = process.env.PLUGIN_REPO_FACTORY_ADDRESS;
+
   // from env var
-  if (process.env.PLUGIN_REPO_FACTORY_ADDRESS) {
-    if (!isValidAddress(process.env.PLUGIN_REPO_FACTORY_ADDRESS)) {
-      throw new Error(
-        'Plugin Repo Factory address in .env is not valid address (is not an address or is address zero)'
-      );
-    }
-    return PluginRepoFactory__factory.connect(
-      process.env.PLUGIN_REPO_FACTORY_ADDRESS,
-      deployer
+  if (!pluginRepoFactoryAddress || !isValidAddress(pluginRepoFactoryAddress)) {
+    throw new Error(
+      'Plugin Repo Factory address in .env is not defined or is not a valid address (is not an address or is address zero)'
     );
   }
 
-  // from commons configs deployments
-  const productionNetworkName = getProductionNetworkName(hre);
-  const network = getNetworkNameByAlias(productionNetworkName);
-  if (network === null) {
-    throw new UnsupportedNetworkError(productionNetworkName);
-  }
-  const networkDeployments = getLatestNetworkDeployment(network);
-  if (networkDeployments === null) {
-    throw `Deployments are not available on network ${network}.`;
-  }
-
-  return PluginRepoFactory__factory.connect(
-    networkDeployments.PluginRepoFactory.address,
-    deployer
-  );
+  return PluginRepoFactory__factory.connect(pluginRepoFactoryAddress, deployer);
 }
 
 export async function impersonatedManagementDaoSigner(
@@ -355,31 +309,6 @@ export async function publishPlaceholderVersion(
       signer
     );
   }
-}
-
-export function getLatestContractAddress(
-  contractName: string,
-  hre: HardhatRuntimeEnvironment
-): string {
-  const networkName = hre.network.name;
-
-  const osxNetworkName = getNetworkByNameOrAlias(networkName);
-  if (!osxNetworkName) {
-    if (isLocal(hre)) {
-      return '';
-    }
-    throw new Error(`Failed to find network ${networkName}`);
-  }
-
-  const latestNetworkDeployment = getLatestNetworkDeployment(
-    osxNetworkName.name
-  );
-  if (latestNetworkDeployment && contractName in latestNetworkDeployment) {
-    // safe cast due to conditional above, but we return the fallback string anyhow
-    const key = contractName as keyof typeof latestNetworkDeployment;
-    return latestNetworkDeployment[key]?.address ?? '';
-  }
-  return '';
 }
 
 export function generateRandomName(length: number): string {

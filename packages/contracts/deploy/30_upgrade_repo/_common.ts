@@ -1,18 +1,11 @@
 import {
   findPluginRepo,
   getProductionNetworkName,
-  isValidAddress,
+  getPluginRepoFactory,
 } from '../../utils/helpers';
-import {
-  getLatestNetworkDeployment,
-  getNetworkNameByAlias,
-} from '@aragon/osx-commons-configs';
+import {getNetworkNameByAlias} from '@aragon/osx-commons-configs';
 import {UnsupportedNetworkError} from '@aragon/osx-commons-sdk';
-import {
-  PluginRepo,
-  PluginRepo__factory,
-  PluginRepoFactory__factory,
-} from '@aragon/osx-ethers';
+import {PluginRepo, PluginRepo__factory} from '@aragon/osx-ethers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
@@ -50,34 +43,13 @@ export async function fetchData(
   );
 
   // Get the latest `PluginRepo` implementation as the upgrade target
-  let latestPluginRepoImplementation;
-  const pluginRepoFactoryAddress = process.env.PLUGIN_REPO_FACTORY_ADDRESS;
+  const pluginRepoFactory = await getPluginRepoFactory(hre);
 
-  if (pluginRepoFactoryAddress) {
-    if (!isValidAddress(pluginRepoFactoryAddress)) {
-      throw new Error(
-        'Plugin Repo Factory in .env is not a valid address (is not an address or is address zero)'
-      );
-    }
+  const latestPluginRepoImplementation = PluginRepo__factory.connect(
+    await pluginRepoFactory.pluginRepoBase(),
+    deployer
+  );
 
-    const pluginRepoFactory = PluginRepoFactory__factory.connect(
-      pluginRepoFactoryAddress,
-      deployer
-    );
-    latestPluginRepoImplementation = PluginRepo__factory.connect(
-      await pluginRepoFactory.pluginRepoBase(),
-      deployer
-    );
-  } else {
-    const networkDeployments = getLatestNetworkDeployment(network);
-    if (networkDeployments === null) {
-      throw `Deployments are not available on network ${network}.`;
-    }
-    latestPluginRepoImplementation = PluginRepo__factory.connect(
-      networkDeployments.PluginRepoBase.address,
-      deployer
-    );
-  }
   // Get the current OSX protocol version from the current plugin repo implementation
   let current: SemVer;
   try {

@@ -2,7 +2,6 @@ import {VERSION, METADATA} from '../../plugin-settings';
 import {
   getManagementDao,
   isValidAddress,
-  getLatestContractAddress,
   findPluginRepo,
   isPermissionSetCorrectly,
 } from '../../utils/helpers';
@@ -48,16 +47,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // Get `PluginSetupProcessor` from env vars or commons config deployment
   let pspAddress;
 
-  if (process.env.PLUGIN_SETUP_PROCESSOR_ADDRESS) {
-    pspAddress = process.env.PLUGIN_SETUP_PROCESSOR_ADDRESS;
-    // getting the psp from the env var
-    if (!isValidAddress(pspAddress)) {
-      throw new Error(
-        'PluginSetupProcessor address in .env is not valid address (is not an address or is address zero)'
-      );
-    }
-  } else {
-    pspAddress = await getLatestContractAddress('PluginSetupProcessor', hre);
+  pspAddress = process.env.PLUGIN_SETUP_PROCESSOR_ADDRESS;
+
+  if (!pspAddress || !isValidAddress(pspAddress)) {
+    throw new Error(
+      'PluginSetupProcessor address in .env is not defined or is not a valid address (is not an address or is address zero)'
+    );
   }
 
   if (!pspAddress) {

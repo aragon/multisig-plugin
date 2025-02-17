@@ -12,7 +12,6 @@ import {
   isLocal,
   pluginEnsDomain,
   publishPlaceholderVersion,
-  getLatestContractAddress,
   isValidAddress,
 } from '../../utils/helpers';
 import {PLUGIN_REPO_PERMISSIONS, uploadToPinata} from '@aragon/osx-commons-sdk';
@@ -132,13 +131,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (latestBuild == 0 && VERSION.build > 1) {
       // We are publishing the first version as build > 1.
       // So we need to publish placeholders first..
-      const placeholderSetup =
-        process.env.PLACEHOLDER_SETUP ??
-        getLatestContractAddress('PlaceholderSetup', hre);
+      const placeholderSetup = process.env.PLACEHOLDER_SETUP;
 
-      if (!isValidAddress(placeholderSetup)) {
+      if (!placeholderSetup || !isValidAddress(placeholderSetup)) {
         throw new Error(
-          'Aborting. Placeholder setup not present in this network or in .env or is not a valid address (is not an address or is address zero)'
+          'Aborting. Placeholder setup not defined in .env or is not a valid address (is not an address or is address zero)'
         );
       }
       await publishPlaceholderVersion(
