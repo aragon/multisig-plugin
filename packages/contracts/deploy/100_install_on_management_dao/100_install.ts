@@ -85,17 +85,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     METADATA.build.pluginSetup.prepareInstallation.inputs
   );
 
-  const data = ethers.utils.defaultAbiCoder.encode(
-    [params[0], params[1]],
-    [
-      approvers,
-      [listedOnly, minApprovals],
-      [ethers.constants.AddressZero, 0], // [target, operation]
-      '0x', // metadata
-    ]
-  );
+  const data = ethers.utils.defaultAbiCoder.encode(params, [
+    approvers,
+    [listedOnly, minApprovals],
+    [ethers.constants.AddressZero, 0], // [target, operation]
+    '0x', // metadata
+  ]);
 
-  console.log('prepare Installation');
   const prepareTx = await pspContract.prepareInstallation(
     managementDAO.address,
     {
@@ -194,7 +190,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // ROOT_PERMISSION permission on the management dao from psp
   // APPLY_INSTALLATION_PERMISSION permission on the PSP from deployer
   // EXECUTE_PERMISSION permission on the management dao from deployer
-
   const permissionsToRevoke: DAOStructs.MultiTargetPermissionStruct[] = [
     {
       operation: Operation.Revoke,
@@ -232,6 +227,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log('Permissions revoked....');
 
   // todo check if the permissions are revoked correctly
+
+  for (const permission of permissionsToRevoke) {
+    const hasPermission = await managementDAO.hasPermission(
+      permission.where,
+      permission.who,
+      permission.permissionId,
+      '0x'
+    );
+    if (hasPermission) {
+      throw new Error(
+        `Permission ${permission.permissionId} not revoked for ${permission.who} on ${permission.where}`
+      );
+    }
+  }
 };
 
 export default func;
