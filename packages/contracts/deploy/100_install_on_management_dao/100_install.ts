@@ -54,10 +54,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
   }
 
-  if (!pspAddress) {
-    throw new Error('PluginSetupProcessor address not found');
-  }
-
   // Get `PluginSetupProcessor` contract.
   const pspContract = PluginSetupProcessor__factory.connect(
     pspAddress,
