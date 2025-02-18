@@ -1,11 +1,14 @@
-import {PLUGIN_REPO_ENS_SUBDOMAIN_NAME} from '../plugin-settings';
+import {
+  PLUGIN_REPO_ENS_SUBDOMAIN_NAME,
+  PLUGIN_REPO_PROXY_NAME,
+} from '../plugin-settings';
 import {
   SupportedNetworks,
-  getLatestNetworkDeployment,
   getNetworkNameByAlias,
   getPluginEnsDomain,
 } from '@aragon/osx-commons-configs';
-import {UnsupportedNetworkError, findEvent} from '@aragon/osx-commons-sdk';
+import {UnsupportedNetworkError} from '@aragon/osx-commons-sdk';
+import {Operation} from '@aragon/osx-commons-sdk';
 import {
   DAO,
   DAO__factory,
@@ -13,12 +16,15 @@ import {
   ENS__factory,
   IAddrResolver__factory,
   PluginRepo,
-  PluginRepoEvents,
+  PluginRepoFactory,
   PluginRepo__factory,
+  PluginRepoFactory__factory,
+  PluginRepoRegistry__factory,
 } from '@aragon/osx-ethers';
 import {setBalance} from '@nomicfoundation/hardhat-network-helpers';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {BigNumber, ContractTransaction} from 'ethers';
+import {BigNumber} from 'ethers';
+import {Contract} from 'ethers';
 import {LogDescription} from 'ethers/lib/utils';
 import {ethers} from 'hardhat';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
@@ -66,28 +72,72 @@ export function pluginEnsDomain(hre: HardhatRuntimeEnvironment): string {
   return `${PLUGIN_REPO_ENS_SUBDOMAIN_NAME}.${pluginEnsDomain}`;
 }
 
+/**
+ * try to get the plugin repo first
+ * 1- env var PLUGIN_REPO_ADDRESS
+ * 2- try to get the latest network deployment
+ * 3- from the commons configs
+ *   - plugin repo factory address from env var
+ */
 export async function findPluginRepo(
   hre: HardhatRuntimeEnvironment
 ): Promise<{pluginRepo: PluginRepo | null; ensDomain: string}> {
   const [deployer] = await hre.ethers.getSigners();
-  const productionNetworkName: string = getProductionNetworkName(hre);
-  const network = getNetworkNameByAlias(productionNetworkName);
-  if (network === null) {
-    throw new UnsupportedNetworkError(productionNetworkName);
+  const ensDomain = pluginEnsDomain(hre);
+
+  // from env var
+  if (process.env.PLUGIN_REPO_ADDRESS) {
+    if (!isValidAddress(process.env.PLUGIN_REPO_ADDRESS)) {
+      throw new Error(
+        'Plugin Repo in .env is not a valid address (is not an address or is address zero)'
+      );
+    }
+
+    return {
+      pluginRepo: PluginRepo__factory.connect(
+        process.env.PLUGIN_REPO_ADDRESS,
+        deployer
+      ),
+      ensDomain,
+    };
   }
-  const networkDeployments = getLatestNetworkDeployment(network);
-  if (networkDeployments === null) {
-    throw `Deployments are not available on network ${network}.`;
+
+  // from deployments
+  const pluginRepo = await hre.deployments.getOrNull(PLUGIN_REPO_PROXY_NAME);
+  if (pluginRepo) {
+    console.log(
+      'using the plugin repo from the deployments',
+      pluginRepo.address
+    );
+    return {
+      pluginRepo: PluginRepo__factory.connect(pluginRepo.address, deployer),
+      ensDomain,
+    };
+  }
+
+  // get ENS registrar from the plugin factory provided
+  const pluginRepoFactory = await getPluginRepoFactory(hre);
+
+  const pluginRepoRegistry = PluginRepoRegistry__factory.connect(
+    await pluginRepoFactory.pluginRepoRegistry(),
+    deployer
+  );
+
+  const subdomainRegistrarAddress =
+    await pluginRepoRegistry.subdomainRegistrar();
+
+  if (subdomainRegistrarAddress === ethers.constants.AddressZero) {
+    // the network does not support ENS and the plugin repo could not be found by env var or deployments
+    return {pluginRepo: null, ensDomain: ''};
   }
 
   const registrar = ENSSubdomainRegistrar__factory.connect(
-    networkDeployments.PluginENSSubdomainRegistrarProxy.address,
+    subdomainRegistrarAddress,
     deployer
   );
 
   // Check if the ens record exists already
   const ens = ENS__factory.connect(await registrar.ens(), deployer);
-  const ensDomain = pluginEnsDomain(hre);
   const node = ethers.utils.namehash(ensDomain);
   const recordExists = await ens.recordExists(node);
 
@@ -114,40 +164,34 @@ export async function getManagementDao(
   hre: HardhatRuntimeEnvironment
 ): Promise<DAO> {
   const [deployer] = await hre.ethers.getSigners();
-  const productionNetworkName = getProductionNetworkName(hre);
-  const network = getNetworkNameByAlias(productionNetworkName);
-  if (network === null) {
-    throw new UnsupportedNetworkError(productionNetworkName);
-  }
-  const networkDeployments = getLatestNetworkDeployment(network);
-  if (networkDeployments === null) {
-    throw `Deployments are not available on network ${network}.`;
+
+  const managementDaoAddress = process.env.MANAGEMENT_DAO_ADDRESS;
+
+  // getting the management DAO from the env var
+  if (!managementDaoAddress || !isValidAddress(managementDaoAddress)) {
+    throw new Error(
+      'Management DAO address in .env is not defined or is not a valid address (is not an address or is address zero)'
+    );
   }
 
-  return DAO__factory.connect(
-    networkDeployments.ManagementDAOProxy.address,
-    deployer
-  );
+  return DAO__factory.connect(managementDaoAddress, deployer);
 }
 
-export async function getManagementDaoMultisig(
+export async function getPluginRepoFactory(
   hre: HardhatRuntimeEnvironment
-): Promise<DAO> {
+): Promise<PluginRepoFactory> {
   const [deployer] = await hre.ethers.getSigners();
-  const productionNetworkName = getProductionNetworkName(hre);
-  const network = getNetworkNameByAlias(productionNetworkName);
-  if (network === null) {
-    throw new UnsupportedNetworkError(productionNetworkName);
-  }
-  const networkDeployments = getLatestNetworkDeployment(network);
-  if (networkDeployments === null) {
-    throw `Deployments are not available on network ${network}.`;
+
+  const pluginRepoFactoryAddress = process.env.PLUGIN_REPO_FACTORY_ADDRESS;
+
+  // from env var
+  if (!pluginRepoFactoryAddress || !isValidAddress(pluginRepoFactoryAddress)) {
+    throw new Error(
+      'Plugin Repo Factory address in .env is not defined or is not a valid address (is not an address or is address zero)'
+    );
   }
 
-  return DAO__factory.connect(
-    networkDeployments.ManagementDAOProxy.address,
-    deployer
-  );
+  return PluginRepoFactory__factory.connect(pluginRepoFactoryAddress, deployer);
 }
 
 export async function impersonatedManagementDaoSigner(
@@ -197,49 +241,44 @@ export type LatestVersion = {
   buildMetadata: string;
 };
 
-export async function createVersion(
-  pluginRepoContract: string,
-  pluginSetupContract: string,
-  releaseNumber: number,
-  releaseMetadata: string,
-  buildMetadata: string
-): Promise<ContractTransaction> {
-  const signers = await ethers.getSigners();
-
-  const PluginRepo = new PluginRepo__factory(signers[0]);
-  const pluginRepo = PluginRepo.attach(pluginRepoContract);
-
-  const tx = await pluginRepo.createVersion(
-    releaseNumber,
-    pluginSetupContract,
-    buildMetadata,
-    releaseMetadata
-  );
-
-  console.log(`Creating build for release ${releaseNumber} with tx ${tx.hash}`);
-
-  const versionCreatedEvent = findEvent<PluginRepoEvents.VersionCreatedEvent>(
-    await tx.wait(),
-    pluginRepo.interface.events['VersionCreated(uint8,uint16,address,bytes)']
-      .name
-  );
-
-  // Check if versionCreatedEvent is not undefined
-  if (versionCreatedEvent) {
-    console.log(
-      `Created build ${versionCreatedEvent.args.build} for release ${
-        versionCreatedEvent.args.release
-      } with setup address: ${
-        versionCreatedEvent.args.pluginSetup
-      }, with build metadata ${ethers.utils.toUtf8String(
-        buildMetadata
-      )} and release metadata ${ethers.utils.toUtf8String(releaseMetadata)}`
+async function createVersion(
+  pluginRepo: PluginRepo,
+  release: number,
+  setup: string,
+  releaseMetadataURI: string,
+  buildMetadataURI: string,
+  signer: SignerWithAddress
+) {
+  const tx = await pluginRepo
+    .connect(signer)
+    .createVersion(
+      release,
+      setup,
+      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(buildMetadataURI)),
+      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(releaseMetadataURI))
     );
-  } else {
-    // Handle the case where the event is not found
-    throw new Error('Failed to get VersionCreatedEvent event log');
+
+  await tx.wait();
+}
+
+export async function publishPlaceholderVersion(
+  placeholderSetup: string,
+  versionBuild: number,
+  versionRelease: number,
+  pluginRepo: PluginRepo,
+  signer: any
+) {
+  for (let i = 0; i < versionBuild - 1; i++) {
+    console.log('Publishing placeholder', i + 1);
+    await createVersion(
+      pluginRepo,
+      versionRelease,
+      placeholderSetup,
+      `{}`,
+      'placeholder-setup-build',
+      signer
+    );
   }
-  return tx;
 }
 
 export function generateRandomName(length: number): string {
@@ -251,6 +290,56 @@ export function generateRandomName(length: number): string {
     );
   }
   return result;
+}
+
+export function isValidAddress(address: string): boolean {
+  // check if the address is valid and not zero address
+  return (
+    ethers.utils.isAddress(address) && address !== ethers.constants.AddressZero
+  );
+}
+
+export async function frameworkSupportsENS(
+  pluginRepoFactory: PluginRepoFactory
+): Promise<boolean> {
+  const [deployer] = await ethers.getSigners();
+  const pluginRepoRegistry = PluginRepoRegistry__factory.connect(
+    await pluginRepoFactory.pluginRepoRegistry(),
+    deployer
+  );
+  const subdomainRegistrar = await pluginRepoRegistry.subdomainRegistrar();
+
+  return subdomainRegistrar !== ethers.constants.AddressZero;
+}
+
+export type Permission = {
+  operation: Operation;
+  where: {name: string; address: string};
+  who: {name: string; address: string};
+  permission: string;
+  condition?: string;
+  data?: string;
+};
+
+export async function isPermissionSetCorrectly(
+  permissionManagerContract: Contract,
+  {operation, where, who, permission, data = '0x'}: Permission
+): Promise<boolean> {
+  const permissionId = ethers.utils.id(permission);
+  const isGranted = await permissionManagerContract.isGranted(
+    where.address,
+    who.address,
+    permissionId,
+    data
+  );
+  if (!isGranted && operation === Operation.Grant) {
+    return false;
+  }
+
+  if (isGranted && operation === Operation.Revoke) {
+    return false;
+  }
+  return true;
 }
 
 export const AragonOSxAsciiArt =
