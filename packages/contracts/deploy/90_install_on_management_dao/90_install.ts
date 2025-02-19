@@ -92,9 +92,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     {
       pluginSetupRef,
       data,
-    },
-    {
-      gasLimit: 30000000,
     }
   );
 
@@ -111,6 +108,39 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log(
     `Prepared (Multisig: ${installationPreparedEvent.plugin} version (release: ${VERSION.release} / build: ${VERSION.build}) to be applied on (ManagementDAO: ${managementDAO.address}), see (tx: ${prepareTx.hash})`
   );
+
+  //////////////////////////
+  // Prepare the Action to grant ROOT permission to the deployer
+  const grantRootPermissionData = managementDAO.interface.encodeFunctionData(
+    'grant',
+    [
+      managementDAO.address,
+      deployer.address,
+      DAO_PERMISSIONS.ROOT_PERMISSION_ID,
+    ]
+  );
+
+  const actions: DAOStructs.ActionStruct[] = [
+    {
+      to: managementDAO.address, // Call the DAO itself
+      value: 0, // No ETH sent
+      data: grantRootPermissionData, // Encoded call to `grant`
+    },
+  ];
+
+  // Execute the transaction via DAO
+  const executeTx = await managementDAO.execute(
+    keccak256(ethers.utils.toUtf8Bytes('grant_root_permission')), // Unique call ID
+    actions,
+    0 // Allow failure map (0 means no failures allowed)
+  );
+
+  await executeTx.wait();
+
+  console.log(
+    `Granted ROOT permission to deployer (${deployer.address}) on ManagementDAO (${managementDAO.address}), see tx: ${executeTx.hash}`
+  );
+  //////////////////////////
 
   // grant
   // ROOT_PERMISSION on the management dao to the PSP
@@ -136,20 +166,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await managementDAO.applyMultiTargetPermissions(permissionsToGrant);
 
   // Apply multisig plugin to the managementDAO
-  const applyTx = await pspContract.applyInstallation(
-    managementDAO.address,
-    {
-      helpersHash: hashHelpers(
-        installationPreparedEvent.preparedSetupData.helpers
-      ),
-      permissions: installationPreparedEvent.preparedSetupData.permissions,
-      plugin: installationPreparedEvent.plugin,
-      pluginSetupRef,
-    },
-    {
-      gasLimit: 30000000,
-    }
-  );
+  const applyTx = await pspContract.applyInstallation(managementDAO.address, {
+    helpersHash: hashHelpers(
+      installationPreparedEvent.preparedSetupData.helpers
+    ),
+    permissions: installationPreparedEvent.preparedSetupData.permissions,
+    plugin: installationPreparedEvent.plugin,
+    pluginSetupRef,
+  });
   await applyTx.wait();
 
   const multisigPluginPermission = {
