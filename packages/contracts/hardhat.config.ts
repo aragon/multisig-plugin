@@ -193,6 +193,7 @@ const config: HardhatUserConfig = {
         // Not including the metadata hash
         // https://github.com/paulrberg/hardhat-template/issues/31
         bytecodeHash: 'none',
+        useLiteralContent: true,
       },
       // Disable the optimizer when debugging
       // https://hardhat.org/hardhat-network/#solidity-optimizer-support
