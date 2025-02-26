@@ -92,9 +92,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     {
       pluginSetupRef,
       data,
-    },
-    {
-      gasLimit: 30000000,
     }
   );
 
@@ -133,23 +130,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     },
   ];
 
-  await managementDAO.applyMultiTargetPermissions(permissionsToGrant);
+  const applyPermissionTx = await managementDAO.applyMultiTargetPermissions(
+    permissionsToGrant
+  );
+  await applyPermissionTx.wait();
 
   // Apply multisig plugin to the managementDAO
-  const applyTx = await pspContract.applyInstallation(
-    managementDAO.address,
-    {
-      helpersHash: hashHelpers(
-        installationPreparedEvent.preparedSetupData.helpers
-      ),
-      permissions: installationPreparedEvent.preparedSetupData.permissions,
-      plugin: installationPreparedEvent.plugin,
-      pluginSetupRef,
-    },
-    {
-      gasLimit: 30000000,
-    }
-  );
+  const applyTx = await pspContract.applyInstallation(managementDAO.address, {
+    helpersHash: hashHelpers(
+      installationPreparedEvent.preparedSetupData.helpers
+    ),
+    permissions: installationPreparedEvent.preparedSetupData.permissions,
+    plugin: installationPreparedEvent.plugin,
+    pluginSetupRef,
+  });
   await applyTx.wait();
 
   const multisigPluginPermission = {
@@ -184,15 +178,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // ROOT_PERMISSION permission on the management dao from deployer
   // ROOT_PERMISSION permission on the management dao from psp
   // APPLY_INSTALLATION_PERMISSION permission on the PSP from deployer
-  // EXECUTE_PERMISSION permission on the management dao from deployer
   const permissionsToRevoke: DAOStructs.MultiTargetPermissionStruct[] = [
-    {
-      operation: Operation.Revoke,
-      where: managementDAO.address,
-      who: deployer.address,
-      condition: ethers.constants.AddressZero,
-      permissionId: DAO_PERMISSIONS.ROOT_PERMISSION_ID,
-    },
     {
       operation: Operation.Revoke,
       where: managementDAO.address,
@@ -213,11 +199,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       where: managementDAO.address,
       who: deployer.address,
       condition: ethers.constants.AddressZero,
-      permissionId: DAO_PERMISSIONS.EXECUTE_PERMISSION_ID,
+      permissionId: DAO_PERMISSIONS.ROOT_PERMISSION_ID,
     },
   ];
 
-  await managementDAO.applyMultiTargetPermissions(permissionsToRevoke);
+  const revokePermissionsTx = await managementDAO.applyMultiTargetPermissions(
+    permissionsToRevoke
+  );
+  await revokePermissionsTx.wait();
 
   console.log('Permissions revoked....');
 
