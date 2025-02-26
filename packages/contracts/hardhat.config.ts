@@ -128,10 +128,6 @@ const config: HardhatUserConfig = {
   namedAccounts,
   networks: {
     hardhat: {
-      forking: {
-        url: 'https://mpfn1.peaq.network',
-        blockNumber: 3936303,
-      },
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       blockGasLimit: BigNumber.from(10).pow(6).mul(300).toNumber(), // 300 million, really high to test some things that are only possible with a higher block gas limit
