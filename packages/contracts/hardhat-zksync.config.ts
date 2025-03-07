@@ -19,8 +19,10 @@ import 'solidity-coverage';
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || '../../.env';
 dotenvConfig({path: resolve(__dirname, dotenvConfigPath), override: true});
 
-const ETH_KEY = process.env.ETH_KEY;
-const accounts = ETH_KEY ? ETH_KEY.split(',') : [];
+// Fetch the accounts specified in the .env file
+function specifiedAccounts(): string[] {
+  return process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.split(',') : [];
+}
 
 // check alchemy Api key existence
 
@@ -56,7 +58,7 @@ task('compile').setAction(async (args, hre, runSuper) => {
 task('deploy-contracts')
   .addOptionalParam('tags', 'Specify which tags to deploy')
   .setAction(async (args, hre) => {
-    await hre.run('build-contracts');
+    await hre.run('compile');
     await hre.run('deploy', {
       tags: args.tags,
     });
@@ -102,7 +104,7 @@ const config: HardhatUserConfig = {
       url: 'http://127.0.0.1:8011',
       ethNetwork: 'http://127.0.0.1:8545',
       zksync: true,
-      deploy: ['./deploy/new'],
+      deploy: ['./deploy'],
       gas: 15000000,
       blockGasLimit: 30000000,
       accounts: RichAccounts,
@@ -114,7 +116,7 @@ const config: HardhatUserConfig = {
       verifyURL:
         'https://explorer.sepolia.era.zksync.dev/contract_verification',
       deploy: ['./deploy'],
-      accounts: accounts,
+      accounts: specifiedAccounts(),
       forceDeploy: true,
     },
     zksyncMainnet: {
@@ -124,7 +126,7 @@ const config: HardhatUserConfig = {
       verifyURL:
         'https://zksync2-mainnet-explorer.zksync.io/contract_verification',
       deploy: ['./deploy'],
-      accounts: accounts,
+      accounts: specifiedAccounts(),
       forceDeploy: true,
     },
   },
