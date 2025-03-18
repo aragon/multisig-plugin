@@ -29,7 +29,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     deployer
   );
   // Get the plugin implementation address
-  const implementationAddress = await setup.implementation()
+  const implementationAddress = await setup.implementation();
 
   const res = await deploy(LISTED_CHECK_CONDITION_CONTRACT_NAME, {
     from: deployer.address,
