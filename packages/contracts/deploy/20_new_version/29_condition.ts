@@ -9,7 +9,7 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import path from 'path';
 
 /**
- * Deploys the plugin setup contract with the plugin implementation inside.
+ * Deploys the listed check condition contract.
  * @param {HardhatRuntimeEnvironment} hre
  */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
