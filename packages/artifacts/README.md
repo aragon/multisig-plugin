@@ -50,6 +50,16 @@ Clone [OSx Commons](https://github.com/aragon/osx-commons) in a folder next to t
 yarn sync-addresses
 ```
 
+### Publishing
+
+- Access the repo's GitHub Actions panel
+- Click on "Publish Artifacts"
+- Select the corresponding `release-v*` branch as the source
+
+This action will:
+- Create a git tag like `v1.2`, following [package.json](./package.json)'s version field
+- Publish the package to NPM
+
 ## Documentation
 
 You can find all documentation regarding how to use this plugin in [Aragon's documentation here](https://docs.aragon.org/multisig/1.x/index.html).
