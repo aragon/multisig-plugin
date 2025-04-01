@@ -41,6 +41,15 @@ The `build` script will:
 4. Generate their ABI.
 5. Extract their ABI and embed it into on `src/abi.ts`.
 
+### Syncing the deployment addresses
+
+Clone [OSx Commons](https://github.com/aragon/osx-commons) in a folder next to this repo.
+
+```sh
+# cd packages/artifacts
+yarn sync-addresses
+```
+
 ## Documentation
 
 You can find all documentation regarding how to use this plugin in [Aragon's documentation here](https://docs.aragon.org/multisig/1.x/index.html).

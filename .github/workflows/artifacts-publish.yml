@@ -1,4 +1,4 @@
-name: Publish NPM Artifacts
+name: Publish Artifacts
 
 on:
   workflow_dispatch:
@@ -42,7 +42,7 @@ jobs:
       - name: Install Dependencies
         run: |
           cd packages/artifacts
-          yarn install
+          yarn install --ignore-scripts
 
       - name: Build Package
         env:
