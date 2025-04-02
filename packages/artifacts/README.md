@@ -21,7 +21,7 @@ import {
 import { addresses } from "@aragon/multisig-plugin-artifacts";
 ```
 
-You can also open [addresses.json](./src/addresses.json) directly.
+You can also open [addresses.json](https://github.com/aragon/multisig-plugin/blob/main/packages/artifacts/src/addresses.json) directly.
 
 ## Development
 
