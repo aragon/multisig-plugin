@@ -237,7 +237,7 @@ contract Multisig is
     /// @dev Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
     function addAddresses(
         address[] calldata _members
-    ) external auth(UPDATE_MULTISIG_SETTINGS_PERMISSION_ID) {
+    ) public virtual auth(UPDATE_MULTISIG_SETTINGS_PERMISSION_ID) {
         uint256 newAddresslistLength = addresslistLength() + _members.length;
 
         // Check if the new address list length would be greater than `type(uint16).max`, the maximal number of
@@ -258,7 +258,7 @@ contract Multisig is
     /// @dev Requires the `UPDATE_MULTISIG_SETTINGS_PERMISSION_ID` permission.
     function removeAddresses(
         address[] calldata _members
-    ) external auth(UPDATE_MULTISIG_SETTINGS_PERMISSION_ID) {
+    ) public virtual auth(UPDATE_MULTISIG_SETTINGS_PERMISSION_ID) {
         uint16 newAddresslistLength = uint16(addresslistLength() - _members.length);
 
         // Check if the new address list length would become less than the current minimum number of approvals required.
@@ -279,7 +279,7 @@ contract Multisig is
     /// @param _multisigSettings The new settings.
     function updateMultisigSettings(
         MultisigSettings calldata _multisigSettings
-    ) external auth(UPDATE_MULTISIG_SETTINGS_PERMISSION_ID) {
+    ) public virtual auth(UPDATE_MULTISIG_SETTINGS_PERMISSION_ID) {
         _updateMultisigSettings(_multisigSettings);
     }
 
@@ -305,7 +305,7 @@ contract Multisig is
         bool _tryExecution,
         uint64 _startDate,
         uint64 _endDate
-    ) public auth(CREATE_PROPOSAL_PERMISSION_ID) returns (uint256 proposalId) {
+    ) public virtual auth(CREATE_PROPOSAL_PERMISSION_ID) returns (uint256 proposalId) {
         uint64 snapshotBlock;
         unchecked {
             // The snapshot block must be mined already to protect the transaction against backrunning transactions
@@ -380,7 +380,7 @@ contract Multisig is
         uint64 _startDate,
         uint64 _endDate,
         bytes memory _data
-    ) external override returns (uint256 proposalId) {
+    ) public virtual override returns (uint256 proposalId) {
         // Custom parameters
         uint256 _allowFailureMap;
         bool _approveProposal;
@@ -406,7 +406,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IProposal
-    function customProposalParamsABI() external pure override returns (string memory) {
+    function customProposalParamsABI() public pure virtual override returns (string memory) {
         return "(uint256 allowFailureMap, bool approveProposal, bool tryExecution)";
     }
 
@@ -415,7 +415,7 @@ contract Multisig is
     ///      Execution will only proceed if the proposal is no longer open, the minimum approval requirements are met,
     ///      and the caller has been granted execution permission. If execution conditions are not met,
     ///      the function does not revert.
-    function approve(uint256 _proposalId, bool _tryExecution) public {
+    function approve(uint256 _proposalId, bool _tryExecution) public virtual {
         address approver = _msgSender();
         if (!_canApprove(_proposalId, approver)) {
             revert ApprovalCastForbidden(_proposalId, approver);
@@ -447,7 +447,7 @@ contract Multisig is
 
     /// @inheritdoc IMultisig
     /// @dev Reverts if the proposal with the given `_proposalId` does not exist.
-    function canApprove(uint256 _proposalId, address _account) external view returns (bool) {
+    function canApprove(uint256 _proposalId, address _account) public view virtual returns (bool) {
         if (!_proposalExists(_proposalId)) {
             revert NonexistentProposal(_proposalId);
         }
@@ -459,7 +459,7 @@ contract Multisig is
     /// @dev Reverts if the proposal with the given `_proposalId` does not exist.
     function canExecute(
         uint256 _proposalId
-    ) external view virtual override(IMultisig, IProposal) returns (bool) {
+    ) public view virtual override(IMultisig, IProposal) returns (bool) {
         if (!_proposalExists(_proposalId)) {
             revert NonexistentProposal(_proposalId);
         }
@@ -468,7 +468,7 @@ contract Multisig is
     }
 
     /// @inheritdoc IProposal
-    function hasSucceeded(uint256 _proposalId) external view virtual override returns (bool) {
+    function hasSucceeded(uint256 _proposalId) public view virtual override returns (bool) {
         if (!_proposalExists(_proposalId)) {
             revert NonexistentProposal(_proposalId);
         }
@@ -493,6 +493,7 @@ contract Multisig is
     )
         public
         view
+        virtual
         returns (
             bool executed,
             uint16 approvals,
@@ -515,7 +516,7 @@ contract Multisig is
     /// @inheritdoc IMultisig
     /// @dev May return false if the `_proposalId` or `_account` do not exist,
     ///     as the function does not verify their existence.
-    function hasApproved(uint256 _proposalId, address _account) public view returns (bool) {
+    function hasApproved(uint256 _proposalId, address _account) public view virtual returns (bool) {
         return proposals[_proposalId].approvers[_account];
     }
 
@@ -524,7 +525,7 @@ contract Multisig is
     /// @dev Reverts if the proposal is still open or if the minimum approval threshold has not been met.
     function execute(
         uint256 _proposalId
-    ) public override(IMultisig, IProposal) auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
+    ) public virtual override(IMultisig, IProposal) auth(EXECUTE_PROPOSAL_PERMISSION_ID) {
         if (!_canExecute(_proposalId)) {
             revert ProposalExecutionForbidden(_proposalId);
         }
@@ -533,14 +534,14 @@ contract Multisig is
     }
 
     /// @inheritdoc IMembership
-    function isMember(address _account) external view returns (bool) {
+    function isMember(address _account) public view virtual returns (bool) {
         return isListed(_account);
     }
 
     /// @notice Internal function to execute a proposal.
     /// @dev It assumes the queried proposal exists.
     /// @param _proposalId The ID of the proposal.
-    function _execute(uint256 _proposalId) internal {
+    function _execute(uint256 _proposalId) internal virtual {
         Proposal storage proposal_ = proposals[_proposalId];
 
         proposal_.executed = true;
@@ -569,7 +570,7 @@ contract Multisig is
     /// @param _proposalId The ID of the proposal.
     /// @param _account The account to check.
     /// @return Returns `true` if the given account can approve on a certain proposal and `false` otherwise.
-    function _canApprove(uint256 _proposalId, address _account) internal view returns (bool) {
+    function _canApprove(uint256 _proposalId, address _account) internal view virtual returns (bool) {
         Proposal storage proposal_ = proposals[_proposalId];
 
         if (!_isProposalOpen(proposal_)) {
@@ -594,7 +595,7 @@ contract Multisig is
     /// @dev It assumes the queried proposal exists.
     /// @param _proposalId The ID of the proposal.
     /// @return Returns `true` if the proposal can be executed and `false` otherwise.
-    function _canExecute(uint256 _proposalId) internal view returns (bool) {
+    function _canExecute(uint256 _proposalId) internal view virtual returns (bool) {
         Proposal storage proposal_ = proposals[_proposalId];
 
         // Verify that the proposal has not been executed or expired.
@@ -618,7 +619,7 @@ contract Multisig is
 
     /// @notice Internal function to update the plugin settings.
     /// @param _multisigSettings The new settings.
-    function _updateMultisigSettings(MultisigSettings calldata _multisigSettings) internal {
+    function _updateMultisigSettings(MultisigSettings calldata _multisigSettings) internal virtual {
         uint16 addresslistLength_ = uint16(addresslistLength());
 
         if (_multisigSettings.minApprovals > addresslistLength_) {
