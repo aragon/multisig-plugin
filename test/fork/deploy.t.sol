@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.28;
 
+import {Vm} from "forge-std/Vm.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {AddrResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/AddrResolver.sol";
 
@@ -55,6 +56,20 @@ contract Deploy_ForkTest is ForkBaseTest {
         for (uint256 i; i < 3; ++i) {
             assertTrue(repo.isGranted(address(repo), managementDao, ids[i], ""), "management DAO");
             assertFalse(repo.isGranted(address(repo), address(deploy), ids[i], ""), "deployer");
+        }
+    }
+
+    function test_WhenDeployingWithoutAnEnsSubdomain() external {
+        // it should register the repo without creating any ENS record.
+        address ens = address(factory.pluginRepoRegistry().subdomainRegistrar().ens());
+        vm.recordLogs();
+        vm.prank(address(deploy));
+        PluginRepo repo = factory.createPluginRepo("", address(deploy));
+
+        assertTrue(factory.pluginRepoRegistry().entries(address(repo)), "registered");
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        for (uint256 i; i < logs.length; ++i) {
+            assertTrue(logs[i].emitter != ens, "no ENS registry event");
         }
     }
 

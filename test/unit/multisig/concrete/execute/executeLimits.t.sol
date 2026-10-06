@@ -102,6 +102,8 @@ contract ExecuteLimits_Multisig_UnitTest is BaseTest {
         // it should accept it and emit it in full.
         bytes memory metadata = new bytes(20_000);
         for (uint256 i; i < metadata.length; ++i) {
+            // Wrapping is intended: any byte pattern will do.
+            // forge-lint: disable-next-line(unsafe-typecast)
             metadata[i] = bytes1(uint8(i));
         }
         Action[] memory actionList = _actions(1);

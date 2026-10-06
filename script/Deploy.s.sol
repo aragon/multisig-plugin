@@ -59,14 +59,11 @@ contract Deploy is BaseScript {
         _writeArtifact(managementDao, address(multisigSetup), multisigSetup.implementation());
     }
 
-    /// @dev `MULTISIG_ENS_SUBDOMAIN` for production ("multisig"); a unique name otherwise, so that
-    ///      test deployments never collide with the canonical one.
+    /// @dev `MULTISIG_ENS_SUBDOMAIN` ("multisig" in production). Empty or unset: the repo is registered
+    ///      without an ENS name.
     function _ensSubdomain() internal view returns (string memory subdomain) {
         subdomain = vm.envOr("MULTISIG_ENS_SUBDOMAIN", string(""));
-        if (bytes(subdomain).length == 0) {
-            subdomain = string.concat("multisig-", vm.toString(block.timestamp));
-        }
-        console.log("- ENS subdomain:        ", subdomain);
+        console.log("- ENS subdomain:        ", bytes(subdomain).length == 0 ? "(none)" : subdomain);
     }
 
     /// @dev Fills builds `1..VERSION_BUILD - 1` with a placeholder so that build numbers are the same

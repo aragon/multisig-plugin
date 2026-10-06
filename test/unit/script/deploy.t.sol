@@ -138,6 +138,19 @@ contract Deploy_Script_UnitTest is Test {
         assertEq(vm.indexOf(PluginSettings.PLACEHOLDER_BUILD_METADATA, "ipfs://"), 0, "placeholder");
     }
 
+    function test_WhenNoEnsSubdomainIsSet() external {
+        // it should use no ENS name (the registry skips ENS for an empty subdomain).
+        vm.setEnv("MULTISIG_ENS_SUBDOMAIN", "");
+        assertEq(deploy.exposed_ensSubdomain(), "", "empty");
+    }
+
+    function test_WhenAnEnsSubdomainIsSet() external {
+        // it should use it as is.
+        vm.setEnv("MULTISIG_ENS_SUBDOMAIN", "multisig");
+        assertEq(deploy.exposed_ensSubdomain(), "multisig", "subdomain");
+        vm.setEnv("MULTISIG_ENS_SUBDOMAIN", "");
+    }
+
     function test_WhenWritingTheArtifact() external {
         // it should write the artifacts-hub envelope with the deployed addresses.
         vm.setEnv("NETWORK_NAME", "unit-test");

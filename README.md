@@ -80,7 +80,7 @@ just pre-new-version # simulate NewVersion.s.sol
 just new-version     # existing repo: deploys the setup, prints the management DAO proposal
 ```
 
-- `Deploy.s.sol` creates the plugin repo (ENS subdomain `MULTISIG_ENS_SUBDOMAIN`, set it to `multisig` in production; a unique `multisig-<timestamp>` otherwise), publishes `PlaceholderSetup` builds below `VERSION_BUILD` so that build numbers match every other network, publishes `MultisigSetup` as `VERSION_BUILD`, and hands ROOT, MAINTAINER and UPGRADE_REPO over to the management DAO.
+- `Deploy.s.sol` creates the plugin repo (ENS subdomain `MULTISIG_ENS_SUBDOMAIN`: `multisig` in production; no ENS name when unset), publishes `PlaceholderSetup` builds below `VERSION_BUILD` so that build numbers match every other network, publishes `MultisigSetup` as `VERSION_BUILD`, and hands ROOT, MAINTAINER and UPGRADE_REPO over to the management DAO.
 - `NewVersion.s.sol` deploys `MultisigSetup` and prints the `createVersion` action(s) for `MULTISIG_PLUGIN_REPO_ADDRESS`, wrapped in a `createProposal` call for `MANAGEMENT_DAO_MULTISIG_ADDRESS`. Any member of the management DAO multisig submits it.
 
 Both scripts write `artifacts/artifacts-<network>-<timestamp>.json` for artifacts-hub (`just import-plugin <file>` there). For `NewVersion`, import it only after the proposal has executed.

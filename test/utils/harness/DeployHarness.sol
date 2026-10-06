@@ -11,6 +11,10 @@ contract DeployHarness is Deploy {
         _requireMetadata();
     }
 
+    function exposed_ensSubdomain() external view returns (string memory) {
+        return _ensSubdomain();
+    }
+
     function exposed_publish(
         PluginRepo _repo,
         address _setup,
