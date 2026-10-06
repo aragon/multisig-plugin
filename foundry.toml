@@ -6,7 +6,13 @@ solc = "0.8.28"
 evm_version = "cancun"
 optimizer = true
 optimizer_runs = 200
-fs_permissions = [{ access = "write", path = "./artifacts" }]
+fs_permissions = [
+    { access = "write", path = "./artifacts" },
+    # test/unit/metadata checks that the published metadata matches what the contracts decode
+    { access = "read", path = "./script/metadata" },
+]
+# Tests deploy type(uint16).max members in one call (~3.3B gas, see MIGRATION.md F16)
+gas_limit = 50073741824
 extra_output = ["storageLayout"]
 gas_reports = ["Multisig", "MultisigSetup", "ListedCheckCondition"]
 
