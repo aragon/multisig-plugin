@@ -152,11 +152,12 @@ contract Deploy_Script_UnitTest is Test {
     }
 
     function test_WhenWritingTheArtifact() external {
-        // it should write the artifacts-hub envelope with the deployed addresses.
+        // it should record every published build: placeholders flagged, without implementation or current;
+        // the real build last, with its implementation and current.
         vm.setEnv("NETWORK_NAME", "unit-test");
         vm.setEnv("SIMULATION", "false");
-        address implementation = setup.implementation();
-        deploy.exposed_writeArtifact(repo, managementDao, address(setup), implementation);
+        deploy.exposed_publish(repo, address(setup), BUILD_METADATA, RELEASE_METADATA);
+        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_publishedVersions(address(setup)));
 
         string memory path =
             string.concat(vm.projectRoot(), "/artifacts/artifacts-unit-test-", vm.toString(block.timestamp), ".json");
@@ -169,18 +170,39 @@ contract Deploy_Script_UnitTest is Test {
         assertEq(vm.parseJsonAddress(json, ".plugin.repo"), address(repo), "repo");
         assertEq(vm.parseJsonString(json, ".plugin.ens"), "multisig.plugin.dao.eth", "ens");
         assertEq(vm.parseJsonAddress(json, ".plugin.maintainer"), managementDao, "maintainer");
-        assertEq(vm.parseJsonUint(json, ".plugin.versions[0].release"), PluginSettings.VERSION_RELEASE, "release");
-        assertEq(vm.parseJsonUint(json, ".plugin.versions[0].build"), PluginSettings.VERSION_BUILD, "build");
-        assertEq(vm.parseJsonAddress(json, ".plugin.versions[0].setup"), address(setup), "setup");
-        assertEq(vm.parseJsonAddress(json, ".plugin.versions[0].implementation"), implementation, "implementation");
-        assertTrue(vm.parseJsonBool(json, ".plugin.versions[0].current"), "current");
+
+        for (uint16 b = 1; b <= PluginSettings.VERSION_BUILD; ++b) {
+            string memory v = string.concat(".plugin.versions[", vm.toString(uint256(b - 1)), "]");
+            assertEq(vm.parseJsonUint(json, string.concat(v, ".release")), PluginSettings.VERSION_RELEASE, "release");
+            assertEq(vm.parseJsonUint(json, string.concat(v, ".build")), b, "build");
+            assertEq(vm.parseJsonAddress(json, string.concat(v, ".setup")), _setupOf(b), "setup as published");
+            if (b < PluginSettings.VERSION_BUILD) {
+                assertTrue(vm.parseJsonBool(json, string.concat(v, ".placeholder")), "placeholder flag");
+                assertFalse(vm.keyExistsJson(json, string.concat(v, ".implementation")), "no implementation");
+                assertFalse(vm.keyExistsJson(json, string.concat(v, ".current")), "never current");
+            } else {
+                assertFalse(vm.keyExistsJson(json, string.concat(v, ".placeholder")), "not a placeholder");
+                assertEq(
+                    vm.parseJsonAddress(json, string.concat(v, ".implementation")),
+                    setup.implementation(),
+                    "implementation"
+                );
+                assertTrue(vm.parseJsonBool(json, string.concat(v, ".current")), "current");
+            }
+        }
+        assertFalse(
+            vm.keyExistsJson(
+                json, string.concat(".plugin.versions[", vm.toString(uint256(PluginSettings.VERSION_BUILD)), "]")
+            ),
+            "nothing else"
+        );
     }
 
     function test_WhenSimulating_ItWritesNoArtifact() external {
         // it should not write anything during a dry run.
         vm.setEnv("NETWORK_NAME", "unit-test-simulation");
         vm.setEnv("SIMULATION", "true");
-        deploy.exposed_writeArtifact(repo, managementDao, address(setup), setup.implementation());
+        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_publishedVersions(address(setup)));
         vm.setEnv("SIMULATION", "false");
 
         string memory path = string.concat(

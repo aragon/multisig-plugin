@@ -36,7 +36,7 @@ contract NewVersion is BaseScript {
 
         // The version only exists on-chain once the proposal below is executed.
         // Import this artifact into artifacts-hub (`just import-plugin`) only after that.
-        _writeArtifact(managementDao, address(multisigSetup), multisigSetup.implementation());
+        _writeArtifact(managementDao, _publishedVersions(address(multisigSetup), buildCount));
 
         Action[] memory actions = _createVersionActions(
             multisigRepo,
@@ -96,6 +96,27 @@ contract NewVersion is BaseScript {
         actions = new Action[](_count);
         for (uint256 i; i < _count; ++i) {
             actions[i] = Action({to: address(_repo), value: 0, data: data});
+        }
+    }
+
+    /// @dev The builds the proposal publishes: `VERSION_BUILD` and, when the repo is behind, the gap before it,
+    ///      all with the same (real) setup.
+    function _publishedVersions(address _setup, uint256 _count)
+        internal
+        view
+        returns (ArtifactVersion[] memory versions)
+    {
+        versions = new ArtifactVersion[](_count);
+        address implementation = MultisigSetup(_setup).implementation();
+        for (uint256 i; i < _count; ++i) {
+            versions[i] = ArtifactVersion({
+                // At most VERSION_BUILD (a uint8), so the cast cannot truncate.
+                // forge-lint: disable-next-line(unsafe-typecast)
+                build: uint16(PluginSettings.VERSION_BUILD - _count + 1 + i),
+                setup: _setup,
+                implementation: implementation,
+                placeholder: false
+            });
         }
     }
 

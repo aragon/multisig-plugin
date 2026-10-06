@@ -22,6 +22,14 @@ contract NewVersionHarness is NewVersion {
         return _createVersionActions(_repo, _setup, _count, _buildMetadata, _releaseMetadata);
     }
 
+    function exposed_publishedVersions(address _setup, uint256 _count)
+        external
+        view
+        returns (ArtifactVersion[] memory)
+    {
+        return _publishedVersions(_setup, _count);
+    }
+
     function exposed_proposalCalldata(Action[] memory _actions, bytes memory _metadata, uint64 _endDate)
         external
         pure

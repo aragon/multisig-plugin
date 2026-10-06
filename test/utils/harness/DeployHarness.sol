@@ -28,10 +28,12 @@ contract DeployHarness is Deploy {
         _transferOwnership(_repo, _managementDao, _deployer);
     }
 
-    function exposed_writeArtifact(PluginRepo _repo, address _maintainer, address _setup, address _implementation)
-        external
-    {
+    function exposed_publishedVersions(address _setup) external view returns (ArtifactVersion[] memory) {
+        return _publishedVersions(_setup);
+    }
+
+    function exposed_writeArtifact(PluginRepo _repo, address _maintainer, ArtifactVersion[] memory _versions) external {
         multisigRepo = _repo;
-        _writeArtifact(_maintainer, _setup, _implementation);
+        _writeArtifact(_maintainer, _versions);
     }
 }

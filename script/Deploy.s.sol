@@ -56,7 +56,23 @@ contract Deploy is BaseScript {
             "- Version:              ", _versionString(PluginSettings.VERSION_RELEASE, PluginSettings.VERSION_BUILD)
         );
 
-        _writeArtifact(managementDao, address(multisigSetup), multisigSetup.implementation());
+        _writeArtifact(managementDao, _publishedVersions(address(multisigSetup)));
+    }
+
+    /// @dev What `_publish` published: placeholders on builds `1..VERSION_BUILD - 1`, then `_setup`.
+    function _publishedVersions(address _setup) internal view returns (ArtifactVersion[] memory versions) {
+        versions = new ArtifactVersion[](PluginSettings.VERSION_BUILD);
+        for (uint16 b = 1; b < PluginSettings.VERSION_BUILD; ++b) {
+            versions[b - 1] = ArtifactVersion({
+                build: b, setup: address(placeholderSetup), implementation: address(0), placeholder: true
+            });
+        }
+        versions[PluginSettings.VERSION_BUILD - 1] = ArtifactVersion({
+            build: PluginSettings.VERSION_BUILD,
+            setup: _setup,
+            implementation: MultisigSetup(_setup).implementation(),
+            placeholder: false
+        });
     }
 
     /// @dev `MULTISIG_ENS_SUBDOMAIN` ("multisig" in production). Empty or unset: the repo is registered

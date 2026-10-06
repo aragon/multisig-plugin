@@ -134,6 +134,18 @@ contract NewVersion_Script_UnitTest is BaseTest {
         }
     }
 
+    function test_WhenListingThePublishedVersions() external view {
+        // it should list the gap builds and VERSION_BUILD, all with the real setup and implementation.
+        BaseScript.ArtifactVersion[] memory versions = newVersion.exposed_publishedVersions(address(newSetup), 2);
+        assertEq(versions.length, 2, "count");
+        for (uint256 i; i < 2; ++i) {
+            assertEq(versions[i].build, PluginSettings.VERSION_BUILD - 1 + i, "build");
+            assertEq(versions[i].setup, address(newSetup), "setup");
+            assertEq(versions[i].implementation, newSetup.implementation(), "implementation");
+            assertFalse(versions[i].placeholder, "real build");
+        }
+    }
+
     function test_WhenBuildingTheProposalCalldata() external {
         // it should create a proposal with the metadata, the actions and the submitter's approval, not executed.
         _publishPreviousBuilds(PluginSettings.VERSION_BUILD - 1);
