@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to the [Aragon OSx Plugin Versioning Convention](https://devs.aragon.org/docs/osx/how-to-guides/plugin-development/publication/versioning).
 
+## Unreleased
+
+### Changed
+
+- `Multisig`: functions are `virtual` and several `external` functions are `public`, so that the plugin can be extended (not covered by the v1.3 audit).
+- Migrated the project from Hardhat to Foundry: sources in `src/`, tests rewritten in Solidity, deployment scripts in `script/` driven by `just` and `just-foundry`.
+- OSx and osx-commons come from the `lib/osx` submodule.
+
+### Fixed
+
+- `build-metadata.json`: the `prepareUpdate` inputs were declared under the wrong source builds. Updating from builds 1 and 2 requires `(targetConfig, metadata)`.
+
+### Removed
+
+- The `@aragon/multisig-plugin-artifacts` npm package. ABIs and addresses are published in artifacts-hub.
+
 ## v1.3
 
 ### Added

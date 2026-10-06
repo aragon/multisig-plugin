@@ -1,6 +1,7 @@
-default: help
+import? 'lib/just-foundry/justfile'
 
-import 'lib/just-foundry/justfile'
+default:
+    @just help
 
 DEPLOY_SCRIPT := "script/Deploy.s.sol:Deploy"
 NEW_VERSION_SCRIPT := "script/NewVersion.s.sol:NewVersion"

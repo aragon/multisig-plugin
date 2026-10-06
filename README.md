@@ -1,9 +1,13 @@
-# Multisig Plugin [![Hardhat][hardhat-badge]][hardhat] [![License: AGPL v3][license-badge]][license]
+# Multisig Plugin [![Foundry][foundry-badge]][foundry] [![License: AGPL v3][license-badge]][license]
 
-[hardhat]: https://hardhat.org/
-[hardhat-badge]: https://img.shields.io/badge/Built%20with-Hardhat-FFDB1C.svg
+[foundry]: https://getfoundry.sh/
+[foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 [license]: https://opensource.org/licenses/AGPL-v3
 [license-badge]: https://img.shields.io/badge/License-AGPL_v3-blue.svg
+
+An Aragon OSx governance plugin where a proposal passes once X out of Y listed members approve it on-chain.
+
+Documentation: [protocol-doc, Multisig Plugin](https://github.com/aragon/protocol-doc/blob/main/plugins/multisig-plugin.md).
 
 ## Audit
 
@@ -15,230 +19,109 @@
 - Started: 2024-11-18
 - Finished: 2025-02-13
 
-## ABI and artifacts
-
-Check out the [artifacts folder](./packages/artifacts/README.md) to get the deployed addresses and the contract ABI's.
-
-## Project
-
-The root folder of the repo includes two subfolders:
-
-```markdown
-.
-├── packages/artifacts
-│ ├── src
-│ ├── prepare-abi.sh
-│ ├── README.md
-│ ├── ...
-| └── package.json
-|
-├── packages/contracts
-│ ├── src
-│ ├── deploy
-│ ├── test
-│ ├── utils
-│ ├── ...
-│ └── package.json
-│
-├── ...
-└── package.json
-```
-
-The root-level `package.json` file contains global `dev-dependencies` for formatting and linting. After installing the dependencies with
-
-```sh
-yarn --ignore-scripts
-```
-
-you can run the associated [formatting](#formatting) and [linting](#linting) commands.
-
-### Formatting
-
-```sh
-yarn prettier:check
-```
-
-all `.sol`, `.js`, `.ts`, `.json`, and `.yml` files will be format-checked according to the specifications in `.prettierrc` file.With
-
-```sh
-yarn prettier:write
-```
-
-the formatting is applied.
-
-### Linting
-
-With
-
-```sh
-yarn lint
-```
-
-`.sol`, `.js`, and `.ts` files in the subfolders are analyzed with `solhint` and `eslint`, respectively.
-
-### Setting Environment Variables
-
-To be able to work on the contracts, make sure that you have created an `.env` file from the `.env.example` file and put in the API keys for
-
-- [Alchemy](https://www.alchemy.com) that we use as the web3 provider
-- the block explorer that you want to use depending on the networks that you want to deploy to
-
-Before deploying, you MUST also change the default hardhat private key (`PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"`).
-
 ## Contracts
 
-This package is located in `packages/contracts`, first run
+| Contract | Purpose |
+|---|---|
+| `src/Multisig.sol` | The plugin (UUPS upgradeable). |
+| `src/MultisigSetup.sol` | Plugin setup: installs, updates and uninstalls the plugin through the `PluginSetupProcessor`. |
+| `src/ListedCheckCondition.sol` | Permission condition enforcing `onlyListed` on proposal creation. |
+| `src/IMultisig.sol` | Interface. |
 
-```sh
-yarn --ignore-scripts
+Deployed addresses and ABIs are published in [artifacts-hub](https://github.com/aragon/artifacts-hub).
+
+## Setup
+
+Requirements: [Foundry](https://getfoundry.sh/) and [just](https://github.com/casey/just).
+
+```shell
+git clone https://github.com/aragon/multisig-plugin.git
+cd multisig-plugin
+just init <network>   # fetch the git submodules (lib/), create .env from .env.example, select the network (default: mainnet)
+just help             # list every recipe (available once the submodules are fetched)
 ```
 
-### Building
+Network settings (RPC, chain ID, OSx and management DAO addresses) come from [just-foundry](https://github.com/aragon/just-foundry) (`lib/just-foundry/networks/<network>.env`). Switch networks with `just switch <network>` and inspect the resolved values with `just env`. Secrets go in `.env` (see `.env.example`) or in `vars` (see `.vars.yaml`).
 
-To build the contracts on EVM based networks:
+## Build
 
-```sh
-yarn build
+```shell
+forge build
 ```
 
-On Zksync:
+## Test
 
-```sh
-yarn build:zksync
+```shell
+just test            # unit, integration, fuzz and invariant tests
+just test-fork       # fork tests against the active network (requires RPC_URL)
+just test-coverage   # HTML coverage report under ./report
 ```
 
-### Testing
+Layout:
 
-To test your contracts, run
-
-```sh
-yarn test
+```
+test/
+├── unit/<contract>/concrete/<function>/    one folder per function
+├── unit/<contract>/fuzz/
+├── unit/metadata/                          build metadata vs what the contracts decode
+├── unit/script/                            deployment scripts
+├── integration/concrete/pluginSetup/       install, update and uninstall through a local PluginSetupProcessor
+├── integration/fuzz/                       invariants
+├── fork/                                   live networks
+└── utils/                                  constants, mocks, harnesses
 ```
 
-on zksync:
+## Deploy
 
-```sh
-yarn test:zksync
+```shell
+just predeploy       # simulate Deploy.s.sol
+just deploy          # new network: creates the plugin repo and publishes VERSION_BUILD
+just pre-new-version # simulate NewVersion.s.sol
+just new-version     # existing repo: deploys the setup, prints the management DAO proposal
 ```
 
-### Linting
+- `Deploy.s.sol` creates the plugin repo (ENS subdomain `MULTISIG_ENS_SUBDOMAIN`, set it to `multisig` in production; a unique `multisig-<timestamp>` otherwise), publishes `PlaceholderSetup` builds below `VERSION_BUILD` so that build numbers match every other network, publishes `MultisigSetup` as `VERSION_BUILD`, and hands ROOT, MAINTAINER and UPGRADE_REPO over to the management DAO.
+- `NewVersion.s.sol` deploys `MultisigSetup` and prints the `createVersion` action(s) for `MULTISIG_PLUGIN_REPO_ADDRESS`, wrapped in a `createProposal` call for `MANAGEMENT_DAO_MULTISIG_ADDRESS`. Any member of the management DAO multisig submits it.
 
-Lint the Solidity and TypeScript code all together with
+Both scripts write `artifacts/artifacts-<network>-<timestamp>.json` for artifacts-hub (`just import-plugin <file>` there). For `NewVersion`, import it only after the proposal has executed.
 
-```sh
-yarn lint
-```
+### Preparing a new build
 
-or separately with
+1. Bump `VERSION_BUILD` in `script/PluginSettings.sol` (and `VERSION_RELEASE` for a new release).
+2. Update the files in `script/metadata/`: `build-metadata.json` (its `prepareUpdate` keys are the builds that can update *from*), `new-version-proposal-metadata.json`, and `release-metadata.json` on a new release.
+3. Pin each file with `just ipfs-pin <file>` and paste the `ipfs://` URIs into `script/PluginSettings.sol`. The scripts refuse to run while any of them is empty.
 
-```sh
-yarn lint:sol
-```
+### Updating existing installations
 
-and
+Publishing a build does not update installed plugins: each DAO applies the update through the `PluginSetupProcessor`. Since build 3, `MultisigSetup` does not grant `UPGRADE_PLUGIN_PERMISSION` to the DAO and `prepareUpdate` from build 3 returns no permissions. A DAO updating from build 3 to a build with a new implementation must therefore grant `UPGRADE_PLUGIN_PERMISSION` on the plugin to the `PluginSetupProcessor`, apply the update and revoke it, in the same proposal.
 
-```sh
-yarn lint:ts
-```
+### Deployment checklist
 
-### Coverage
+- [ ] I have checked out the official repository on the `main` branch, and `git status` reports no local changes
+- [ ] The rest of the ceremony reports the same `git log -n 1` commit hash
+- [ ] I have run `just init <network>` and `just env` shows the right network, addresses and deployer
+- [ ] `DEPLOYER_KEY` is a fresh wallet that only I operate
+- [ ] `ETHERSCAN_API_KEY` is set (when the network uses Etherscan)
+- [ ] `VERSION_BUILD` and every metadata URI in `script/PluginSettings.sol` are final
+- [ ] `MULTISIG_ENS_SUBDOMAIN=multisig` (new network only)
+- [ ] `just test` runs clean, and `just test-fork` runs clean on the target network
+- [ ] `just predeploy` (or `just pre-new-version`) completes without errors
+- [ ] `just balance` shows at least 15% more funds than the simulation estimated
+- [ ] My machine is on a trusted network and exposes no services
+- [ ] I run `just deploy` (or `just new-version`)
 
-Generate the code coverage report with
+### Post deployment checklist
 
-```sh
-yarn coverage
-```
+- [ ] The script completed without errors and every contract is verified on the network's explorer
+- [ ] The log under `logs/` matches the console output
+- [ ] `artifacts/artifacts-<network>-<timestamp>.json` matches the logged addresses, and it was imported into artifacts-hub (after the proposal executed, for `NewVersion`)
+- [ ] The plugin repo's ROOT, MAINTAINER and UPGRADE_REPO permissions belong to the management DAO only (`Deploy`)
+- [ ] The log, the artifact and `broadcast/<script>/<chain-id>/run-latest.json` are uploaded to the shared location
 
-### Gas Report
+## zkSync
 
-See the gas usage per test and average gas per method call with
-
-```sh
-REPORT_GAS=true yarn test
-```
-
-you can permanently enable the gas reporting by putting the `REPORT_GAS=true` into the `.env` file.
-
-### Deployment
-
-The deploy scripts provided inside `./packages/contracts/deploy` take care of
-
-1. Creating an on-chain [Plugin Repository](https://devs.aragon.org/docs/osx/how-it-works/framework/plugin-management/plugin-repo/) for you through Aragon's factories with an [unique ENS name](https://devs.aragon.org/docs/osx/how-it-works/framework/ens-names).
-2. Publishing the first version of your `Plugin` and associated `PluginSetup` contract in your repo from step 1.
-3. Upgrade your plugin repository to the latest Aragon OSx protocol version.
-
-Finally, it verifies all contracts on the block explorer of the chosen network.
-
-**You don't need to make changes to the deploy script.** You only have to update the entries in `packages/contracts/plugin-settings.ts` as explained in the template [usage guide](./USAGE_GUIDE.md#contracts).
-
-#### Creating a Plugin Repository & Publishing Your Plugin
-
-Deploy the contracts to the local Hardhat Network (being forked from the network specified in `NETWORK_NAME` in your `.env` file ) with
-
-```sh
-yarn deploy --tags CreateRepo,NewVersion
-```
-
-This will create a plugin repo and publish the first version (`v1.1`) of your plugin.
-By adding the tag `TransferOwnershipToManagmentDao`, the `ROOT_PERMISSION_ID`, `MAINTAINER_PERMISSION_ID`, and
-`UPGRADE_REPO_PERMISSION_ID` are granted to the management DAO and revoked from the deployer.
-You can do this directly
-
-```sh
-yarn deploy --tags CreateRepo,NewVersion,TransferOwnershipToManagmentDao
-```
-
-or at a later point by executing
-
-```sh
-yarn deploy --tags TransferOwnershipToManagmentDao
-```
-
-To deploy the contracts to a production network use the `--network` option, for example
-
-```sh
-yarn deploy --network sepolia --tags CreateRepo,NewVersion,TransferOwnershipToManagmentDao,Verification
-```
-
-This will create a plugin repo, publish the first version (`v1.1`) of your plugin, transfer permissions to the
-management DAO, and lastly verfiy the contracts on sepolia.
-
-If you want to deploy a new version of your plugin afterwards (e.g., `1.2`), simply change the `VERSION` entry in the `packages/contracts/plugin-settings.ts` file and use
-
-```sh
-yarn deploy --network sepolia --tags NewVersion,Verification
-```
-
-Note, that if the deploying account doesn't own the repo anymore, this will create a `createVersionProposalData-sepolia.json` containing the data for a management DAO signer to create a proposal publishing a new version.
-
-Note, that if you include the `CreateRepo` tag after you've created your plugin repo already, this part of the script will be skipped.
-
-#### Upgrading Your Plugin Repository
-
-Upgrade your plugin repo on the local Hardhat Network (being forked from the network specified in `NETWORK_NAME` in your `.env` file ) with
-
-```sh
-yarn deploy --tags UpgradeRepo
-```
-
-Upgrade your plugin repo on sepolia with
-
-```sh
-yarn deploy --network sepolia --tags UpgradeRepo
-```
-
-This will upgrade your plugin repo to the latest Aragon OSx protocol version implementation, which might include new features and security updates.
-**For this to work, make sure that you are using the latest version of [this repository](https://github.com/aragon/osx-plugin-template-hardhat) in your fork.**
-
-Note, that if the deploying account doesn't own the repo anymore, this will create a `upgradeRepoProposalData-sepolia.json` containing the data for a management DAO signer to create a proposal upgrading the repo.
-
-If you want to run deployments against zksync, you can use:
-
-```sh
-yarn deploy:zksync --network zksyncSepolia --tags ...
-yarn deploy:zksync --network zksyncMainnet --tags ...
-```
+just-foundry selects `forge-zksync` automatically on zkSync networks (`just switch zksync` or `zksync-sepolia`). `MultisigSetup` deploys plugins as UUPS proxies and conditions with `new`, so no zkSync-specific setup is needed.
 
 ## License
 
-This project is licensed under AGPL-3.0-or-later.
+AGPL-3.0-or-later, see [LICENSE.md](./LICENSE.md).
