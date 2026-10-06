@@ -42,4 +42,14 @@ contract HasApproved_Multisig_UnitTest is BaseTest {
         _removeMembers(_members(carol));
         assertTrue(multisig.hasApproved(proposalId, carol));
     }
+
+    function testFuzz_WhenAccountIsAnyNonApprover(address _account) external {
+        // it should be false for every account that did not approve, including address(0) and the plugin.
+        vm.assume(_account != alice);
+        _approve(proposalId, alice);
+        assertFalse(multisig.hasApproved(proposalId, _account), "fuzzed account");
+        assertFalse(multisig.hasApproved(proposalId, address(0)), "zero address");
+        assertFalse(multisig.hasApproved(proposalId, address(multisig)), "plugin");
+        assertFalse(multisig.hasApproved(proposalId, address(dao)), "dao");
+    }
 }

@@ -234,4 +234,33 @@ contract Approve_Multisig_UnitTest is BaseTest {
         multisig.approve(proposalId, true);
         assertTrue(_executed(proposalId), "executed through approve");
     }
+
+    function test_WhenTryExecutionAndOnlyTheApproverHoldsTheExecutePermission() external {
+        // it should check the approver, not the plugin or anyone else: bob executes, carol does not.
+        _revoke(address(multisig), ANY_ADDR, EXECUTE_PROPOSAL_PERMISSION_ID);
+        _grant(address(multisig), bob, EXECUTE_PROPOSAL_PERMISSION_ID);
+
+        uint256 other = _createProposal(alice, _actions(2), 0, true, false);
+        _approve(proposalId, alice);
+
+        vm.prank(carol);
+        multisig.approve(other, true);
+        assertFalse(_executed(other), "carol lacks the permission");
+
+        vm.prank(bob);
+        multisig.approve(proposalId, true);
+        assertTrue(_executed(proposalId), "bob holds the permission");
+    }
+
+    function test_WhenTryExecutionAndOnlyThePluginHoldsTheExecutePermission() external {
+        // it should not execute: the plugin holding the permission does not count for the approver.
+        _revoke(address(multisig), ANY_ADDR, EXECUTE_PROPOSAL_PERMISSION_ID);
+        _grant(address(multisig), address(multisig), EXECUTE_PROPOSAL_PERMISSION_ID);
+
+        _approve(proposalId, alice);
+        vm.prank(bob);
+        multisig.approve(proposalId, true);
+        assertFalse(_executed(proposalId), "not executed");
+        assertEq(_approvals(proposalId), 2, "approval recorded");
+    }
 }
