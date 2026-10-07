@@ -160,11 +160,15 @@ contract Deploy_Script_UnitTest is Test {
             string.concat(vm.projectRoot(), "/artifacts/artifacts-unit-test-", vm.toString(block.timestamp), ".json");
 
         vm.setEnv("SIMULATION", "true");
-        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_publishedVersions(address(setup)));
+        deploy.exposed_writeArtifact(
+            repo, managementDao, "multisig.plugin.dao.eth", deploy.exposed_publishedVersions(address(setup))
+        );
         assertFalse(vm.exists(path), "no artifact in a simulation");
 
         vm.setEnv("SIMULATION", "false");
-        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_publishedVersions(address(setup)));
+        deploy.exposed_writeArtifact(
+            repo, managementDao, "multisig.plugin.dao.eth", deploy.exposed_publishedVersions(address(setup))
+        );
         string memory json = vm.readFile(path);
         vm.removeFile(path);
 
@@ -200,5 +204,28 @@ contract Deploy_Script_UnitTest is Test {
             ),
             "nothing else"
         );
+
+        // A repo created without ENS name, whose setup has no implementation (AdminSetupZkSync): both fields
+        // are omitted, as the artifacts-hub schema expects (it rejects 0x0 and unresolvable names are misleading).
+        vm.warp(block.timestamp + 1);
+        BaseScript.ArtifactVersion[] memory bare = new BaseScript.ArtifactVersion[](1);
+        bare[0] = BaseScript.ArtifactVersion({
+            build: PluginSettings.VERSION_BUILD, setup: address(setup), implementation: address(0), placeholder: false
+        });
+        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_ensName(""), bare);
+        path = string.concat(vm.projectRoot(), "/artifacts/artifacts-unit-test-", vm.toString(block.timestamp), ".json");
+        json = vm.readFile(path);
+        vm.removeFile(path);
+        assertFalse(vm.keyExistsJson(json, ".plugin.ens"), "no ENS name when none was registered");
+        assertFalse(vm.keyExistsJson(json, ".plugin.versions[0].implementation"), "no implementation");
+        assertTrue(vm.parseJsonBool(json, ".plugin.versions[0].current"), "current");
+        assertEq(vm.parseJsonAddress(json, ".plugin.maintainer"), managementDao, "maintainer");
+    }
+
+    function test_WhenNamingTheEnsEntry() external view {
+        // it should record no name when no subdomain was registered, and <subdomain>.plugin.dao.eth otherwise.
+        assertEq(deploy.exposed_ensName(""), "", "none");
+        assertEq(deploy.exposed_ensName("multisig"), "multisig.plugin.dao.eth", "canonical");
+        assertEq(deploy.exposed_ensName("multisig-test"), "multisig-test.plugin.dao.eth", "custom");
     }
 }

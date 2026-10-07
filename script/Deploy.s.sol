@@ -28,7 +28,10 @@ contract Deploy is BaseScript {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        multisigRepo = PluginRepoFactory(pluginRepoFactory).createPluginRepo(_ensSubdomain(), deployer);
+        string memory subdomain = _ensSubdomain();
+
+        multisigRepo = PluginRepoFactory(pluginRepoFactory).createPluginRepo(subdomain, deployer);
+        repoEnsName = _ensName(subdomain);
         multisigSetup = new MultisigSetup();
         _publish(
             multisigRepo,

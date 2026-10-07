@@ -11,6 +11,10 @@ contract DeployHarness is Deploy {
         _requireMetadata();
     }
 
+    function exposed_ensName(string memory _subdomain) external pure returns (string memory) {
+        return _ensName(_subdomain);
+    }
+
     function exposed_ensSubdomain() external view returns (string memory) {
         return _ensSubdomain();
     }
@@ -32,8 +36,14 @@ contract DeployHarness is Deploy {
         return _publishedVersions(_setup);
     }
 
-    function exposed_writeArtifact(PluginRepo _repo, address _maintainer, ArtifactVersion[] memory _versions) external {
+    function exposed_writeArtifact(
+        PluginRepo _repo,
+        address _maintainer,
+        string memory _ens,
+        ArtifactVersion[] memory _versions
+    ) external {
         multisigRepo = _repo;
+        repoEnsName = _ens;
         _writeArtifact(_maintainer, _versions);
     }
 }
