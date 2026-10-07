@@ -1,0 +1,133 @@
+{
+  "ui": {},
+  "name": "multisig",
+  "description": "The on-chain multisig governance plugin in which a proposal passes if X out of Y approvals are met.",
+  "change": "v1.3\n - Removed an unnecessary permission that allowed the DAO to upgrade the plugin, because this is supposed to happen as part of the update itself. The unnecessary permission, which was granted on installation of previous versions, is automatically removed with the update to this version.\n",
+  "pluginSetup": {
+    "prepareInstallation": {
+      "description": "The information required for the installation.",
+      "inputs": [
+        {
+          "name": "members",
+          "type": "address[]",
+          "internalType": "address[]",
+          "description": "The addresses of the initial members to be added."
+        },
+        {
+          "components": [
+            {
+              "name": "onlyListed",
+              "type": "bool",
+              "internalType": "bool",
+              "description": "Whether only listed addresses can create a proposal or not."
+            },
+            {
+              "name": "minApprovals",
+              "type": "uint16",
+              "internalType": "uint16",
+              "description": "The minimal number of approvals required for a proposal to pass."
+            }
+          ],
+          "name": "multisigSettings",
+          "type": "tuple",
+          "internalType": "struct Multisig.MultisigSettings",
+          "description": "The initial multisig settings."
+        },
+        {
+          "components": [
+            {
+              "name": "target",
+              "type": "address",
+              "internalType": "address",
+              "description": "The target contract to which actions will be forwarded to for execution. Use the zero address to target the DAO."
+            },
+            {
+              "name": "operation",
+              "type": "uint8",
+              "internalType": "enum IPlugin.Operation",
+              "description": "The operation type (0 = call, 1 = delegatecall) used to forward actions to the target."
+            }
+          ],
+          "name": "targetConfig",
+          "type": "tuple",
+          "internalType": "struct IPlugin.TargetConfig",
+          "description": "The initial execution target configuration."
+        },
+        {
+          "name": "metadata",
+          "type": "bytes",
+          "internalType": "bytes",
+          "description": "The metadata that contains the information about the multisig plugin instance."
+        }
+      ]
+    },
+    "prepareUpdate": {
+      "1": {
+        "description": "Builds 1 and 2 have no target config or instance metadata. Both must be provided.",
+        "inputs": [
+          {
+            "components": [
+              {
+                "name": "target",
+                "type": "address",
+                "internalType": "address",
+                "description": "The target contract to which actions will be forwarded to for execution. Use the zero address to target the DAO."
+              },
+              {
+                "name": "operation",
+                "type": "uint8",
+                "internalType": "enum IPlugin.Operation",
+                "description": "The operation type (0 = call, 1 = delegatecall) used to forward actions to the target."
+              }
+            ],
+            "name": "targetConfig",
+            "type": "tuple",
+            "internalType": "struct IPlugin.TargetConfig",
+            "description": "The execution target configuration."
+          },
+          {
+            "name": "metadata",
+            "type": "bytes",
+            "internalType": "bytes",
+            "description": "The metadata that contains the information about the multisig plugin instance."
+          }
+        ]
+      },
+      "2": {
+        "description": "Builds 1 and 2 have no target config or instance metadata. Both must be provided.",
+        "inputs": [
+          {
+            "components": [
+              {
+                "name": "target",
+                "type": "address",
+                "internalType": "address",
+                "description": "The target contract to which actions will be forwarded to for execution. Use the zero address to target the DAO."
+              },
+              {
+                "name": "operation",
+                "type": "uint8",
+                "internalType": "enum IPlugin.Operation",
+                "description": "The operation type (0 = call, 1 = delegatecall) used to forward actions to the target."
+              }
+            ],
+            "name": "targetConfig",
+            "type": "tuple",
+            "internalType": "struct IPlugin.TargetConfig",
+            "description": "The execution target configuration."
+          },
+          {
+            "name": "metadata",
+            "type": "bytes",
+            "internalType": "bytes",
+            "description": "The metadata that contains the information about the multisig plugin instance."
+          }
+        ]
+      }
+    },
+    "prepareUninstallation": {
+      "description": "No input is required for the uninstallation.",
+      "inputs": []
+    }
+  }
+}

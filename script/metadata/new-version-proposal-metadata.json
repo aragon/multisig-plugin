@@ -1,0 +1,15 @@
+{
+  "title": "Publish Multisig v1.3",
+  "summary": "Publishes build 3 of the Multisig plugin (release 1) on the multisig.plugin.dao.eth plugin repository.",
+  "description": "# Publish a new plugin version\n\nCalls `createVersion` on the Multisig plugin repository (`multisig.plugin.dao.eth`) to publish **v1.3** (release 1, build 3). If the repository is missing earlier builds on this network, the same plugin setup is published once per missing build, so that build numbers match every other network.\n\n# What changes in v1.3\n\n- Proposal creation and execution are permissioned: `CREATE_PROPOSAL_PERMISSION` is granted to any address through the `ListedCheckCondition` (enforcing `onlyListed`), and `EXECUTE_PROPOSAL_PERMISSION` to any address.\n- Each plugin instance has its own metadata (`getMetadata` / `setMetadata`) and a configurable execution target (`setTargetConfig`).\n- The plugin implements the standard `IProposal` interface (`createProposal`, `hasSucceeded`, `customProposalParamsABI`).\n- `UPGRADE_PLUGIN_PERMISSION` is no longer granted to the DAO on installation, and it is revoked when updating from builds 1 and 2.\n\n# Updating existing installations\n\nPublishing a version does not update installed plugins. DAOs on builds 1 and 2 can update through the Plugin Setup Processor, providing the target configuration and the plugin metadata as update parameters.",
+  "resources": [
+    {
+      "name": "Changelog",
+      "url": "https://github.com/aragon/multisig-plugin/blob/main/CHANGELOG.md"
+    },
+    {
+      "name": "Audit report",
+      "url": "https://github.com/aragon/osx/tree/main/audits"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc = "0.8.28"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+fs_permissions = [
+    # read access too: test/unit/script checks the artifact the scripts write
+    { access = "read-write", path = "./artifacts" },
+    # test/unit/metadata checks that the published metadata matches what the contracts decode
+    { access = "read", path = "./script/metadata" },
+]
+# Tests deploy type(uint16).max members in one call (~3.3B gas, see MIGRATION.md F16)
+gas_limit = 50073741824
+extra_output = ["storageLayout"]
+gas_reports = ["Multisig", "MultisigSetup", "ListedCheckCondition"]
+
+[fuzz]
+runs = 256
+
+[fmt]
+# src/ keeps the formatting of the audited code (prettier-solidity); forge fmt cannot reproduce it
+ignore = ["src/**/*.sol"]
