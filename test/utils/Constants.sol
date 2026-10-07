@@ -30,11 +30,11 @@ abstract contract Constants {
     bytes4 internal constant ADDRESSLIST_ID = bytes4(keccak256("isListedAtBlock(address,uint256)"))
         ^ bytes4(keccak256("isListed(address)")) ^ bytes4(keccak256("addresslistLengthAtBlock(uint256)"))
         ^ bytes4(keccak256("addresslistLength()"));
-    bytes4 internal constant IPROPOSAL_ID = bytes4(
-        keccak256("createProposal(bytes,(address,uint256,bytes)[],uint64,uint64,bytes)")
-    ) ^ bytes4(keccak256("hasSucceeded(uint256)")) ^ bytes4(keccak256("execute(uint256)"))
-    ^ bytes4(keccak256("canExecute(uint256)")) ^ bytes4(keccak256("customProposalParamsABI()"))
-    ^ bytes4(keccak256("proposalCount()"));
+    bytes4 internal constant IPROPOSAL_CREATE_SELECTOR =
+        bytes4(keccak256("createProposal(bytes,(address,uint256,bytes)[],uint64,uint64,bytes)"));
+    bytes4 internal constant IPROPOSAL_ID = IPROPOSAL_CREATE_SELECTOR ^ bytes4(keccak256("hasSucceeded(uint256)"))
+        ^ bytes4(keccak256("execute(uint256)")) ^ bytes4(keccak256("canExecute(uint256)"))
+        ^ bytes4(keccak256("customProposalParamsABI()")) ^ bytes4(keccak256("proposalCount()"));
     /// @dev OSx v1.0 IProposal (only `proposalCount()`), still advertised by `ProposalUpgradeable` for compatibility.
     bytes4 internal constant IPROPOSAL_LEGACY_ID = bytes4(keccak256("proposalCount()"));
     bytes4 internal constant IMULTISIG_ID = bytes4(keccak256("addAddresses(address[])"))

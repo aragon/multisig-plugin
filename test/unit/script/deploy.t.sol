@@ -138,29 +138,33 @@ contract Deploy_Script_UnitTest is Test {
         assertEq(vm.indexOf(PluginSettings.PLACEHOLDER_BUILD_METADATA, "ipfs://"), 0, "placeholder");
     }
 
-    function test_WhenNoEnsSubdomainIsSet() external {
-        // it should use no ENS name (the registry skips ENS for an empty subdomain).
+    /// @dev One test on purpose: `vm.setEnv` is process-wide and tests run in parallel.
+    function test_WhenReadingTheEnsSubdomain() external {
+        // it should use no ENS name when unset or empty (the registry skips ENS for an empty subdomain).
+        // it should use the configured subdomain as is.
         vm.setEnv("MULTISIG_ENS_SUBDOMAIN", "");
         assertEq(deploy.exposed_ensSubdomain(), "", "empty");
-    }
-
-    function test_WhenAnEnsSubdomainIsSet() external {
-        // it should use it as is.
         vm.setEnv("MULTISIG_ENS_SUBDOMAIN", "multisig");
         assertEq(deploy.exposed_ensSubdomain(), "multisig", "subdomain");
         vm.setEnv("MULTISIG_ENS_SUBDOMAIN", "");
     }
 
+    /// @dev One test on purpose: `vm.setEnv` (NETWORK_NAME, SIMULATION) is process-wide and tests run in parallel.
     function test_WhenWritingTheArtifact() external {
+        // it should write nothing during a dry run (SIMULATION).
         // it should record every published build: placeholders flagged, without implementation or current;
         // the real build last, with its implementation and current.
         vm.setEnv("NETWORK_NAME", "unit-test");
-        vm.setEnv("SIMULATION", "false");
         deploy.exposed_publish(repo, address(setup), BUILD_METADATA, RELEASE_METADATA);
-        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_publishedVersions(address(setup)));
-
         string memory path =
             string.concat(vm.projectRoot(), "/artifacts/artifacts-unit-test-", vm.toString(block.timestamp), ".json");
+
+        vm.setEnv("SIMULATION", "true");
+        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_publishedVersions(address(setup)));
+        assertFalse(vm.exists(path), "no artifact in a simulation");
+
+        vm.setEnv("SIMULATION", "false");
+        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_publishedVersions(address(setup)));
         string memory json = vm.readFile(path);
         vm.removeFile(path);
 
@@ -196,18 +200,5 @@ contract Deploy_Script_UnitTest is Test {
             ),
             "nothing else"
         );
-    }
-
-    function test_WhenSimulating_ItWritesNoArtifact() external {
-        // it should not write anything during a dry run.
-        vm.setEnv("NETWORK_NAME", "unit-test-simulation");
-        vm.setEnv("SIMULATION", "true");
-        deploy.exposed_writeArtifact(repo, managementDao, deploy.exposed_publishedVersions(address(setup)));
-        vm.setEnv("SIMULATION", "false");
-
-        string memory path = string.concat(
-            vm.projectRoot(), "/artifacts/artifacts-unit-test-simulation-", vm.toString(block.timestamp), ".json"
-        );
-        assertFalse(vm.exists(path), "no artifact");
     }
 }
