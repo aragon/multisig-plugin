@@ -141,7 +141,7 @@ contract Initialize_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenMembersContainTheZeroAddress() external {
-        // it should accept it (no member validation, finding F8).
+        // it should accept it (no member validation).
         Multisig plugin =
             _deployMultisig(dao, _members(alice, address(0)), _settings(false, 2), _daoTarget(), PLUGIN_METADATA);
         assertTrue(plugin.isListed(address(0)));

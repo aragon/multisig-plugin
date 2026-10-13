@@ -161,7 +161,7 @@ contract CreateProposal_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenEndDateIsTheMaximum() external {
-        // it should accept it, there is no maximum duration (finding F15).
+        // it should accept it, there is no maximum duration.
         uint256 proposalId = _create(alice, _actions(1), 0, 0, type(uint64).max);
         (,, Multisig.ProposalParameters memory parameters,,,) = multisig.getProposal(proposalId);
         assertEq(parameters.endDate, type(uint64).max);
@@ -192,8 +192,8 @@ contract CreateProposal_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenSameActionsAndMetadataButDifferentParametersInTheSameBlock() external {
-        // it should give the same ID and block the original creator (finding F3: front-running).
-        // FINDING: F3. The ID ignores allowFailureMap, dates and creator, so the same content can be front-run.
+        // it should give the same ID and block the original creator (front-running).
+        // The ID ignores allowFailureMap, dates and creator, so the same content can be front-run.
         _updateSettings(false, 2);
         vm.roll(block.number + 1);
         Action[] memory actionList = _actions(1);
@@ -324,8 +324,8 @@ contract CreateProposal_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenCreatedWithApprovalAndTryExecutionAtThreshold() external {
-        // it should execute, emitting ProposalCreated last (finding F10).
-        // FINDING: F10. Indexers see Approved and ProposalExecuted before ProposalCreated.
+        // it should execute, emitting ProposalCreated last.
+        // Indexers see Approved and ProposalExecuted before ProposalCreated.
         _updateSettings(true, 1);
         vm.roll(block.number + 1);
 

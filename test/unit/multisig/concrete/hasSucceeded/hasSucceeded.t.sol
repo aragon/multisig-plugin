@@ -25,14 +25,14 @@ contract HasSucceeded_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenExecuted() external {
-        // it should still return true (finding F11).
+        // it should still return true.
         uint256 proposalId = _createPassedProposal();
         multisig.execute(proposalId);
         assertTrue(multisig.hasSucceeded(proposalId));
     }
 
     function test_WhenExpiredAfterPassing() external {
-        // it should still return true (finding F11).
+        // it should still return true.
         uint256 proposalId = _createPassedProposal();
         vm.warp(block.timestamp + PROPOSAL_DURATION + 1);
         assertTrue(multisig.hasSucceeded(proposalId));

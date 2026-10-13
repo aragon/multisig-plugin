@@ -31,7 +31,7 @@ contract HasApproved_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenProposalDoesNotExist() external view {
-        // it should return false without reverting (finding F11).
+        // it should return false without reverting.
         assertFalse(multisig.hasApproved(42, alice));
     }
 

@@ -105,19 +105,19 @@ contract Update_ForkTest is ForkBaseTest {
     }
 
     function test_RevertWhen_ExecutingAProposalCreatedOnBuild1() external {
-        // it should revert although canExecute is true (finding F1).
+        // it should revert although canExecute is true.
         _updateFromLegacy(1);
         _assertPendingIsBricked();
     }
 
     function test_RevertWhen_ExecutingAProposalCreatedOnBuild2() external {
-        // it should revert although canExecute is true (finding F1).
+        // it should revert although canExecute is true.
         _updateFromLegacy(2);
         _assertPendingIsBricked();
     }
 
     function test_RevertWhen_ExecutingAProposalCreatedOnBuild2AfterUpdatingToThePublishedBuild3() external {
-        // it should revert too: the bug is already live in build 3 (finding F1).
+        // it should revert too: the bug is already live in build 3.
         _installAndCreatePending(2);
         _update(dao, address(multisig), _tag(2), _tag(3), installedHelpers, _legacyUpdateData());
         assertEq(
@@ -128,7 +128,7 @@ contract Update_ForkTest is ForkBaseTest {
         _assertPendingIsBricked();
     }
 
-    /// @dev FINDING: F1. Builds 1 and 2 stored no `targetConfig` per proposal. `_execute(uint256)` uses the
+    /// @dev Builds 1 and 2 stored no `targetConfig` per proposal. `_execute(uint256)` uses the
     ///      stored (empty) target instead of falling back to the DAO, so it calls `address(0)` and reverts.
     ///      The proposal can still be approved and `canExecute` reports true, but it can never execute:
     ///      it has to be recreated after the update.

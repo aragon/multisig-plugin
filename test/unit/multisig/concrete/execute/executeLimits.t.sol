@@ -39,7 +39,7 @@ contract ExecuteLimits_Multisig_UnitTest is BaseTest {
 
     function test_RevertWhen_TheProposalHasMoreActionsThanTheDaoAccepts() external {
         // it should accept the proposal and let it pass, but it can never execute.
-        // FINDING: F22. Multisig does not cap the number of actions at creation; the DAO rejects more than
+        // Multisig does not cap the number of actions at creation; the DAO rejects more than
         // 256 at execution, so such a proposal can gather approvals and never execute.
         uint256 id = _createProposal(alice, _actions(DAO_MAX_ACTIONS + 1), 0, true, false);
         _approve(id, bob);

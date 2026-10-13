@@ -12,7 +12,7 @@ fs_permissions = [
     # test/unit/metadata checks that the published metadata matches what the contracts decode
     { access = "read", path = "./script/metadata" },
 ]
-# Tests deploy type(uint16).max members in one call (~3.3B gas, see MIGRATION.md F16)
+# Tests deploy type(uint16).max members in one call (~3.3B gas)
 gas_limit = 50073741824
 extra_output = ["storageLayout"]
 gas_reports = ["Multisig", "MultisigSetup", "ListedCheckCondition"]

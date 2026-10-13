@@ -18,7 +18,7 @@ library PluginSettings {
     string internal constant RELEASE_METADATA = "ipfs://QmRfQ7ghLZFy5DHQ63eDK3iPfXUP6igoupFYsy9whhYyJq";
     /// @dev Title, summary and description of the management DAO proposal that publishes the build.
     ///      Source: `script/metadata/new-version-proposal-metadata.json`.
-    string internal constant PROPOSAL_METADATA = "ipfs://Qma3BneRJoRdHW3ptH19w3jLbENvFBDoSgW4qDCmFkjYt5";
+    string internal constant PROPOSAL_METADATA = "ipfs://QmUz2ewqdpKCiRD7by6DX7VrUF6aNvPnCzH7VMFz73FJqa";
 
     /// @dev Metadata of the placeholder builds that keep build numbers aligned across networks.
     ///      Same CID as the staged-proposal-processor-plugin uses for

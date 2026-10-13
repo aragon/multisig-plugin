@@ -122,6 +122,10 @@ Publishing a build does not update installed plugins: each DAO applies the updat
 
 just-foundry selects `forge-zksync` automatically on zkSync networks (`just switch zksync` or `zksync-sepolia`). `MultisigSetup` deploys plugins as UUPS proxies and conditions with `new`, so no zkSync-specific setup is needed.
 
+## Security
+
+Do not open a public issue for a security vulnerability. Email [sirt@aragon.org](mailto:sirt@aragon.org) instead.
+
 ## License
 
 AGPL-3.0-or-later, see [LICENSE.md](./LICENSE.md).

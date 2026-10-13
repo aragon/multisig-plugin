@@ -115,7 +115,7 @@ contract AddAddresses_Multisig_UnitTest is BaseTest {
 
     function test_WhenAddingTheZeroAddress() external {
         // it should accept it and count it as a member.
-        // FINDING: F8. No member validation: address(0) counts towards the length, so minApprovals can be
+        // No member validation: address(0) counts towards the length, so minApprovals can be
         // raised to a value that no set of real signers can ever reach.
         _addMembers(_members(address(0)));
         assertTrue(multisig.isListed(address(0)), "listed");

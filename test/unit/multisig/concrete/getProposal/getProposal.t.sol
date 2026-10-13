@@ -10,7 +10,7 @@ import {Multisig} from "../../../../../src/Multisig.sol";
 
 contract GetProposal_Multisig_UnitTest is BaseTest {
     function test_WhenProposalDoesNotExist() external view {
-        // it should return zeroed data without reverting (finding F11).
+        // it should return zeroed data without reverting.
         (
             bool executed,
             uint16 approvals,

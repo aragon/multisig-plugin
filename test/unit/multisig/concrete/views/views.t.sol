@@ -32,7 +32,7 @@ contract Views_Multisig_UnitTest is BaseTest {
 
     function test_RevertWhen_ReadingProposalCount() external {
         // it should revert with FunctionDeprecated.
-        // FINDING: F14. Integrations reading proposalCount() break after upgrading to build 3.
+        // Integrations reading proposalCount() break after upgrading to build 3.
         vm.expectRevert(ProposalUpgradeable.FunctionDeprecated.selector);
         multisig.proposalCount();
     }

@@ -67,7 +67,7 @@ contract CanApprove_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenMembershipChangesAfterCreation() external {
-        // it should follow the snapshot, not the current list (finding F7).
+        // it should follow the snapshot, not the current list.
         vm.roll(block.number + 1);
         _addMembers(_members(dave));
         _removeMembers(_members(carol));

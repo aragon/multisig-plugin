@@ -204,7 +204,7 @@ contract Execute_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenTargetChangesAfterCreation() external {
-        // it should execute on the target stored at creation (finding F6).
+        // it should execute on the target stored at creation.
         uint256 proposalId = _createPassedProposal();
 
         CustomExecutorMock executor = new CustomExecutorMock();

@@ -67,7 +67,7 @@ contract RemoveAddresses_Multisig_UnitTest is BaseTest {
 
     function test_RevertWhen_RemovingMoreEntriesThanMembers() external {
         // it should revert with an arithmetic panic instead of a custom error.
-        // FINDING: F13. `addresslistLength() - _members.length` underflows before any validation.
+        // `addresslistLength() - _members.length` underflows before any validation.
         address[] memory list = new address[](4);
         list[0] = alice;
         list[1] = bob;

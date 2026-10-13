@@ -307,7 +307,7 @@ contract Multisig_FuzzTest is BaseTest {
         bool _creatorIsBob
     ) external {
         // it should collide on identical actions and metadata in the same block, whatever the other
-        // parameters (front-running vector, finding F3).
+        // parameters (front-running vector).
         _endOffset = uint64(bound(_endOffset, 0, 365 days));
         uint256 idA = _createProposal(alice);
 

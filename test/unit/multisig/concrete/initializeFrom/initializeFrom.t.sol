@@ -103,7 +103,7 @@ contract InitializeFrom_Multisig_UnitTest is BaseTest {
     function test_WhenCalledByAnyone_ItShouldTakeOverTheExecutionTarget() external givenAProxyComingFromBuild1Or2 {
         // it should let any account set the target config (no access control).
         // it should make proposal execution delegatecall into the attacker's contract from the plugin context.
-        // FINDING: F2. `initializeFrom` has no access control. If a build 1/2 proxy is upgraded with a bare
+        // `initializeFrom` has no access control. If a build 1/2 proxy is upgraded with a bare
         // `upgradeTo` (not through the PSP, which upgrades and calls atomically), anyone can front-run the
         // reinitialization and install a DelegateCall target. The plugin holds EXECUTE_PERMISSION on the DAO.
         vm.prank(attacker);
@@ -123,7 +123,7 @@ contract InitializeFrom_Multisig_UnitTest is BaseTest {
     function test_WhenFromBuildIs3OrHigher() external givenAProxyComingFromBuild1Or2 {
         // it should not change the target config nor the metadata.
         // it should consume the reinitializer, so a later legitimate reinitialization reverts.
-        // FINDING: F2 (griefing). Anyone can burn the reinitializer with `_fromBuild >= 3` and arbitrary data.
+        // Griefing: anyone can burn the reinitializer with `_fromBuild >= 3` and arbitrary data.
         IPlugin.TargetConfig memory targetBefore = multisig.getCurrentTargetConfig();
 
         vm.prank(attacker);

@@ -95,7 +95,7 @@ contract Approve_Multisig_UnitTest is BaseTest {
         _approve(passedId, carol);
     }
 
-    // ==== Snapshot semantics (finding F7) ====
+    // ==== Snapshot semantics ====
 
     function test_RevertWhen_MemberWasAddedAfterCreation() external {
         // it should revert, eligibility is fixed at the snapshot block.
@@ -109,7 +109,7 @@ contract Approve_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenMemberWasRemovedAfterCreation() external {
-        // it should still accept the approval (finding F7).
+        // it should still accept the approval.
         vm.roll(block.number + 1);
         _removeMembers(_members(carol));
         vm.roll(block.number + 1);
@@ -173,8 +173,8 @@ contract Approve_Multisig_UnitTest is BaseTest {
     }
 
     function test_RevertWhen_TryExecutionAndAnActionReverts() external {
-        // it should revert the approval itself (finding F4: IMultisig says it does not revert).
-        // FINDING: F4. IMultisig.approve NatSpec says tryExecution does not revert on failure; it does.
+        // it should revert the approval itself.
+        // IMultisig.approve NatSpec says tryExecution does not revert on failure; it does.
         Action[] memory actionList = new Action[](1);
         actionList[0] = _failingAction();
         uint256 failingId = _createProposal(alice, actionList, 0, true, false);
@@ -192,8 +192,8 @@ contract Approve_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenTryExecutionAndTheExecuteConditionChecksTheSelector() external {
-        // it should forward the approve calldata to the condition (finding F5).
-        // FINDING: F5. The EXECUTE_PROPOSAL check in approve() passes the outer msg.data, not execute(id).
+        // it should forward the approve calldata to the condition.
+        // The EXECUTE_PROPOSAL check in approve() passes the outer msg.data, not execute(id).
         _revoke(address(multisig), ANY_ADDR, EXECUTE_PROPOSAL_PERMISSION_ID);
         SelectorCondition executeOnly = new SelectorCondition(Multisig.execute.selector);
         vm.prank(manager);
@@ -212,7 +212,7 @@ contract Approve_Multisig_UnitTest is BaseTest {
     }
 
     function test_WhenTryExecutionAndTheConditionOnlyAllowsTheApproveSelector() external {
-        // it should execute through approve although direct execution is denied (finding F5).
+        // it should execute through approve although direct execution is denied.
         _revoke(address(multisig), ANY_ADDR, EXECUTE_PROPOSAL_PERMISSION_ID);
         SelectorCondition approveOnly = new SelectorCondition(Multisig.approve.selector);
         vm.prank(manager);

@@ -106,7 +106,7 @@ contract IsGranted_ListedCheckCondition_UnitTest is BaseTest {
 
     function test_RevertWhen_BoundToAnAddressThatIsNotAMultisig() external {
         // it should deploy (no validation) but revert on use.
-        // FINDING: the constructor accepts any address, including EOAs and address(0).
+        // The constructor accepts any address, including EOAs and address(0).
         ListedCheckCondition broken = new ListedCheckCondition(address(0));
         vm.expectRevert();
         broken.isGranted(address(multisig), alice, CREATE_PROPOSAL_PERMISSION_ID, "");
