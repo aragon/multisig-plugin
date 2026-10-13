@@ -1,0 +1,5 @@
+{
+  "name": "Multisig",
+  "description": "The on-chain multisig governance plugin in which a proposal passes if X out of Y approvals are met.",
+  "images": {}
+}
