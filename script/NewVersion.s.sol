@@ -62,8 +62,6 @@ contract NewVersion is BaseScript {
         console.log("  metadata:", PluginSettings.PROPOSAL_METADATA);
         console.log("  allowFailureMap=0, approveProposal=true, tryExecution=false, startDate=now");
         console.log("  endDate (unix, now + 30 days):", uint256(endDate));
-        console.log("\n  Proposal id salt (the id also depends on the submission block):");
-        console.logBytes32(keccak256(abi.encode(actions, bytes(PluginSettings.PROPOSAL_METADATA))));
 
         console.log("\nSubmit it from a management DAO multisig member, e.g.:");
         console.log(
