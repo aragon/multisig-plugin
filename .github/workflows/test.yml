@@ -1,0 +1,48 @@
+name: test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'lib/**'
+      - 'script/**'
+      - 'src/**'
+      - 'test/**'
+      - '.github/workflows/*.yml'
+      - '.gitmodules'
+      - 'remappings.txt'
+      - 'foundry.toml'
+      - 'justfile'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Foundry project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
+        with:
+          version: v1.7.1
+
+      - name: Install just
+        uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
+
+      - name: Check formatting
+        run: forge fmt --check
+
+      - name: Build
+        run: |
+          forge --version
+          forge build --sizes
+
+      - name: Run unit and integration tests
+        run: |
+          just switch mainnet
+          just test
